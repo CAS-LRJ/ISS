@@ -1,2 +1,4 @@
-# ISS
-ISCAS Self-driving System
+# How-to
+```
+python setup.py build_ext --inline
+```
