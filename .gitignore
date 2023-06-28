@@ -3,7 +3,7 @@ build/*
 *.pyc
 ## We do not update compiled pyd files, translated cpp files
 *.pyd
-*.cpp
+# *.cpp
 *.exp
 ## We do not update video logs
 *.mp4
