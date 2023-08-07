@@ -7,7 +7,7 @@
             "/O2"
         ],
         "include_dirs": [
-            "D:\\Miniconda3\\envs\\beamng\\lib\\site-packages\\numpy\\core\\include",
+            "C:\\Users\\NINGMEI\\anaconda3\\envs\\ISS\\lib\\site-packages\\numpy\\core\\include",
             "ISS/algorithms/planning/dubins/include"
         ],
         "language": "c++",
