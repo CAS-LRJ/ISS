@@ -1,3 +1,3 @@
 from setuptools import Extension
 
-extensions = []
+extensions = [Extension('Carla.carla_collector', ['Carla/carla_collector.pyx'])]
