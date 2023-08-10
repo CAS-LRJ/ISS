@@ -3,6 +3,7 @@ build/*
 *.pyc
 ## We do not update compiled pyd files, translated cpp files
 *.pyd
+*.c
 *.cpp
 *.exp
 *.pxd
