@@ -7,6 +7,7 @@ build/*
 *.cpp
 *.exp
 *.pxd
+!**/core.pxd
 ## We do not update video logs
 *.mp4
 ## We do not update model files

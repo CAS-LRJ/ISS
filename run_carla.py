@@ -1,4 +1,4 @@
-from ISS.algorithms.perception.Carla.carla_collector import signal_handler, DataCollector
+from ISS.algorithms.perception.Carla.carla_collector import DataCollector
 from ISS.algorithms.perception.Carla.utils.path import ROOT_PATH, RAW_DATA_PATH
 from ISS.algorithms.perception.Carla.utils.transform import *
 from ISS.algorithms.perception.Carla.recorder.actor_tree import ActorTree
@@ -12,6 +12,13 @@ import time
 from pathlib import Path
 
 import carla
+
+sig_interrupt = False
+
+
+def signal_handler(signal, frame):
+    global sig_interrupt
+    sig_interrupt = True
 
 def main():
     print("Project Root PATH: {}".format(ROOT_PATH))
