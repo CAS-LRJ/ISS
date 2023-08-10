@@ -3,10 +3,13 @@ build/*
 *.pyc
 ## We do not update compiled pyd files, translated cpp files
 *.pyd
-# *.cpp
+*.cpp
 *.exp
+*.pxd
 ## We do not update video logs
 *.mp4
 ## We do not update model files
 *.pt
 *.pth
+## We do not update cache files
+*/__pycache__
