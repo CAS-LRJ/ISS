@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import carla
-from sensors.carla_actor import PseudoActor
+from ISS.algorithms.sensors.carla_actor import PseudoActor
 
 
 class Infrastructure(PseudoActor):

@@ -7,7 +7,7 @@ from queue import Queue
 
 import carla
 
-from sensors.carla_actor import Actor
+from ISS.algorithms.sensors.carla_actor import Actor
 
 
 class Sensor(Actor):

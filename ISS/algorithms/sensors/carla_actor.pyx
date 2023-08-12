@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import carla
-from utils.sensorutils.transform import *
+from ISS.algorithms.utils.sensorutils.transform import *
 
 
 class PseudoActor(object):

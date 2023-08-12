@@ -3,7 +3,7 @@
 import carla
 import numpy as np
 
-from sensors.carla_sensor import Sensor
+from ISS.algorithms.sensors.carla_sensor import Sensor
 
 
 class Radar(Sensor):

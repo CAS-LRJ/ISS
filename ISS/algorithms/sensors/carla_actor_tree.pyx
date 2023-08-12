@@ -2,7 +2,7 @@
 import os
 
 import carla
-from sensors.carla_actor_factory import ActorFactory, Node
+from ISS.algorithms.sensors.carla_actor_factory import ActorFactory, Node
 from multiprocessing.dummy import Pool as ThreadPool
 
 

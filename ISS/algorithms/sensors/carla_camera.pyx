@@ -6,9 +6,9 @@ import numpy as np
 import transforms3d
 import math
 
-from sensors.carla_sensor import Sensor
-from utils.sensorutils.geometry_types import Transform, Rotation
-from utils.sensorutils.transform import carla_transform_to_transform
+from ISS.algorithms.sensors.carla_sensor import Sensor
+from ISS.algorithms.utils.sensorutils.geometry_types import Transform, Rotation
+from ISS.algorithms.utils.sensorutils.transform import carla_transform_to_transform
 
 
 class CameraBase(Sensor):
