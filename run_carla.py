@@ -8,8 +8,8 @@ from pathlib import Path
 import carla
 
 from ISS.algorithms.sensors.carla_actor_tree import ActorTree
-from ISS.utils.sensorutils.transform import Transform, Location, Rotation
-from ISS.utils.sensorutils.transform import transform_to_carla_transform
+from ISS.algorithms.utils.sensorutils.transform import Transform, Location, Rotation
+from ISS.algorithms.utils.sensorutils.transform import transform_to_carla_transform
 
 # Project Root Path
 ROOT_PATH = Path(__file__).parent.parent.as_posix()
