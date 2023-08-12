@@ -4,6 +4,7 @@ import json
 import random
 import warnings
 from enum import Enum
+from pathlib import Path
 
 import carla
 
@@ -18,6 +19,7 @@ from ISS.algorithms.sensors.carla_vehicle import Vehicle, OtherVehicle
 from ISS.algorithms.sensors.carla_infrastructure import Infrastructure
 from ISS.algorithms.sensors.carla_world import WorldActor
 
+ROOT_PATH = Path(__file__).parent.parent.parent.parent.as_posix()
 
 class NodeType(Enum):
     DEFAULT = 0

@@ -12,10 +12,10 @@ from ISS.algorithms.utils.sensorutils.transform import Transform, Location, Rota
 from ISS.algorithms.utils.sensorutils.transform import transform_to_carla_transform
 
 # Project Root Path
-ROOT_PATH = Path(__file__).parent.parent.as_posix()
+ROOT_PATH = Path(__file__).parent.as_posix()
 
-RAW_DATA_PATH = "{}/{}".format(ROOT_PATH, 'raw_data')
-DATASET_PATH = "{}/{}".format(ROOT_PATH, 'dataset')
+RAW_DATA_PATH = "{}/resources/data/carla/{}".format(ROOT_PATH, 'raw_data')
+DATASET_PATH = "{}/resources/data/carla/{}".format(ROOT_PATH, 'dataset')
 
 sig_interrupt = False
 

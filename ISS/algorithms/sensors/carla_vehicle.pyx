@@ -5,8 +5,8 @@ import os
 import carla
 
 from ISS.algorithms.sensors.carla_actor import Actor
-from ISS.algorithms.sensors.agents.navigation.behavior_agent import BasicAgent
-from ISS.algorithms.sensors.agents.navigation.behavior_agent import BehaviorAgent
+from ISS.algorithms.sensors.carla_agents.navigation.behavior_agent import BasicAgent
+from ISS.algorithms.sensors.carla_agents.navigation.behavior_agent import BehaviorAgent
 
 
 class OtherVehicle(Actor):

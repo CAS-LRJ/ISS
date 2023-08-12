@@ -13,9 +13,9 @@ import carla
 from enum import Enum
 from shapely.geometry import Polygon
 
-from recorder.agents.navigation.local_planner import LocalPlanner
-from recorder.agents.navigation.global_route_planner import GlobalRoutePlanner
-from recorder.agents.tools.misc import get_speed, is_within_distance, get_trafficlight_trigger_location, compute_distance
+from ISS.algorithms.sensors.carla_agents.navigation.local_planner import LocalPlanner
+from ISS.algorithms.sensors.carla_agents.navigation.global_route_planner import GlobalRoutePlanner
+from ISS.algorithms.sensors.carla_agents.tools.misc import get_speed, is_within_distance, get_trafficlight_trigger_location, compute_distance
 
 
 class BasicAgent(object):

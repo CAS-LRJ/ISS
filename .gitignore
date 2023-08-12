@@ -17,3 +17,5 @@ build/*
 *.pth
 ## We do not update cache files
 **/__pycache__
+## We do not update crawled carla data
+resources/data/carla
