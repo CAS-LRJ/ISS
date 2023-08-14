@@ -1,3 +1,4 @@
 from setuptools import Extension
 
-extensions = []
+extensions = [Extension('groundtruth.gt', ['groundtruth/gt.pyx'])]
+
