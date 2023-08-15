@@ -2,14 +2,31 @@
 import carla
 from ISS.algorithms.utils.sensorutils.transform import *
 
+from libc.stdlib cimport *
 
-class PseudoActor(object):
+#TODO: convert pure Python class into Cython
+class PseudoActor:
+
+    # cdef:
+        # int uid
+        # str name
+        # PseudoActor parent
+
+    # def __cinit__(self, uid, name, parent):
+    #     if name == '':
+    #         name = f"{self.get_type_id()}_{uid}"
+    #     self.uid = uid
+    #     self.name = name
+    #     self.parent = parent
     def __init__(self, uid, name, parent):
         if name == '':
             name = f"{self.get_type_id()}_{uid}"
-        self.uid = uid
+            self.uid = uid
         self.name = name
         self.parent = parent
+
+    # def __dealloc__(self):
+        # self.destroy()
 
     def destroy(self):
         return True

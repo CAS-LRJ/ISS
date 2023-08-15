@@ -19,3 +19,6 @@ build/*
 **/__pycache__
 ## We do not update crawled carla data
 resources/data/carla
+## We do not update test scripts
+test.sh
+nohup.out
