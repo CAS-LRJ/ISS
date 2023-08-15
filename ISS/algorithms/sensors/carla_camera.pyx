@@ -6,12 +6,12 @@ import numpy as np
 import transforms3d
 import math
 
-from ISS.algorithms.sensors.carla_sensor import Sensor
+from ISS.algorithms.sensors.carla_sensor import CarlaSensor
 from ISS.algorithms.utils.sensorutils.geometry_types import Transform, Rotation
 from ISS.algorithms.utils.sensorutils.transform import carla_transform_to_transform
 
 
-class CameraBase(Sensor):
+class CarlaCameraBase(CarlaSensor):
     def __init__(self,
                  uid,
                  name: str,
@@ -86,20 +86,20 @@ class CameraBase(Sensor):
                                                   yaw=math.degrees(yaw)))
 
 
-class RgbCamera(CameraBase):
+class CarlaRgbCamera(CarlaCameraBase):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor,
                  color_converter: carla.ColorConverter = None):
         super().__init__(uid, name, base_save_dir, parent, carla_actor, color_converter)
 
 
-class SemanticSegmentationCamera(CameraBase):
+class CarlaSemanticSegmentationCamera(CarlaCameraBase):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor,
                  color_converter: carla.ColorConverter = None):
         color_converter = carla.ColorConverter.CityScapesPalette
         super().__init__(uid, name, base_save_dir, parent, carla_actor, color_converter)
 
 
-class DepthCamera(CameraBase):
+class CarlaDepthCamera(CarlaCameraBase):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor,
                  color_converter: carla.ColorConverter = None):
         color_converter = carla.ColorConverter.Raw

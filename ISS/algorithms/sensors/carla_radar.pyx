@@ -3,10 +3,10 @@
 import carla
 import numpy as np
 
-from ISS.algorithms.sensors.carla_sensor import Sensor
+from ISS.algorithms.sensors.carla_sensor import CarlaSensor
 
 
-class Radar(Sensor):
+class CarlaRadar(CarlaSensor):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
 

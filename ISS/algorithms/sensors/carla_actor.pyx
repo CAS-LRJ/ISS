@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 import carla
+from ISS.algorithms.sensors.sensor import Sensor
 from ISS.algorithms.utils.sensorutils.transform import *
 
 from libc.stdlib cimport *
 
 #TODO: convert pure Python class into Cython
-class PseudoActor:
+class CarlaPseudoActor(Sensor):
 
     # cdef:
         # int uid
@@ -50,7 +51,7 @@ class PseudoActor:
         raise NotImplementedError
 
 
-class Actor(PseudoActor):
+class CarlaActor(CarlaPseudoActor):
     def __init__(self, uid, name, parent, carla_actor: carla.Actor):
         self.carla_actor = carla_actor
         super(Actor, self).__init__(uid=uid,

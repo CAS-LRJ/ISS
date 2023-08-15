@@ -3,10 +3,10 @@
 import carla
 import numpy as np
 
-from ISS.algorithms.sensors.carla_sensor import Sensor
+from ISS.algorithms.sensors.carla_sensor import CarlaSensor
 
 
-class Lidar(Sensor):
+class CarlaLidar(CarlaSensor):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
 
@@ -27,7 +27,7 @@ class Lidar(Sensor):
         return True
 
 
-class SemanticLidar(Sensor):
+class CarlaSemanticLidar(CarlaSensor):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
 

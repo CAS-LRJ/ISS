@@ -7,22 +7,22 @@ from queue import Queue
 
 import carla
 
-from ISS.algorithms.sensors.carla_actor import Actor
+from ISS.algorithms.sensors.carla_actor import CarlaActor
 
 
-class Sensor(Actor):
+class CarlaSensor(CarlaActor):
     def __init__(self,
                  uid,
                  name: str,
                  base_save_dir: str,
                  parent,
                  carla_actor: carla.Sensor):
-        super(Sensor, self).__init__(uid=uid, name=name, parent=parent, carla_actor=carla_actor)
+        super(CarlaSensor, self).__init__(uid=uid, name=name, parent=parent, carla_actor=carla_actor)
         self.sensor_type = copy.deepcopy(self.get_type_id())
         self.save_dir = base_save_dir + '/{}'.format(name)
         self.queue = Queue()
         weak_self = weakref.ref(self)
-        self.carla_actor.listen(lambda sensor_data: Sensor.data_callback(weak_self,
+        self.carla_actor.listen(lambda sensor_data: CarlaSensor.data_callback(weak_self,
                                                                          sensor_data,
                                                                          self.queue))
 

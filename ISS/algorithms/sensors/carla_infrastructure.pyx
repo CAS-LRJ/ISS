@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 import carla
-from ISS.algorithms.sensors.carla_actor import PseudoActor
+from ISS.algorithms.sensors.carla_actor import CarlaPseudoActor
 
 
-class Infrastructure(PseudoActor):
+class CarlaInfrastructure(CarlaPseudoActor):
     def __init__(self,
                  uid,
                  name: str,

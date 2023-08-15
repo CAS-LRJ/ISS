@@ -4,12 +4,12 @@ import csv
 import os
 import carla
 
-from ISS.algorithms.sensors.carla_actor import Actor
+from ISS.algorithms.sensors.carla_actor import CarlaActor
 from ISS.algorithms.sensors.carla_agents.navigation.behavior_agent import BasicAgent
 from ISS.algorithms.sensors.carla_agents.navigation.behavior_agent import BehaviorAgent
 
 
-class OtherVehicle(Actor):
+class CarlaOtherVehicle(CarlaActor):
     def __init__(self,
                  uid,
                  name: str,
@@ -43,7 +43,7 @@ class OtherVehicle(Actor):
         #     return
 
 
-class Vehicle(Actor):
+class CarlaVehicle(CarlaActor):
     def __init__(self,
                  uid,
                  name: str,
