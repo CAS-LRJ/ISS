@@ -111,7 +111,7 @@ class CarlaActorFactory(object):
         root = self.create_world_node()
         for actor_info in json_actors["actors"]:
             actor_type = str(actor_info["type"])
-            node = Node()
+            node = CarlaNode()
             if actor_type.startswith("vehicle"):
                 node = self.create_vehicle_node(actor_info)
                 root.add_child(node)
@@ -204,7 +204,7 @@ class CarlaActorFactory(object):
                                                     name='',
                                                     base_save_dir="/tmp",
                                                     carla_actor=carla_actor)
-                other_vehicle_node = Node(other_vehicle_object, CarlaNodeType.OTHER_VEHICLE)
+                other_vehicle_node = CarlaNode(other_vehicle_object, CarlaNodeType.OTHER_VEHICLE)
                 other_vehicle_nodes.append(other_vehicle_node)
 
         return other_vehicle_nodes

@@ -54,7 +54,7 @@ class CarlaPseudoActor(Sensor):
 class CarlaActor(CarlaPseudoActor):
     def __init__(self, uid, name, parent, carla_actor: carla.Actor):
         self.carla_actor = carla_actor
-        super(Actor, self).__init__(uid=uid,
+        super(CarlaActor, self).__init__(uid=uid,
                                     name=name,
                                     parent=parent)
 
