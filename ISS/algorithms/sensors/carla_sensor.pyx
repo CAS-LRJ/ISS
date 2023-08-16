@@ -20,7 +20,8 @@ class CarlaSensor(CarlaActor):
         super(CarlaSensor, self).__init__(uid=uid, name=name, parent=parent, carla_actor=carla_actor)
         self.sensor_type = copy.deepcopy(self.get_type_id())
         self.save_dir = base_save_dir + '/{}'.format(name)
-        self.queue = Queue()
+        # Fix queue capacity to 2000, acting as fake circular queue
+        self.queue = Queue(2000)
         weak_self = weakref.ref(self)
         self.carla_actor.listen(lambda sensor_data: CarlaSensor.data_callback(weak_self,
                                                                          sensor_data,
