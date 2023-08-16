@@ -5,6 +5,7 @@ import os
 import carla
 
 from ISS.algorithms.sensors.carla_actor import CarlaActor
+from ISS.algorithms.sensors.sensor import SensorType
 from ISS.algorithms.sensors.carla_agents.navigation.behavior_agent import BasicAgent
 from ISS.algorithms.sensors.carla_agents.navigation.behavior_agent import BehaviorAgent
 
@@ -19,6 +20,7 @@ class CarlaOtherVehicle(CarlaActor):
         self.vehicle_type = copy.deepcopy(carla_actor.type_id)
         self.save_dir = '{}/{}_{}'.format(base_save_dir, self.vehicle_type, self.get_uid())
         self.first_tick = True
+        self.stype(SensorType.OTHER_VEHICLE)
         # For vehicle control
         self.auto_pilot = True
         self.vehicle_agent = None
@@ -52,6 +54,7 @@ class CarlaVehicle(CarlaActor):
         super().__init__(uid=uid, name=name, parent=None, carla_actor=carla_actor)
         self.vehicle_type = copy.deepcopy(carla_actor.type_id)
         self.save_dir = '{}/{}'.format(base_save_dir, self.name)
+        self.stype(SensorType.VEHICLE)
         self.first_tick = True
         # For vehicle control
         self.use_auto_pilot = True

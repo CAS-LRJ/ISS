@@ -5,6 +5,7 @@ import carla
 from dataclasses import dataclass
 
 from ISS.algorithms.sensors.carla_actor import CarlaPseudoActor
+from ISS.algorithms.sensors.sensor import SensorType
 from ISS.algorithms.utils.sensorutils.label_types import *
 from ISS.algorithms.utils.sensorutils.transform import carla_bbox_to_bbox, carla_transform_to_transform
 
@@ -14,6 +15,7 @@ class CarlaWorldActor(CarlaPseudoActor):
         super().__init__(uid, self.get_type_id(), None)
         self.save_dir = "{}/{}_{}".format(base_save_dir, self.get_type_id(), uid)
         self.carla_world = carla_world
+        self.stype(SensorType.WORLD)
 
     def save_to_disk(self, frame_id, timestamp, debug=False):
         # TODO: Save all object bbox in world

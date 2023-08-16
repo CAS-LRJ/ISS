@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import carla
-from ISS.algorithms.sensors.sensor import Sensor
+from ISS.algorithms.sensors.sensor import Sensor, SensorSource, SensorType
 from ISS.algorithms.utils.sensorutils.transform import *
 
 from libc.stdlib cimport *
@@ -25,6 +25,7 @@ class CarlaPseudoActor(Sensor):
             self.uid = uid
         self.name = name
         self.parent = parent
+        self.set_ssource(SensorSource.CARLA)
 
     # def __dealloc__(self):
         # self.destroy()

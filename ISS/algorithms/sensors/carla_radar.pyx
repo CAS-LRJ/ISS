@@ -4,11 +4,14 @@ import carla
 import numpy as np
 
 from ISS.algorithms.sensors.carla_sensor import CarlaSensor
+from ISS.algorithms.sensors.sensor import SensorType
 
 
 class CarlaRadar(CarlaSensor):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
+        self.stype(SensorType.RADAR)
+
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:
         # Save as a Nx4 numpy array. Each row is a point (velocity, azimuth, altitude, depth)

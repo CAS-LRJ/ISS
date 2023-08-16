@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import carla
 from ISS.algorithms.sensors.carla_actor import CarlaPseudoActor
+from ISS.algorithms.sensors.sensor import SensorType
 
 
 class CarlaInfrastructure(CarlaPseudoActor):
@@ -12,6 +13,7 @@ class CarlaInfrastructure(CarlaPseudoActor):
         super().__init__(uid=uid, name=name, parent=None)
         self.carla_transform = transform
         self.save_dir = '{}/{}'.format(base_save_dir, self.name)
+        self.stype(SensorType.INFRASTRUCTURE)
 
     def get_carla_transform(self):
         return self.carla_transform
