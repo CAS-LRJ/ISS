@@ -22,7 +22,7 @@ class Detection2DInput(object):
         self.resolution_x, self.resolution_y = image.size
         self.resize_image = self.padding_resize()
 
-    def from_camera(self, camera):
+    def from_beamng_camera(self, camera):
         camera.poll_data()
         if camera.rgb_image != None:
             self.image = camera.rgb_image
