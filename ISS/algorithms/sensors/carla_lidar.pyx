@@ -5,7 +5,7 @@ import numpy as np
 
 from ISS.algorithms.sensors.carla_sensor import CarlaSensor
 from ISS.algorithms.sensors.sensor import SensorType
-from ISS.algorithms.utils.dataexchange.detection_lidar import DetectionLiDARInput, SegmentationLiDARInput
+from ISS.algorithms.utils.dataexchange.sensor.lidar import LiDAROutput, LiDARSegOutput
 
 
 class CarlaLidar(CarlaSensor):
@@ -13,7 +13,7 @@ class CarlaLidar(CarlaSensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
         self.stype(SensorType.LIDAR)
 
-    def realtime_data(self, sensor_data) -> DetectionLiDARInput:
+    def realtime_data(self, sensor_data) -> LiDAROutput:
         # Save as a Nx4 numpy array. Each row is a point (x, y, z, intensity)
         lidar_data = np.fromstring(bytes(sensor_data.raw_data),
                                    dtype=np.float32)
@@ -22,8 +22,8 @@ class CarlaLidar(CarlaSensor):
 
         # Convert point cloud to right-hand coordinate system
         lidar_data[:, 1] *= -1
-        lidar_input = DetectionLiDARInput(lidar_data)
-        return lidar_input
+        lidar_output = LiDAROutput(lidar_data)
+        return lidar_output
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:
         # Save as a Nx4 numpy array. Each row is a point (x, y, z, intensity)
@@ -47,7 +47,7 @@ class CarlaSemanticLidar(CarlaSensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
         self.stype(SensorType.SEMANTICLIDAR)
 
-    def realtime_data(self, sensor_data) -> SegmentationLiDARInput:
+    def realtime_data(self, sensor_data) -> LiDARSegOutput:
         # Save data as a Nx6 numpy array.
         lidar_data = np.fromstring(bytes(sensor_data.raw_data),
                                    dtype=np.dtype([
@@ -62,8 +62,8 @@ class CarlaSemanticLidar(CarlaSensor):
         # Convert point cloud to right-hand coordinate system
         lidar_data['y'] *= -1
         
-        lidar_input = SegmentationLiDARInput(lidar_data)
-        return lidar_input
+        lidar_output = LiDARSegOutput(lidar_data)
+        return lidar_output
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:
         # Save data as a Nx6 numpy array.
