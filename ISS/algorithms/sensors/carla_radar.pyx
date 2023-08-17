@@ -5,7 +5,7 @@ import numpy as np
 
 from ISS.algorithms.sensors.carla_sensor import CarlaSensor
 from ISS.algorithms.sensors.sensor import SensorType
-from ISS.algorithms.utils.dataexchange.detection_radar import DetectionRadarInput, DetectionRadarOutput
+from ISS.algorithms.utils.dataexchange.detection_radar import DetectionRadarInput
 
 
 class CarlaRadar(CarlaSensor):

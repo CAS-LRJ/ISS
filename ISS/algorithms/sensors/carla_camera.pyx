@@ -10,6 +10,8 @@ from ISS.algorithms.sensors.sensor import SensorType
 from ISS.algorithms.sensors.carla_sensor import CarlaSensor
 from ISS.algorithms.utils.sensorutils.geometry_types import Transform, Rotation
 from ISS.algorithms.utils.sensorutils.transform import carla_transform_to_transform
+from ISS.algorithms.utils.dataexchange.detection_2d import Detection2DInput
+from ISS.algorithms.utils.dataexchange.detection_3d import Detection3DInput
 
 
 class CarlaCameraBase(CarlaSensor):
@@ -23,6 +25,36 @@ class CarlaCameraBase(CarlaSensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
         self.color_converter = color_converter
         self.set_stype(SensorType.CAMERA)
+
+    def realtime_data_2d(self, sensor_data) -> Detection2DInput:
+        # Convert to target color template
+        if self.color_converter is not None:
+            sensor_data.convert(self.color_converter)
+
+        # Convert raw data to numpy array, image type is 'bgra8'
+        carla_image_data_array = np.ndarray(shape=(sensor_data.height,
+                                                   sensor_data.width,
+                                                   4),
+                                            dtype=np.uint8,
+                                            buffer=sensor_data.raw_data)
+
+        camera_input = Detection2DInput(carla_image_data_array)
+        return camera_input
+
+    def realtime_data_3d(self, sensor_data) -> Detection3DInput:
+        # Convert to target color template
+        if self.color_converter is not None:
+            sensor_data.convert(self.color_converter)
+
+        # Convert raw data to numpy array, image type is 'bgra8'
+        carla_image_data_array = np.ndarray(shape=(sensor_data.height,
+                                                   sensor_data.width,
+                                                   4),
+                                            dtype=np.uint8,
+                                            buffer=sensor_data.raw_data)
+        camera_info = self.get_camera_info()
+        camera_input = Detection3DInput(camera_info, carla_image_data_array)
+        return camera_input
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:
         # Convert to target color template

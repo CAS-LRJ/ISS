@@ -5,20 +5,10 @@ import cv2
 class Detection3DInput(object):
 
     def __init__(self):
-        self.height = None
-        self.width = None
         self.intrinsic = None
         self.image = None
 
-    def __init__(self, height, width):
-        self.height = height
-        self.width = width
-        self.intrinsic = np.zeros((3, 3), dtype=np.float32)
-        self.image = np.zeros((height, width, 3), dtype=np.uint8)
-
-    def __init__(self, height, width, intrinsic, image):
-        self.height = height
-        self.width = width
+    def __init__(self, intrinsic, image):
         self.intrinsic = intrinsic
         self.image = image
 
