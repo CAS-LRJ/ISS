@@ -5,12 +5,28 @@ import numpy as np
 
 from ISS.algorithms.sensors.carla_sensor import CarlaSensor
 from ISS.algorithms.sensors.sensor import SensorType
+from ISS.algorithms.utils.dataexchange.detection_radar import DetectionRadarInput, DetectionRadarOutput
 
 
 class CarlaRadar(CarlaSensor):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
         self.stype(SensorType.RADAR)
+
+    def realtime_data(self, sensor_data) -> DetectionRadarInput:
+        radar_points = []
+        for detection in sensor_data:
+            radar_points.append([detection.depth * np.cos(detection.azimuth) * np.cos(-detection.altitude),
+                                 detection.depth * np.sin(-detection.azimuth) * np.cos(detection.altitude),
+                                 detection.depth * np.sin(detection.altitude),
+                                 detection.depth,
+                                 detection.velocity,
+                                 detection.azimuth,
+                                 detection.altitude])
+        radar_points = np.asarray(radar_points)
+        radar_points.reshape(-1, 7)
+        radar_input = DetectionRadarInput(radar_points)
+        return radar_input
 
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:
