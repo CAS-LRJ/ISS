@@ -26,17 +26,17 @@ class Detection3DInput(object):
 class Detection3DOutput(object):
 
     def __init__(self):
-        self.bbox = None
-        self.class_id = None
-        self.score = None
+        self.bboxes = []
+        self.class_ids = []
+        self.scores = []
         self.mask = None
         self.keypoints = None
         self.pose = None
 
     def __init__(self, bbox, class_id, score, mask, keypoints, pose):
-        self.bbox = bbox
-        self.class_id = class_id
-        self.score = score
+        self.bboxes = [bbox]
+        self.class_ids = [class_id]
+        self.scores = [score]
         self.mask = mask
         self.keypoints = keypoints
         self.pose = pose
