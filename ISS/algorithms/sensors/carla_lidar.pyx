@@ -8,7 +8,7 @@ from ISS.algorithms.sensors.sensor import SensorType
 from ISS.algorithms.utils.dataexchange.sensor.lidar import LiDAROutput, LiDARSegOutput
 
 
-class CarlaLidar(CarlaSensor):
+class CarlaLiDAR(CarlaSensor):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
         self.stype(SensorType.LIDAR)
@@ -42,7 +42,7 @@ class CarlaLidar(CarlaSensor):
         return True
 
 
-class CarlaSemanticLidar(CarlaSensor):
+class CarlaSemanticLiDAR(CarlaSensor):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
         self.stype(SensorType.SEMANTICLIDAR)

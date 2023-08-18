@@ -25,7 +25,7 @@ class CarlaCameraBase(CarlaSensor):
         self.color_converter = color_converter
         self.set_stype(SensorType.CAMERA)
 
-    def realtime_data_2d(self, sensor_data) -> CameraOutput:
+    def realtime_data(self, sensor_data) -> CameraOutput:
         # Convert to target color template
         if self.color_converter is not None:
             sensor_data.convert(self.color_converter)
@@ -40,7 +40,7 @@ class CarlaCameraBase(CarlaSensor):
         camera_output = CameraOutput(carla_image_data_array)
         return camera_output
 
-    def realtime_data_3d(self, sensor_data) -> Camera3DOutput:
+    def realtime_data(self, sensor_data) -> Camera3DOutput:
         # Convert to target color template
         if self.color_converter is not None:
             sensor_data.convert(self.color_converter)
