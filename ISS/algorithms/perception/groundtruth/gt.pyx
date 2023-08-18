@@ -11,5 +11,9 @@ from ISS.algorithms.sensors.carla_lidar import Lidar
 from ISS.algorithms.sensors.carla_radar import Radar
 from ISS.algorithms.sensors.carla_vehicle import Vehicle, OtherVehicle
 
+from ISS.algorithms.utils.dataexchange.sensor.camera import CameraOutput, Camera3DOutput
+from ISS.algorithms.utils.dataexchange.sensor.lidar import LiDAROutput, LiDARSegOutput
+from ISS.algorithms.utils.dataexchange.sensor.radar import RadarOutput
+
 def test():
     a = CameraBase()
