@@ -6,9 +6,8 @@ build/*
 *.c
 *.cpp
 *.exp
-*.pxd
+**/__init__.pxd
 # Cpp/Hpp files wrote by original authors should be updated instead
-!**/core.pxd
 !**/src/**
 ## We do not update video logs
 *.mp4
@@ -19,3 +18,6 @@ build/*
 **/__pycache__
 ## We do not update crawled carla data
 resources/data/carla
+## We do not update test scripts
+test.sh
+nohup.out
