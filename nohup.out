@@ -1,0 +1,568 @@
+2023-08-15T17:24:52.212[E]                   GfnDllWrapper.cpp:38   Could not prepare temp directory for download
+2023-08-15T17:24:52.212[I] GfnRunti  APP GfnRuntimeBootstrap.c:168  Create Bootstrap
+2023-08-15T17:24:52.212[E] GfnRunti  APP  TelemetryService.cpp:52   Could not get gfn.dll version: 0
+2023-08-15T17:24:52.212[I]               GfnRuntimeBootstrap.c:536  Joining MessageBus as GfnSdk:GfnSdkClientPeer_12604
+2023-08-15T17:24:52.213[E]               GfnRuntimeBootstrap.c:554  Could not get MessageBus interface
+INFO:  Created new stream: 1 
+INFO:  Connecting session (stream  1 ) 
+INFO:  Connecting session (stream  1 ) 
+INFO:  session 0 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  1 ) 
+INFO:  Connecting session (stream  1 ) 
+INFO:  session 1 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  1 ) 
+INFO:  Connecting session (stream  1 ) 
+INFO:  session 2 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  1 ) 
+INFO:  Created new stream: 2 
+INFO:  Created new stream: 3 
+INFO:  Connecting session (stream  2 ) 
+INFO:  Created new stream: 4 
+INFO:  Connecting session (stream  3 ) 
+INFO:  Created new stream: 5 
+INFO:  Connecting session (stream  4 ) 
+INFO:  Created new stream: 6 
+INFO:  Connecting session (stream  5 ) 
+INFO:  Connecting session (stream  6 ) 
+INFO:  Created new stream: 7 
+INFO:  Created new stream: 8 
+INFO:  Connecting session (stream  7 ) 
+INFO:  Created new stream: 9 
+INFO:  Connecting session (stream  8 ) 
+INFO:  Created new stream: 10 
+INFO:  Connecting session (stream  9 ) 
+INFO:  Created new stream: 11 
+INFO:  Connecting session (stream  10 ) 
+INFO:  Connecting session (stream  11 ) 
+INFO:  Created new stream: 12 
+INFO:  Created new stream: 13 
+INFO:  Connecting session (stream  12 ) 
+INFO:  Created new stream: 14 
+INFO:  Connecting session (stream  13 ) 
+INFO:  Created new stream: 15 
+INFO:  Connecting session (stream  14 ) 
+INFO:  Created new stream: 16 
+INFO:  Connecting session (stream  15 ) 
+INFO:  Connecting session (stream  16 ) 
+INFO:  Created new stream: 17 
+INFO:  Created new stream: 18 
+INFO:  Connecting session (stream  17 ) 
+INFO:  Created new stream: 19 
+INFO:  Connecting session (stream  18 ) 
+INFO:  Created new stream: 20 
+INFO:  Connecting session (stream  19 ) 
+INFO:  Created new stream: 21 
+INFO:  Connecting session (stream  20 ) 
+INFO:  Connecting session (stream  21 ) 
+INFO:  Created new stream: 22 
+INFO:  Created new stream: 23 
+INFO:  Connecting session (stream  22 ) 
+INFO:  Created new stream: 24 
+INFO:  Connecting session (stream  23 ) 
+INFO:  Created new stream: 25 
+INFO:  Connecting session (stream  24 ) 
+INFO:  Created new stream: 26 
+INFO:  Connecting session (stream  25 ) 
+INFO:  Connecting session (stream  26 ) 
+INFO:  Created new stream: 27 
+INFO:  Created new stream: 28 
+INFO:  Created new stream: 29 
+INFO:  Connecting session (stream  27 ) 
+INFO:  Connecting session (stream  28 ) 
+INFO:  Created new stream: 30 
+INFO:  Connecting session (stream  29 ) 
+INFO:  Connecting session (stream  30 ) 
+INFO:  Connecting session (stream  1 ) 
+INFO:  session 32 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  30 ) 
+INFO:  session 31 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  29 ) 
+INFO:  session 30 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  28 ) 
+INFO:  session 28 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  26 ) 
+INFO:  session 27 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  25 ) 
+INFO:  session 26 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  24 ) 
+INFO:  session 23 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  21 ) 
+INFO:  session 22 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  20 ) 
+INFO:  session 21 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  19 ) 
+INFO:  session 18 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  16 ) 
+INFO:  session 17 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  15 ) 
+INFO:  session 16 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  14 ) 
+INFO:  session 13 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  11 ) 
+INFO:  session 29 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  27 ) 
+INFO:  session 12 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  10 ) 
+INFO:  session 11 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  9 ) 
+INFO:  session 8 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  6 ) 
+INFO:  session 7 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  5 ) 
+INFO:  session 25 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  23 ) 
+INFO:  session 6 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  4 ) 
+INFO:  session 3 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  1 ) 
+INFO:  Created new stream: 31 
+INFO:  Created new stream: 32 
+INFO:  Connecting session (stream  31 ) 
+INFO:  Created new stream: 33 
+INFO:  Connecting session (stream  32 ) 
+INFO:  Created new stream: 34 
+INFO:  Connecting session (stream  33 ) 
+INFO:  Created new stream: 35 
+INFO:  Connecting session (stream  34 ) 
+INFO:  Connecting session (stream  35 ) 
+INFO:  Created new stream: 36 
+INFO:  Created new stream: 37 
+INFO:  Connecting session (stream  36 ) 
+INFO:  Created new stream: 38 
+INFO:  Connecting session (stream  37 ) 
+INFO:  Created new stream: 39 
+INFO:  Connecting session (stream  38 ) 
+INFO:  Connecting session (stream  39 ) 
+INFO:  Created new stream: 40 
+INFO:  Connecting session (stream  40 ) 
+INFO:  Created new stream: 41 
+INFO:  Created new stream: 42 
+INFO:  Connecting session (stream  41 ) 
+INFO:  Connecting session (stream  42 ) 
+INFO:  Created new stream: 43 
+INFO:  Connecting session (stream  43 ) 
+INFO:  Created new stream: 44 
+INFO:  Created new stream: 45 
+INFO:  Connecting session (stream  44 ) 
+INFO:  Connecting session (stream  45 ) 
+INFO:  Created new stream: 46 
+INFO:  Created new stream: 47 
+INFO:  Connecting session (stream  46 ) 
+INFO:  Connecting session (stream  47 ) 
+INFO:  Created new stream: 48 
+INFO:  Created new stream: 49 
+INFO:  Connecting session (stream  48 ) 
+INFO:  Created new stream: 50 
+INFO:  Connecting session (stream  49 ) 
+INFO:  Connecting session (stream  50 ) 
+INFO:  Created new stream: 51 
+INFO:  Created new stream: 52 
+INFO:  Connecting session (stream  51 ) 
+INFO:  Connecting session (stream  52 ) 
+INFO:  Created new stream: 53 
+INFO:  Created new stream: 54 
+INFO:  Connecting session (stream  53 ) 
+INFO:  Connecting session (stream  54 ) 
+INFO:  Created new stream: 55 
+INFO:  Connecting session (stream  55 ) 
+INFO:  Created new stream: 56 
+INFO:  Created new stream: 57 
+INFO:  Connecting session (stream  56 ) 
+INFO:  Created new stream: 58 
+INFO:  Connecting session (stream  57 ) 
+INFO:  Connecting session (stream  58 ) 
+INFO:  Created new stream: 59 
+INFO:  Connecting session (stream  59 ) 
+INFO:  Connecting session (stream  1 ) 
+INFO:  session 62 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  59 ) 
+INFO:  session 61 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  58 ) 
+INFO:  session 60 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  57 ) 
+INFO:  session 58 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  55 ) 
+INFO:  session 57 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  54 ) 
+INFO:  session 56 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  53 ) 
+INFO:  session 53 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  50 ) 
+INFO:  session 52 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  49 ) 
+INFO:  session 51 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  48 ) 
+INFO:  session 48 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  45 ) 
+INFO:  session 59 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  56 ) 
+INFO:  session 47 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  44 ) 
+INFO:  session 46 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  43 ) 
+INFO:  session 43 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  40 ) 
+INFO:  session 55 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  52 ) 
+INFO:  session 42 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  39 ) 
+INFO:  session 41 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  38 ) 
+INFO:  session 38 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  35 ) 
+INFO:  session 37 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  34 ) 
+INFO:  session 36 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  33 ) 
+INFO:  session 33 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  1 ) 
+INFO:  session 54 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Created new stream: 60 
+INFO:  Created new stream: 61 
+INFO:  Connecting session (stream  60 ) 
+INFO:  Connecting session (stream  61 ) 
+INFO:  Created new stream: 62 
+INFO:  Created new stream: 63 
+INFO:  Connecting session (stream  62 ) 
+INFO:  Created new stream: 64 
+INFO:  Connecting session (stream  63 ) 
+INFO:  Connecting session (stream  64 ) 
+INFO:  Created new stream: 65 
+INFO:  Created new stream: 66 
+INFO:  Connecting session (stream  65 ) 
+INFO:  Created new stream: 67 
+INFO:  Connecting session (stream  66 ) 
+INFO:  Created new stream: 68 
+INFO:  Connecting session (stream  67 ) 
+INFO:  Created new stream: 69 
+INFO:  Connecting session (stream  68 ) 
+INFO:  Connecting session (stream  69 ) 
+INFO:  Created new stream: 70 
+INFO:  Connecting session (stream  70 ) 
+INFO:  Created new stream: 71 
+INFO:  Connecting session (stream  71 ) 
+INFO:  Created new stream: 72 
+INFO:  Created new stream: 73 
+INFO:  Connecting session (stream  72 ) 
+INFO:  Created new stream: 74 
+INFO:  Connecting session (stream  73 ) 
+INFO:  Connecting session (stream  74 ) 
+INFO:  Created new stream: 75 
+INFO:  Created new stream: 76 
+INFO:  Connecting session (stream  75 ) 
+INFO:  Created new stream: 77 
+INFO:  Connecting session (stream  76 ) 
+INFO:  Created new stream: 78 
+INFO:  Connecting session (stream  77 ) 
+INFO:  Created new stream: 79 
+INFO:  Connecting session (stream  78 ) 
+INFO:  Connecting session (stream  79 ) 
+INFO:  Created new stream: 80 
+INFO:  Created new stream: 81 
+INFO:  Connecting session (stream  80 ) 
+INFO:  Created new stream: 82 
+INFO:  Connecting session (stream  81 ) 
+INFO:  Created new stream: 83 
+INFO:  Connecting session (stream  82 ) 
+INFO:  Created new stream: 84 
+INFO:  Connecting session (stream  83 ) 
+INFO:  Connecting session (stream  84 ) 
+INFO:  Created new stream: 85 
+INFO:  Created new stream: 86 
+INFO:  Connecting session (stream  85 ) 
+INFO:  Connecting session (stream  86 ) 
+INFO:  Created new stream: 87 
+INFO:  Created new stream: 88 
+INFO:  Connecting session (stream  87 ) 
+INFO:  Connecting session (stream  88 ) 
+INFO:  session 63 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  1 ) 
+INFO:  Connecting session (stream  1 ) 
+INFO:  Created new stream: 89 
+INFO:  Created new stream: 90 
+INFO:  Connecting session (stream  89 ) 
+INFO:  Created new stream: 91 
+INFO:  Connecting session (stream  90 ) 
+INFO:  Created new stream: 92 
+INFO:  Connecting session (stream  91 ) 
+INFO:  Created new stream: 93 
+INFO:  Connecting session (stream  92 ) 
+INFO:  Connecting session (stream  93 ) 
+INFO:  Created new stream: 94 
+INFO:  Created new stream: 95 
+INFO:  Connecting session (stream  94 ) 
+INFO:  Created new stream: 96 
+INFO:  Connecting session (stream  95 ) 
+INFO:  Created new stream: 97 
+INFO:  Connecting session (stream  96 ) 
+INFO:  Created new stream: 98 
+INFO:  Connecting session (stream  97 ) 
+INFO:  Connecting session (stream  98 ) 
+INFO:  Created new stream: 99 
+INFO:  Created new stream: 100 
+INFO:  Connecting session (stream  99 ) 
+INFO:  Created new stream: 101 
+INFO:  Connecting session (stream  100 ) 
+INFO:  Created new stream: 102 
+INFO:  Connecting session (stream  101 ) 
+INFO:  Created new stream: 103 
+INFO:  Connecting session (stream  102 ) 
+INFO:  Connecting session (stream  103 ) 
+INFO:  Created new stream: 104 
+INFO:  Created new stream: 105 
+INFO:  Connecting session (stream  104 ) 
+INFO:  Created new stream: 106 
+INFO:  Connecting session (stream  105 ) 
+INFO:  Created new stream: 107 
+INFO:  Connecting session (stream  106 ) 
+INFO:  Created new stream: 108 
+INFO:  Connecting session (stream  107 ) 
+INFO:  Connecting session (stream  108 ) 
+INFO:  Created new stream: 109 
+INFO:  Created new stream: 110 
+INFO:  Connecting session (stream  109 ) 
+INFO:  Connecting session (stream  110 ) 
+INFO:  Created new stream: 111 
+INFO:  Connecting session (stream  111 ) 
+INFO:  Created new stream: 112 
+INFO:  Created new stream: 113 
+INFO:  Connecting session (stream  112 ) 
+INFO:  Connecting session (stream  113 ) 
+INFO:  Created new stream: 114 
+INFO:  Connecting session (stream  114 ) 
+INFO:  Created new stream: 115 
+INFO:  Connecting session (stream  115 ) 
+INFO:  Created new stream: 116 
+INFO:  Connecting session (stream  116 ) 
+INFO:  Created new stream: 117 
+INFO:  Connecting session (stream  117 ) 
+INFO:  session 93 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  1 ) 
+INFO:  Connecting session (stream  1 ) 
+INFO:  Created new stream: 118 
+INFO:  Created new stream: 119 
+INFO:  Connecting session (stream  118 ) 
+INFO:  Connecting session (stream  119 ) 
+INFO:  Created new stream: 120 
+INFO:  Created new stream: 121 
+INFO:  Connecting session (stream  120 ) 
+INFO:  Created new stream: 122 
+INFO:  Connecting session (stream  121 ) 
+INFO:  Connecting session (stream  122 ) 
+INFO:  Created new stream: 123 
+INFO:  Created new stream: 124 
+INFO:  Connecting session (stream  123 ) 
+INFO:  Created new stream: 125 
+INFO:  Connecting session (stream  124 ) 
+INFO:  Created new stream: 126 
+INFO:  Connecting session (stream  125 ) 
+INFO:  Created new stream: 127 
+INFO:  Connecting session (stream  126 ) 
+INFO:  Connecting session (stream  127 ) 
+INFO:  Created new stream: 128 
+INFO:  Created new stream: 129 
+INFO:  Connecting session (stream  128 ) 
+INFO:  Created new stream: 130 
+INFO:  Connecting session (stream  129 ) 
+INFO:  Created new stream: 131 
+INFO:  Connecting session (stream  130 ) 
+INFO:  Created new stream: 132 
+INFO:  Connecting session (stream  131 ) 
+INFO:  Connecting session (stream  132 ) 
+INFO:  Created new stream: 133 
+INFO:  Created new stream: 134 
+INFO:  Connecting session (stream  133 ) 
+INFO:  Created new stream: 135 
+INFO:  Connecting session (stream  134 ) 
+INFO:  Created new stream: 136 
+INFO:  Connecting session (stream  135 ) 
+INFO:  Created new stream: 137 
+INFO:  Connecting session (stream  136 ) 
+INFO:  Connecting session (stream  137 ) 
+INFO:  Created new stream: 138 
+INFO:  Created new stream: 139 
+INFO:  Connecting session (stream  138 ) 
+INFO:  Created new stream: 140 
+INFO:  Connecting session (stream  139 ) 
+INFO:  Created new stream: 141 
+INFO:  Connecting session (stream  140 ) 
+INFO:  Created new stream: 142 
+INFO:  Connecting session (stream  141 ) 
+INFO:  Connecting session (stream  142 ) 
+INFO:  Created new stream: 143 
+INFO:  Connecting session (stream  143 ) 
+INFO:  Created new stream: 144 
+INFO:  Created new stream: 145 
+INFO:  Connecting session (stream  144 ) 
+INFO:  Created new stream: 146 
+INFO:  Connecting session (stream  145 ) 
+INFO:  Connecting session (stream  146 ) 
+INFO:  session 123 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  1 ) 
+INFO:  Connecting session (stream  1 ) 
+INFO:  Created new stream: 147 
+INFO:  Created new stream: 148 
+INFO:  Connecting session (stream  147 ) 
+INFO:  Created new stream: 149 
+INFO:  Connecting session (stream  148 ) 
+INFO:  Connecting session (stream  149 ) 
+INFO:  Created new stream: 150 
+INFO:  Created new stream: 151 
+INFO:  Connecting session (stream  150 ) 
+INFO:  Connecting session (stream  151 ) 
+INFO:  Created new stream: 152 
+INFO:  Created new stream: 153 
+INFO:  Connecting session (stream  152 ) 
+INFO:  Connecting session (stream  153 ) 
+INFO:  Created new stream: 154 
+INFO:  Created new stream: 155 
+INFO:  Connecting session (stream  154 ) 
+INFO:  Created new stream: 156 
+INFO:  Connecting session (stream  155 ) 
+INFO:  Connecting session (stream  156 ) 
+INFO:  Created new stream: 157 
+INFO:  Created new stream: 158 
+INFO:  Connecting session (stream  157 ) 
+INFO:  Created new stream: 159 
+INFO:  Connecting session (stream  158 ) 
+INFO:  Created new stream: 160 
+INFO:  Connecting session (stream  159 ) 
+INFO:  Connecting session (stream  160 ) 
+INFO:  Created new stream: 161 
+INFO:  Connecting session (stream  161 ) 
+INFO:  Created new stream: 162 
+INFO:  Created new stream: 163 
+INFO:  Connecting session (stream  162 ) 
+INFO:  Created new stream: 164 
+INFO:  Connecting session (stream  163 ) 
+INFO:  Created new stream: 165 
+INFO:  Connecting session (stream  164 ) 
+INFO:  Created new stream: 166 
+INFO:  Connecting session (stream  165 ) 
+INFO:  Connecting session (stream  166 ) 
+INFO:  Created new stream: 167 
+INFO:  Created new stream: 168 
+INFO:  Connecting session (stream  167 ) 
+INFO:  Created new stream: 169 
+INFO:  Connecting session (stream  168 ) 
+INFO:  Created new stream: 170 
+INFO:  Connecting session (stream  169 ) 
+INFO:  Created new stream: 171 
+INFO:  Connecting session (stream  170 ) 
+INFO:  Connecting session (stream  171 ) 
+INFO:  Created new stream: 172 
+INFO:  Created new stream: 173 
+INFO:  Connecting session (stream  172 ) 
+INFO:  Created new stream: 174 
+INFO:  Connecting session (stream  173 ) 
+INFO:  Connecting session (stream  174 ) 
+INFO:  Created new stream: 175 
+INFO:  Connecting session (stream  175 ) 
+INFO:  session 153 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  1 ) 
+INFO:  Connecting session (stream  1 ) 
+INFO:  Created new stream: 176 
+INFO:  Created new stream: 177 
+INFO:  Connecting session (stream  176 ) 
+INFO:  Connecting session (stream  177 ) 
+INFO:  Created new stream: 178 
+INFO:  Created new stream: 179 
+INFO:  Connecting session (stream  178 ) 
+INFO:  Created new stream: 180 
+INFO:  Connecting session (stream  179 ) 
+INFO:  Connecting session (stream  180 ) 
+INFO:  Created new stream: 181 
+INFO:  Created new stream: 182 
+INFO:  Connecting session (stream  181 ) 
+INFO:  Connecting session (stream  182 ) 
+INFO:  Created new stream: 183 
+INFO:  Connecting session (stream  183 ) 
+INFO:  Created new stream: 184 
+INFO:  Created new stream: 185 
+INFO:  Connecting session (stream  184 ) 
+INFO:  Connecting session (stream  185 ) 
+INFO:  Created new stream: 186 
+INFO:  Created new stream: 187 
+INFO:  Connecting session (stream  186 ) 
+INFO:  Created new stream: 188 
+INFO:  Connecting session (stream  187 ) 
+INFO:  Created new stream: 189 
+INFO:  Connecting session (stream  188 ) 
+INFO:  Connecting session (stream  189 ) 
+INFO:  Created new stream: 190 
+INFO:  Connecting session (stream  190 ) 
+INFO:  Created new stream: 191 
+INFO:  Created new stream: 192 
+INFO:  Connecting session (stream  191 ) 
+INFO:  Connecting session (stream  192 ) 
+INFO:  Created new stream: 193 
+INFO:  Created new stream: 194 
+INFO:  Connecting session (stream  193 ) 
+INFO:  Connecting session (stream  194 ) 
+INFO:  Created new stream: 195 
+INFO:  Connecting session (stream  195 ) 
+INFO:  Created new stream: 196 
+INFO:  Created new stream: 197 
+INFO:  Connecting session (stream  196 ) 
+INFO:  Connecting session (stream  197 ) 
+INFO:  Created new stream: 198 
+INFO:  Created new stream: 199 
+INFO:  Connecting session (stream  198 ) 
+INFO:  Connecting session (stream  199 ) 
+INFO:  Created new stream: 200 
+INFO:  Connecting session (stream  200 ) 
+INFO:  Created new stream: 201 
+INFO:  Connecting session (stream  201 ) 
+INFO:  Created new stream: 202 
+INFO:  Created new stream: 203 
+INFO:  Connecting session (stream  202 ) 
+INFO:  Created new stream: 204 
+INFO:  Connecting session (stream  203 ) 
+INFO:  Connecting session (stream  204 ) 
+INFO:  Connecting session (stream  1 ) 
+INFO:  session 212 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  204 ) 
+INFO:  session 211 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  203 ) 
+INFO:  session 210 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  202 ) 
+INFO:  session 208 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  200 ) 
+INFO:  session 207 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  199 ) 
+INFO:  session 206 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  198 ) 
+INFO:  session 203 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  195 ) 
+INFO:  session 209 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  201 ) 
+INFO:  session 202 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  194 ) 
+INFO:  session 205 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  197 ) 
+INFO:  session 201 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  193 ) 
+INFO:  session 198 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  190 ) 
+INFO:  session 197 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  189 ) 
+INFO:  session 196 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  188 ) 
+INFO:  session 193 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  185 ) 
+INFO:  session 204 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  196 ) 
+INFO:  session 192 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  184 ) 
+INFO:  session 200 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  192 ) 
+INFO:  session 191 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  183 ) 
+INFO:  session 188 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  180 ) 
+INFO:  session 187 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  179 ) 
+INFO:  session 199 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+INFO:  Disconnecting session (stream  191 ) 
+INFO:  session 186 : error sending data : 远程主机强迫关闭了一个现有的连接。 
+I
