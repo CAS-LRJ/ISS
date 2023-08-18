@@ -1,6 +1,7 @@
 from setuptools import Extension
 
-extensions = [Extension('camera', ['camera.pyx']),
+extensions = [Extension('sensor', ['sensor.pyx']),
+            #   Extension('beamng_camera', ['beamng_camera.pyx']),
               Extension('carla_camera', ['carla_camera.pyx']),
               Extension('carla_lidar', ['carla_lidar.pyx']),
               Extension('carla_sensor', ['carla_sensor.pyx']),

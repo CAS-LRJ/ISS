@@ -11,17 +11,17 @@ import carla
 from ISS.algorithms.utils.sensorutils.geometry_types import *
 from ISS.algorithms.utils.sensorutils.transform import transform_to_carla_transform
 
-from ISS.algorithms.sensors.carla_actor import Actor, PseudoActor
-from ISS.algorithms.sensors.carla_camera import RgbCamera, DepthCamera, SemanticSegmentationCamera
-from ISS.algorithms.sensors.carla_lidar import Lidar, SemanticLidar
-from ISS.algorithms.sensors.carla_radar import Radar
-from ISS.algorithms.sensors.carla_vehicle import Vehicle, OtherVehicle
-from ISS.algorithms.sensors.carla_infrastructure import Infrastructure
-from ISS.algorithms.sensors.carla_world import WorldActor
+from ISS.algorithms.sensors.carla_actor import CarlaActor, CarlaPseudoActor
+from ISS.algorithms.sensors.carla_camera import CarlaRgbCamera, CarlaDepthCamera, CarlaSemanticSegmentationCamera
+from ISS.algorithms.sensors.carla_lidar import CarlaLidar, CarlaSemanticLidar
+from ISS.algorithms.sensors.carla_radar import CarlaRadar
+from ISS.algorithms.sensors.carla_vehicle import CarlaVehicle, CarlaOtherVehicle
+from ISS.algorithms.sensors.carla_infrastructure import CarlaInfrastructure
+from ISS.algorithms.sensors.carla_world import CarlaWorldActor
 
 ROOT_PATH = Path(__file__).parent.parent.parent.parent.as_posix()
 
-class NodeType(Enum):
+class CarlaNodeType(Enum):
     DEFAULT = 0
     WORLD = 1
     VEHICLE = 2
@@ -30,8 +30,8 @@ class NodeType(Enum):
     OTHER_VEHICLE = 5
 
 
-class Node(object):
-    def __init__(self, actor=None, node_type=NodeType.DEFAULT):
+class CarlaNode(object):
+    def __init__(self, actor=None, node_type=CarlaNodeType.DEFAULT):
         self._actor = actor
         self._node_type = node_type
         self._children_nodes = []
@@ -56,14 +56,14 @@ class Node(object):
 
     # Tick for control step, running before world.tick()
     def tick_controller(self):
-        if self._node_type == NodeType.VEHICLE or \
-                self._node_type == NodeType.OTHER_VEHICLE:
+        if self._node_type == CarlaNodeType.VEHICLE or \
+                self._node_type == CarlaNodeType.OTHER_VEHICLE:
             self._actor.control_step()
 
     def tick_data_saving(self, frame_id, timestamp):
-        if self.get_node_type() == NodeType.SENSOR \
-                or NodeType.VEHICLE \
-                or NodeType.WORLD:
+        if self.get_node_type() == CarlaNodeType.SENSOR \
+                or CarlaNodeType.VEHICLE \
+                or CarlaNodeType.WORLD:
             self._actor.save_to_disk(frame_id, timestamp, True)
 
 
@@ -90,7 +90,7 @@ def create_spawn_point(x, y, z, roll, pitch, yaw):
     return transform_to_carla_transform(Transform(Location(x, y, z), Rotation(roll=roll, pitch=pitch, yaw=yaw)))
 
 
-class ActorFactory(object):
+class CarlaActorFactory(object):
     def __init__(self, world: carla.World, base_save_dir=None):
         self._uid_count = 0
         self.world = world
@@ -111,7 +111,7 @@ class ActorFactory(object):
         root = self.create_world_node()
         for actor_info in json_actors["actors"]:
             actor_type = str(actor_info["type"])
-            node = Node()
+            node = CarlaNode()
             if actor_type.startswith("vehicle"):
                 node = self.create_vehicle_node(actor_info)
                 root.add_child(node)
@@ -136,10 +136,10 @@ class ActorFactory(object):
         return root
 
     def create_world_node(self):
-        world_actor = WorldActor(uid=self.generate_uid(),
+        world_actor = CarlaWorldActor(uid=self.generate_uid(),
                                  carla_world=self.world,
                                  base_save_dir=self.base_save_dir)
-        world_node = Node(world_actor, NodeType.WORLD)
+        world_node = CarlaNode(world_actor, CarlaNodeType.WORLD)
         return world_node
 
     def create_vehicle_node(self, actor_info):
@@ -159,11 +159,11 @@ class ActorFactory(object):
         blueprint = self.blueprint_lib.find(vehicle_type)
         carla_actor = self.world.spawn_actor(blueprint, transform)
         print(vehicle_name)
-        vehicle_object = Vehicle(uid=self.generate_uid(),
+        vehicle_object = CarlaVehicle(uid=self.generate_uid(),
                                  name=vehicle_name,
                                  base_save_dir=self.base_save_dir,
                                  carla_actor=carla_actor)
-        vehicle_node = Node(vehicle_object, NodeType.VEHICLE)
+        vehicle_node = CarlaNode(vehicle_object, CarlaNodeType.VEHICLE)
         return vehicle_node
 
     def create_other_vehicles(self, other_vehicles_info):
@@ -179,11 +179,11 @@ class ActorFactory(object):
                 bp = random.choice(blueprints)
                 transform = self.spawn_points[spawn_point]
                 carla_actor = self.world.spawn_actor(bp, transform)
-                other_vehicle_object = OtherVehicle(uid=self.generate_uid(),
+                other_vehicle_object = CarlaOtherVehicle(uid=self.generate_uid(),
                                                     name='',
                                                     base_save_dir="/tmp",
                                                     carla_actor=carla_actor)
-                other_vehicle_node = Node(other_vehicle_object, NodeType.OTHER_VEHICLE)
+                other_vehicle_node = CarlaNode(other_vehicle_object, CarlaNodeType.OTHER_VEHICLE)
                 other_vehicle_nodes.append(other_vehicle_node)
 
         try:
@@ -200,11 +200,11 @@ class ActorFactory(object):
                     i -= 1
                     continue
 
-                other_vehicle_object = OtherVehicle(uid=self.generate_uid(),
+                other_vehicle_object = CarlaOtherVehicle(uid=self.generate_uid(),
                                                     name='',
                                                     base_save_dir="/tmp",
                                                     carla_actor=carla_actor)
-                other_vehicle_node = Node(other_vehicle_object, NodeType.OTHER_VEHICLE)
+                other_vehicle_node = CarlaNode(other_vehicle_object, CarlaNodeType.OTHER_VEHICLE)
                 other_vehicle_nodes.append(other_vehicle_node)
 
         return other_vehicle_nodes
@@ -223,14 +223,14 @@ class ActorFactory(object):
                 0,
                 0,
             )
-        infrastructure_object = Infrastructure(uid=self.generate_uid(),
+        infrastructure_object = CarlaInfrastructure(uid=self.generate_uid(),
                                                name=infrastructure_name,
                                                base_save_dir=self.base_save_dir,
                                                transform=transform)
-        infrastructure_node = Node(infrastructure_object, NodeType.INFRASTRUCTURE)
+        infrastructure_node = CarlaNode(infrastructure_object, CarlaNodeType.INFRASTRUCTURE)
         return infrastructure_node
 
-    def create_sensor_node(self, sensor_info: dict, parent_actor: PseudoActor, sensor_name_set: set):
+    def create_sensor_node(self, sensor_info: dict, parent_actor: CarlaPseudoActor, sensor_name_set: set):
         sensor_type = str(sensor_info.pop("type"))
         sensor_name = get_name_from_json(sensor_info, sensor_name_set)
         spawn_point = sensor_info.pop("spawn_point")
@@ -253,37 +253,37 @@ class ActorFactory(object):
 
         sensor_actor = None
         if sensor_type == 'sensor.camera.rgb':
-            sensor_actor = RgbCamera(uid=self.generate_uid(),
+            sensor_actor = CarlaRgbCamera(uid=self.generate_uid(),
                                      name=sensor_name,
                                      base_save_dir=parent_actor.get_save_dir(),
                                      carla_actor=carla_actor,
                                      parent=parent_actor)
         elif sensor_type == 'sensor.camera.depth':
-            sensor_actor = DepthCamera(uid=self.generate_uid(),
+            sensor_actor = CarlaDepthCamera(uid=self.generate_uid(),
                                        name=sensor_name,
                                        base_save_dir=parent_actor.get_save_dir(),
                                        carla_actor=carla_actor,
                                        parent=parent_actor)
         elif sensor_type == 'sensor.camera.semantic_segmentation':
-            sensor_actor = SemanticSegmentationCamera(uid=self.generate_uid(),
+            sensor_actor = CarlaSemanticSegmentationCamera(uid=self.generate_uid(),
                                                       name=sensor_name,
                                                       base_save_dir=parent_actor.get_save_dir(),
                                                       carla_actor=carla_actor,
                                                       parent=parent_actor)
         elif sensor_type == 'sensor.lidar.ray_cast':
-            sensor_actor = Lidar(uid=self.generate_uid(),
+            sensor_actor = CarlaLidar(uid=self.generate_uid(),
                                  name=sensor_name,
                                  base_save_dir=parent_actor.get_save_dir(),
                                  carla_actor=carla_actor,
                                  parent=parent_actor)
         elif sensor_type == 'sensor.lidar.ray_cast_semantic':
-            sensor_actor = SemanticLidar(uid=self.generate_uid(),
+            sensor_actor = CarlaSemanticLidar(uid=self.generate_uid(),
                                          name=sensor_name,
                                          base_save_dir=parent_actor.get_save_dir(),
                                          carla_actor=carla_actor,
                                          parent=parent_actor)
         elif sensor_type == 'sensor.other.radar':
-            sensor_actor = Radar(uid=self.generate_uid(),
+            sensor_actor = CarlaRadar(uid=self.generate_uid(),
                                  name=sensor_name,
                                  base_save_dir=parent_actor.get_save_dir(),
                                  carla_actor=carla_actor,
@@ -291,7 +291,7 @@ class ActorFactory(object):
         else:
             print("Unsupported sensor type: {}".format(sensor_type))
             raise AttributeError
-        sensor_node = Node(sensor_actor, NodeType.SENSOR)
+        sensor_node = CarlaNode(sensor_actor, CarlaNodeType.SENSOR)
         return sensor_node
 
     def generate_uid(self):
