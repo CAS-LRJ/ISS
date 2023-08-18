@@ -10,7 +10,7 @@ from ISS.algorithms.sensors.sensor import SensorType
 from ISS.algorithms.sensors.carla_sensor import CarlaSensor
 from ISS.algorithms.utils.sensorutils.geometry_types import Transform, Rotation
 from ISS.algorithms.utils.sensorutils.transform import carla_transform_to_transform
-from ISS.algorithms.utils.dataexchange.sensor.camera import CameraOutput, Camera3DOutput
+from ISS.algorithms.utils.dataexchange.sensor.camera import CameraOutput
 
 
 class CarlaCameraBase(CarlaSensor):
@@ -36,23 +36,8 @@ class CarlaCameraBase(CarlaSensor):
                                                    4),
                                             dtype=np.uint8,
                                             buffer=sensor_data.raw_data)
-
-        camera_output = CameraOutput(carla_image_data_array)
-        return camera_output
-
-    def realtime_data(self, sensor_data) -> Camera3DOutput:
-        # Convert to target color template
-        if self.color_converter is not None:
-            sensor_data.convert(self.color_converter)
-
-        # Convert raw data to numpy array, image type is 'bgra8'
-        carla_image_data_array = np.ndarray(shape=(sensor_data.height,
-                                                   sensor_data.width,
-                                                   4),
-                                            dtype=np.uint8,
-                                            buffer=sensor_data.raw_data)
         camera_info = self.get_camera_info()
-        camera_output = Camera3DOutput(camera_info, carla_image_data_array)
+        camera_output = CameraOutput(carla_image_data_array)
         return camera_output
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:

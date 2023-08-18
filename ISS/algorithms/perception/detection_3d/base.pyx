@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from ISS.algorithms.utils.dataexchange.sensor.camera import Camera3DOutput
+from ISS.algorithms.utils.dataexchange.sensor.camera import CameraOutput
 
 class Detection3DBase(object):
 

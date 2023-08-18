@@ -64,6 +64,7 @@ class CarlaSensor(CarlaActor):
 
     def get_output(self, frame_id, timestamp):
         sensor_frame_id = 0
+        output_classes = []
         while sensor_frame_id < frame_id:
             sensor_data = self.queue.get(True, 1.0)
             sensor_frame_id = sensor_data.frame
@@ -71,7 +72,7 @@ class CarlaSensor(CarlaActor):
             # Drop previous data
             if sensor_frame_id < frame_id:
                 continue
-            
+            output_classes.append(self.realtime_data(sensor_data))
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:
         raise NotImplementedError

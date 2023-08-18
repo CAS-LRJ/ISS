@@ -5,20 +5,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 class CameraOutput(object):
 
-    def __init__(self, image=None):
-        self.image = image
-
-    def visualize(self):
-        if self.image == None:
-            print("No image to visualize")
-            return
-        cv_image = cv2.cvtColor(np.array(self.annotated_image), cv2.COLOR_RGB2BGR)        
-        # 在窗口中显示图像
-        cv2.imshow('Realtime Image Display', cv_image)
-        cv2.waitKey()  # 保持图像显示的时间间隔，单位为毫秒
-
-class Camera3DOutput(object):
-
     def __init__(self, intrinsic=None, image=None):
         self.intrinsic = intrinsic
         self.image = image
