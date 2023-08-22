@@ -12,7 +12,7 @@ We suggest using virtual environment under Windows system. Cython 3.0.0 is curre
 
 ## Run tasks
 
-### CARLA data Collector
+### CARLA Data Collector
 
 Run following command to collect various kinds of sensor data from CARLA:
 ```bash

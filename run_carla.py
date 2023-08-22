@@ -7,7 +7,7 @@ from pathlib import Path
 
 import carla
 
-from ISS.algorithms.sensors.carla_actor_tree import ActorTree
+from ISS.algorithms.sensors.carla_actor_tree import CarlaActorTree
 from ISS.algorithms.utils.sensorutils.transform import Transform, Location, Rotation
 from ISS.algorithms.utils.sensorutils.transform import transform_to_carla_transform
 
@@ -37,7 +37,7 @@ class DataCollector:
         self.record_name = None
         self.base_save_dir = None
         self.world_config_file = "{}/config/{}".format(ROOT_PATH, args.world_config_file)
-        self.actor_tree = ActorTree(self.world)
+        self.actor_tree = CarlaActorTree(self.world)
         self.frame_total = -1
         self.frame_step = 1
 
@@ -86,7 +86,7 @@ class DataCollector:
             actor_config_file = json_settings["actor_settings"]
             self.record_name = time.strftime("%Y_%m%d_%H%M", time.localtime())
             self.base_save_dir = "{}/record_{}".format(RAW_DATA_PATH, self.record_name)
-            self.actor_tree = ActorTree(self.world,
+            self.actor_tree = CarlaActorTree(self.world,
                                         "{}/config/{}".format(ROOT_PATH,
                                                               actor_config_file),
                                         self.base_save_dir)

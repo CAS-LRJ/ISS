@@ -2,16 +2,16 @@
 import os
 
 import carla
-from ISS.algorithms.sensors.carla_actor_factory import ActorFactory, Node
+from ISS.algorithms.sensors.carla_actor_factory import CarlaActorFactory, CarlaNode
 from multiprocessing.dummy import Pool as ThreadPool
 
 
-class ActorTree(object):
+class CarlaActorTree(object):
     def __init__(self, world: carla.World, actor_config_file=None, base_save_dir=None):
         self.world = world
         self.actor_config_file = actor_config_file
-        self.actor_factory = ActorFactory(self.world, base_save_dir)
-        self.root = Node(None)
+        self.actor_factory = CarlaActorFactory(self.world, base_save_dir)
+        self.root = CarlaNode(None)
         self.node_list = []
 
     def init(self):
@@ -40,7 +40,7 @@ class ActorTree(object):
         thread_pool.close()
         thread_pool.join()
 
-    def save_data(self, frame_id, timestamp: float, node: Node):
+    def save_data(self, frame_id, timestamp: float, node: CarlaNode):
         node.tick_data_saving(frame_id, timestamp)
 
     def print_tree(self):

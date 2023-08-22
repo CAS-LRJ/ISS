@@ -1,15 +1,34 @@
 #!/usr/bin/python3
 import carla
+from ISS.algorithms.sensors.sensor import Sensor, SensorSource, SensorType
 from ISS.algorithms.utils.sensorutils.transform import *
 
+from libc.stdlib cimport *
 
-class PseudoActor(object):
+#TODO: convert pure Python class into Cython
+class CarlaPseudoActor(Sensor):
+
+    # cdef:
+        # int uid
+        # str name
+        # PseudoActor parent
+
+    # def __cinit__(self, uid, name, parent):
+    #     if name == '':
+    #         name = f"{self.get_type_id()}_{uid}"
+    #     self.uid = uid
+    #     self.name = name
+    #     self.parent = parent
     def __init__(self, uid, name, parent):
         if name == '':
             name = f"{self.get_type_id()}_{uid}"
-        self.uid = uid
+            self.uid = uid
         self.name = name
         self.parent = parent
+        self.set_ssource(SensorSource.CARLA)
+
+    # def __dealloc__(self):
+        # self.destroy()
 
     def destroy(self):
         return True
@@ -33,10 +52,10 @@ class PseudoActor(object):
         raise NotImplementedError
 
 
-class Actor(PseudoActor):
+class CarlaActor(CarlaPseudoActor):
     def __init__(self, uid, name, parent, carla_actor: carla.Actor):
         self.carla_actor = carla_actor
-        super(Actor, self).__init__(uid=uid,
+        super(CarlaActor, self).__init__(uid=uid,
                                     name=name,
                                     parent=parent)
 
