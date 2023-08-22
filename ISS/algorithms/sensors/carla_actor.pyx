@@ -48,6 +48,9 @@ class CarlaPseudoActor(Sensor):
     def save_to_disk(self, frame_id, timestamp, debug=False):
         return
 
+    def get_output(self, frame_id, timestamp):
+        return
+
     def get_carla_transform(self) -> carla.Transform:
         raise NotImplementedError
 

@@ -13,7 +13,7 @@ from ISS.algorithms.utils.sensorutils.transform import transform_to_carla_transf
 
 from ISS.algorithms.sensors.carla_actor import CarlaActor, CarlaPseudoActor
 from ISS.algorithms.sensors.carla_camera import CarlaRgbCamera, CarlaDepthCamera, CarlaSemanticSegmentationCamera
-from ISS.algorithms.sensors.carla_lidar import CarlaLidar, CarlaSemanticLidar
+from ISS.algorithms.sensors.carla_lidar import CarlaLiDAR, CarlaSemanticLiDAR
 from ISS.algorithms.sensors.carla_radar import CarlaRadar
 from ISS.algorithms.sensors.carla_vehicle import CarlaVehicle, CarlaOtherVehicle
 from ISS.algorithms.sensors.carla_infrastructure import CarlaInfrastructure
@@ -271,13 +271,13 @@ class CarlaActorFactory(object):
                                                       carla_actor=carla_actor,
                                                       parent=parent_actor)
         elif sensor_type == 'sensor.lidar.ray_cast':
-            sensor_actor = CarlaLidar(uid=self.generate_uid(),
+            sensor_actor = CarlaLiDAR(uid=self.generate_uid(),
                                  name=sensor_name,
                                  base_save_dir=parent_actor.get_save_dir(),
                                  carla_actor=carla_actor,
                                  parent=parent_actor)
         elif sensor_type == 'sensor.lidar.ray_cast_semantic':
-            sensor_actor = CarlaSemanticLidar(uid=self.generate_uid(),
+            sensor_actor = CarlaSemanticLiDAR(uid=self.generate_uid(),
                                          name=sensor_name,
                                          base_save_dir=parent_actor.get_save_dir(),
                                          carla_actor=carla_actor,

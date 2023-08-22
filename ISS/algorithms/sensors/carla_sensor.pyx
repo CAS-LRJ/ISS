@@ -37,7 +37,7 @@ class CarlaSensor(CarlaActor):
     def data_callback(weak_self, sensor_data, data_queue: Queue):
         data_queue.put(sensor_data)
 
-    def save_to_disk(self, frame_id, timestamp,  debug=False):
+    def save_to_disk(self, frame_id, timestamp, debug=False):
         sensor_frame_id = 0
         while sensor_frame_id < frame_id:
             sensor_data = self.queue.get(True, 1.0)
@@ -61,6 +61,18 @@ class CarlaSensor(CarlaActor):
 
             if debug:
                 self.print_debug_info(sensor_data.frame, sensor_data)
+
+    def get_output(self, frame_id, timestamp):
+        sensor_frame_id = 0
+        output_classes = []
+        while sensor_frame_id < frame_id:
+            sensor_data = self.queue.get(True, 1.0)
+            sensor_frame_id = sensor_data.frame
+
+            # Drop previous data
+            if sensor_frame_id < frame_id:
+                continue
+            output_classes.append(self.realtime_data(sensor_data))
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:
         raise NotImplementedError
