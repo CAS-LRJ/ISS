@@ -66,6 +66,10 @@ class CarlaNode(object):
                 or CarlaNodeType.WORLD:
             self._actor.save_to_disk(frame_id, timestamp, True)
 
+    def realtime_data(self, frame_id, timestamp):
+        if self.get_node_type() == CarlaNodeType.CAMERA:
+            self._actor.realtime_data(frame_id, timestamp)
+
 
 def get_name_from_json(json_info, name_set: set):
     # Get actor name from json, default to ''.

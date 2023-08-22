@@ -2,6 +2,7 @@ import numpy as np
 cimport numpy as np
 import cv2
 from PIL import Image, ImageDraw, ImageFont
+from time import sleep
 
 class CameraOutput(object):
 
@@ -16,7 +17,9 @@ class CameraOutput(object):
         cv_image = cv2.cvtColor(np.array(self.annotated_image), cv2.COLOR_RGB2BGR)        
         # 在窗口中显示图像
         cv2.imshow('Realtime Image Display', cv_image)
-        cv2.waitKey()  # 保持图像显示的时间间隔，单位为毫秒
+        cv2.waitKey(10000)  # 保持图像显示的时间间隔，单位为毫秒
+        print("Image displayed")
+        sleep(1)
 
     
 

@@ -37,7 +37,8 @@ class CarlaCameraBase(CarlaSensor):
                                             dtype=np.uint8,
                                             buffer=sensor_data.raw_data)
         camera_info = self.get_camera_info()
-        camera_output = CameraOutput(carla_image_data_array)
+        camera_output = CameraOutput(camera_info, carla_image_data_array)
+        camera_output.visualize()
         return camera_output
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:

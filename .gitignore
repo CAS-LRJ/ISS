@@ -6,7 +6,6 @@ build/*
 *.c
 *.cpp
 *.exp
-**/__init__.pxd
 # Cpp/Hpp files wrote by original authors should be updated instead
 !**/src/**
 ## We do not update video logs

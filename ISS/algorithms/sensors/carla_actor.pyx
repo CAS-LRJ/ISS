@@ -48,6 +48,9 @@ class CarlaPseudoActor(Sensor):
     def save_to_disk(self, frame_id, timestamp, debug=False):
         return
 
+    def realtime_data(self, frame_id, timestamp):
+        return
+
     def get_output(self, frame_id, timestamp):
         return
 

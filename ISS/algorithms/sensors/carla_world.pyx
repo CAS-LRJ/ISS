@@ -15,7 +15,6 @@ class CarlaWorldActor(CarlaPseudoActor):
         super().__init__(uid, self.get_type_id(), None)
         self.save_dir = "{}/{}_{}".format(base_save_dir, self.get_type_id(), uid)
         self.carla_world = carla_world
-        self.stype(SensorType.WORLD)
 
     def save_to_disk(self, frame_id, timestamp, debug=False):
         # TODO: Save all object bbox in world

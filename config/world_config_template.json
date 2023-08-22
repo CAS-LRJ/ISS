@@ -9,7 +9,7 @@
         "max_substep_delta_time": 0.01,
         "max_substeps": 16
     },
-    "actor_settings": "actor_settings_template.json",
+    "actor_settings": "actor_settings_onlycamera.json",
     "traffic_light_setting":
     {
         "red_time": 2.0,
