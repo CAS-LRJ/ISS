@@ -2,6 +2,7 @@ from setuptools import Extension, setup
 from Cython.Build import cythonize
 import ISS.setup as ISS_setup
 import numpy as np
+import os
 
 setups = [ISS_setup]
 setup_dirs = ['ISS']
@@ -25,7 +26,10 @@ for ext_ in extensions:
     ext_.include_dirs += include_dirs
     if not ext_.language:
         ext_.language = 'c++'
-    ext_.extra_compile_args = ["/O2"]    
+    if os.name == 'nt':
+        ext_.extra_compile_args = ["/O2"]    
+    elif os.name == 'posix':
+        ext_.extra_compile_args = ["-O3"]
 
 
 compiler_directives = {"language_level": 3, "embedsignature": True}
