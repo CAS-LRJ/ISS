@@ -9,4 +9,4 @@ class Detection3Dgt(Detection3DBase):
         self.input = detection_3d_input
 
     def detect(self, detection_3d_input):
-        
+        pass
