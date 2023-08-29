@@ -21,6 +21,36 @@ class CameraOutput(object):
         print("Image displayed")
         sleep(1)
 
+    def padding_resize(self):
+        if self.image != None:
+            image_numpy = np.array(self.image)
+            shape = image_numpy.shape[:2]
+            new_shape = (self.resize, self.resize)
+
+            # Scale ratio (new / old)
+            r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
+
+            # Compute padding
+            ratio = r, r  # width, height ratios
+            new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
+
+            dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
+            dw, dh = np.mod(dw, self.stride), np.mod(dh, self.stride)  # wh padding
+            dw /= 2  # divide padding into 2 sides
+            dh /= 2
+            # print(dw, dh)
+            if shape[::-1] != new_unpad:  # resize
+                im = cv2.resize(image_numpy, new_unpad, interpolation=cv2.INTER_LINEAR)
+            top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
+            left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
+            self.padding_top = top
+            self.padding_bottom = bottom
+            self.padding_left = left
+            self.padding_right = right
+            im = cv2.copyMakeBorder(im, top, bottom, left, right, cv2.BORDER_CONSTANT, value=self.colour)  # add border
+            return Image.fromarray(im.astype('uint8')).convert('RGB')
+    
+
     
 
 
