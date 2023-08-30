@@ -3,8 +3,6 @@ import carla
 from ISS.algorithms.sensors.sensor import Sensor, SensorSource, SensorType
 from ISS.algorithms.utils.sensorutils.transform import *
 
-from libc.stdlib cimport *
-
 #TODO: convert pure Python class into Cython
 class CarlaPseudoActor(Sensor):
 

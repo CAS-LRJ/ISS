@@ -41,8 +41,8 @@ class CarlaActorTree(object):
         thread_pool.join()
 
     def save_data(self, frame_id, timestamp: float, node: CarlaNode):
-        # node.tick_data_saving(frame_id, timestamp)
-        node.realtime_data(frame_id, timestamp)
+        node.tick_data_saving(frame_id, timestamp)
+        # node.realtime_data(frame_id, timestamp)
 
     def print_tree(self):
         print("------ Actor Tree BEGIN ------")

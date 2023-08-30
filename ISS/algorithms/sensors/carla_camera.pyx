@@ -24,6 +24,7 @@ class CarlaCameraBase(CarlaSensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
         self.color_converter = color_converter
         self.set_stype(SensorType.CAMERA)
+        self.to_port = 6001
 
     def realtime_data(self, sensor_data) -> CameraOutput:
         # Convert to target color template
@@ -38,7 +39,7 @@ class CarlaCameraBase(CarlaSensor):
                                             buffer=sensor_data.raw_data)
         camera_info = self.get_camera_info()
         camera_output = CameraOutput(camera_info, carla_image_data_array)
-        camera_output.visualize()
+        # camera_output.visualize()
         return camera_output
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:
