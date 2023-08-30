@@ -182,4 +182,4 @@ class BoundingBox:
         return o3d.geometry.OrientedBoundingBox(center, rotation, extent)
 
     def __str__(self):
-        return "BoundingBox({}, {})".format(self.location, self.extent.to_str(name="Extent"), self.rotation)
+        return "BoundingBox({}, {}, {})".format(self.location, self.extent.to_str(name="Extent"), self.rotation)
