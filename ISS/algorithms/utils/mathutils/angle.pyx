@@ -4,13 +4,14 @@ from libc cimport math
 cimport cython
 
 
-cdef double pi_2_pi(double angle):
+cpdef double pi_2_pi(double angle):
     return (angle + math.pi) % (2 * math.pi) - math.pi
 
-cdef double zero_2_2pi(double angle):
+cpdef double zero_2_2pi(double angle):
     return angle % (math.pi * 2)
 
-cdef double calculate_rot_angle(np.float64_t[::1] dir):
+cpdef double calculate_rot_angle(np.float64_t[::1] dir):
+    dir = np.array(dir) / np.linalg.norm(dir)
     cdef double rot_angle
     if dir[0]>=0 and dir[1]>=0:
         rot_angle = math.asin(dir[1])

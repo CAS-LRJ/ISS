@@ -6,6 +6,7 @@ build/*
 *.c
 *.cpp
 *.exp
+*.so
 # Cpp/Hpp files wrote by original authors should be updated instead
 !**/src/**
 ## We do not update video logs
