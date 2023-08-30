@@ -5,6 +5,7 @@ from ISS.algorithms.utils.sensorutils.transform import carla_bbox_to_bbox, carla
 import carla
 import os
 import numpy as np
+from typing import List
 
 class Detection3Dgt(Detection3DBase):
     def _preprocess(self, detection_3d_input):

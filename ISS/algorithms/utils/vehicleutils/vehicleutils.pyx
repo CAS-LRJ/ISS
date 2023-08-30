@@ -3,6 +3,7 @@ cimport numpy as np
 from libc cimport math
 cimport cython
 from ISS.algorithms.utils.mathutils.angle cimport pi_2_pi
+from scipy.spatial import KDTree
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -49,3 +50,28 @@ cdef tuple bicycle_model_move(double x,
     yaw += pi_2_pi(distance * math.tan(steer) / L)  # distance/2        
 
     return (x, y, yaw)
+
+## 2D Collision Checker
+class CollisionChecker(object):
+
+    def __init__(self, points, vehicle_length, vehicle_width) -> None:        
+        self.points = np.array([(point[0], point[1]) for point in points])
+        self.kdtree = KDTree(self.points)
+        self.vehicle_length = vehicle_length
+        self.vehicle_width = vehicle_width
+    
+    def check_point(self, point):
+        point = np.array(point)
+        potential_index = self.kdtree.query_ball_point(point, self.vehicle_length)
+        potential_points = self.points[potential_index]
+        return collision_check(point[:2], potential_points, point[2], self.vehicle_length, self.vehicle_width) == 0
+
+    def check_path(self, path):
+        path = np.array(path)
+        path_xy = path[:, :2]
+        potential_indices = self.kdtree.query_ball_point(path_xy, self.vehicle_length)        
+        for i, index in enumerate(potential_indices):
+            potential_points = self.points[index]
+            if collision_check(path[i][:2], potential_points, path[i][2], self.vehicle_length, self.vehicle_width) > 0:
+                return False
+        return True
