@@ -4,7 +4,7 @@ cimport numpy as np
 # for single image/pcd file
 class ObjectDetectionOutput(object):
 
-    def __init__(self, gt=None):
+    def __init__(self):
         self._label = None
         self._score = None
         self._bbox = None
