@@ -161,3 +161,33 @@ def bbox_to_o3d_bbox(bbox: BoundingBox):
     rotation = bbox.rotation.get_rotation_matrix()
     extent = 2.0 * bbox.extent.get_vector()
     return o3d.geometry.OrientedBoundingBox(center, rotation, extent)
+
+def vertices_to_carla_bbox(vertices: list(carla.Location)):
+    """
+    Convert a list of vertices to a carla bounding box
+
+    :param vertices: a list of vertices
+    :type vertices: list(carla.Location)
+    :return: a carla bounding box
+    :rtype: carla.BoundingBox
+    """
+    min_x = min([vertex.x for vertex in vertices])
+    max_x = max([vertex.x for vertex in vertices])
+    min_y = min([vertex.y for vertex in vertices])
+    max_y = max([vertex.y for vertex in vertices])
+    min_z = min([vertex.z for vertex in vertices])
+    max_z = max([vertex.z for vertex in vertices])
+
+    carla_location = carla.Location(
+        x=(min_x + max_x) / 2.0,
+        y=(min_y + max_y) / 2.0,
+        z=(min_z + max_z) / 2.0
+    )
+
+    carla_extent = carla.Vector3D(
+        x=(max_x - min_x) / 2.0,
+        y=(max_y - min_y) / 2.0,
+        z=(max_z - min_z) / 2.0
+    )
+
+    return carla.BoundingBox(carla_location, carla_extent)
