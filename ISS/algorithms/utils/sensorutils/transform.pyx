@@ -155,6 +155,13 @@ def carla_bbox_to_bbox(carla_bbox: carla.BoundingBox):
                       carla_bbox.extent.z)
     return BoundingBox(location, extent, rotation)
 
+def bbox_to_carla_bbox(bbox: BoundingBox):
+    location = location_to_carla_location(bbox.location)
+    rotation = rotation_to_carla_rotation(bbox.rotation)
+    extent = carla.Vector3D(bbox.extent.x,
+                            bbox.extent.y,
+                            bbox.extent.z)
+    return carla.BoundingBox(location, extent)
 
 def bbox_to_o3d_bbox(bbox: BoundingBox):
     center = bbox.location.get_vector()
@@ -191,3 +198,17 @@ def vertices_to_carla_bbox(vertices: list(carla.Location)):
     )
 
     return carla.BoundingBox(carla_location, carla_extent)
+
+def carla_bbox_trans(carla_bbox: carla.BoundingBox, transform: carla.Transform):
+    """
+    Transform a carla bounding box with a carla transform
+
+    :param carla_bbox: the carla bounding box
+    :type carla_bbox: carla.BoundingBox
+    :param transform: the carla transform
+    :type transform: carla.Transform
+    :return: the transformed carla bounding box
+    :rtype: carla.BoundingBox
+    """
+    world_vertices = carla_bbox.get_world_vertices(transform)
+    return vertices_to_carla_bbox(world_vertices)

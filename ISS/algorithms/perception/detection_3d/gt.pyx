@@ -1,6 +1,6 @@
 from ISS.algorithms.perception.detection_3d.base import Detection3DBase
 from ISS.algorithms.utils.dataexchange.perception.object_detection import ObjectDetectionOutput
-from ISS.algorithms.utils.sensorutils.transform import carla_bbox_to_bbox, carla_location_to_location, carla_transform_to_transform, vertices_to_carla_bbox
+from ISS.algorithms.utils.sensorutils.transform import carla_bbox_to_bbox, carla_location_to_location, carla_transform_to_transform, vertices_to_carla_bbox, carla_bbox_trans
 
 import carla
 import os
@@ -21,18 +21,20 @@ class Detection3Dgt(Detection3DBase):
             if actor.type_id.startswith("vehicle"):
                 output._label = "vehicle"
                 print("VEHICLE: " + actor.type_id)
+                output._bbox = carla_bbox_to_bbox(carla_bbox_trans(actor.bounding_box, actor.get_transform()))
                 # transform local coords to global
-                trans = actor.get_transform()
-                bbox = actor.bounding_box
-                world_vertices = bbox.get_world_vertices(trans)
-                output._bbox = carla_bbox_to_bbox(vertices_to_carla_bbox(world_vertices))
+                # trans = actor.get_transform()
+                # bbox = actor.bounding_box
+                # world_vertices = bbox.get_world_vertices(trans)
+                # output._bbox = carla_bbox_to_bbox(vertices_to_carla_bbox(world_vertices))
             elif actor.type_id.startswith("walker"):
                 output._label = "walker"
                 print("WALKER:" + actor.type_id)
-                trans = actor.get_transform()
-                bbox = actor.bounding_box
-                world_vertices = bbox.get_world_vertices(trans)
-                output._bbox = carla_bbox_to_bbox(vertices_to_carla_bbox(world_vertices))
+                output._bbox = carla_bbox_to_bbox(carla_bbox_trans(actor.bounding_box, actor.get_transform()))
+                # trans = actor.get_transform()
+                # bbox = actor.bounding_box
+                # world_vertices = bbox.get_world_vertices(trans)
+                # output._bbox = carla_bbox_to_bbox(vertices_to_carla_bbox(world_vertices))
             #BUG: cannot invoke get_light_boxes() for traffic light
             # elif actor.type_id.startswith("traffic.traffic_light"):
             #     print("LIGHT:" + actor.type_id)
