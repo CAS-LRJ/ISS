@@ -20,7 +20,7 @@ sys.path.append(ROOT_PATH)
 # from ISS.algorithms.utils.dataexchange.sensor.lidar import LiDAROutput
 # from ISS.algorithms.utils.dataexchange.perception.object_detection import ObjectDetectionOutput
 # from ISS.algorithms.utils.sensorutils.transform import Transform, Location, Rotation
-# from ISS.algorithms.utils.sensorutils.transform import transform_to_carla_transform, carla_transform_to_transform
+from ISS.algorithms.utils.sensorutils.transform import bbox_to_carla_bbox
 from ISS.algorithms.perception.detection_3d.gt import Detection3Dgt
 
 RAW_DATA_PATH = "{}/resources/data/carla/{}".format(ROOT_PATH, 'raw_data')
@@ -34,6 +34,7 @@ def main():
         json_settings = json.loads(handle.read())
         carla_client.load_world(json_settings["map"])
         world = carla_client.get_world()
+        dh = world.debug
         # random spawn things
         blib = world.get_blueprint_library()
         spoints = world.get_map().get_spawn_points()
@@ -53,6 +54,9 @@ def main():
             for object in res:
                 print(object._label)
                 print(object._bbox)
+                # draw bounding box
+                bbox = bbox_to_carla_bbox(object._bbox)
+                dh.draw_box(bbox, bbox.rotation)
 
     
 

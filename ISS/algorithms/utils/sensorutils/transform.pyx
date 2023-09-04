@@ -155,9 +155,60 @@ def carla_bbox_to_bbox(carla_bbox: carla.BoundingBox):
                       carla_bbox.extent.z)
     return BoundingBox(location, extent, rotation)
 
+def bbox_to_carla_bbox(bbox: BoundingBox):
+    location = location_to_carla_location(bbox.location)
+    rotation = rotation_to_carla_rotation(bbox.rotation)
+    extent = carla.Vector3D(bbox.extent.x,
+                            bbox.extent.y,
+                            bbox.extent.z)
+    return carla.BoundingBox(location, extent)
 
 def bbox_to_o3d_bbox(bbox: BoundingBox):
     center = bbox.location.get_vector()
     rotation = bbox.rotation.get_rotation_matrix()
     extent = 2.0 * bbox.extent.get_vector()
     return o3d.geometry.OrientedBoundingBox(center, rotation, extent)
+
+def vertices_to_carla_bbox(vertices: list(carla.Location)):
+    """
+    Convert a list of vertices to a carla bounding box
+
+    :param vertices: a list of vertices
+    :type vertices: list(carla.Location)
+    :return: a carla bounding box
+    :rtype: carla.BoundingBox
+    """
+    min_x = min([vertex.x for vertex in vertices])
+    max_x = max([vertex.x for vertex in vertices])
+    min_y = min([vertex.y for vertex in vertices])
+    max_y = max([vertex.y for vertex in vertices])
+    min_z = min([vertex.z for vertex in vertices])
+    max_z = max([vertex.z for vertex in vertices])
+
+    carla_location = carla.Location(
+        x=(min_x + max_x) / 2.0,
+        y=(min_y + max_y) / 2.0,
+        z=(min_z + max_z) / 2.0
+    )
+
+    carla_extent = carla.Vector3D(
+        x=(max_x - min_x) / 2.0,
+        y=(max_y - min_y) / 2.0,
+        z=(max_z - min_z) / 2.0
+    )
+
+    return carla.BoundingBox(carla_location, carla_extent)
+
+def carla_bbox_trans(carla_bbox: carla.BoundingBox, transform: carla.Transform):
+    """
+    Transform a carla bounding box with a carla transform
+
+    :param carla_bbox: the carla bounding box
+    :type carla_bbox: carla.BoundingBox
+    :param transform: the carla transform
+    :type transform: carla.Transform
+    :return: the transformed carla bounding box
+    :rtype: carla.BoundingBox
+    """
+    world_vertices = carla_bbox.get_world_vertices(transform)
+    return vertices_to_carla_bbox(world_vertices)
