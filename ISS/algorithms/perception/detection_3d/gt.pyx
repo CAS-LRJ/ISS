@@ -25,6 +25,7 @@ class Detection3Dgt(Detection3DBase):
             if actor.type_id.startswith("vehicle") and actor.id != self.ego.id:
                 output._label = "vehicle"
                 print("VEHICLE: " + actor.type_id)
+                output._localbbox = carla_bbox_to_bbox(actor.bounding_box)
                 output._bbox = carla_bbox_to_bbox(carla_bbox_trans(actor.bounding_box, actor.get_transform()))
                 # transform local coords to global
                 # trans = actor.get_transform()
@@ -34,6 +35,7 @@ class Detection3Dgt(Detection3DBase):
             elif actor.type_id.startswith("walker"):
                 output._label = "walker"
                 print("WALKER:" + actor.type_id)
+                output._localbbox = carla_bbox_to_bbox(actor.bounding_box)
                 output._bbox = carla_bbox_to_bbox(carla_bbox_trans(actor.bounding_box, actor.get_transform()))
                 # trans = actor.get_transform()
                 # bbox = actor.bounding_box

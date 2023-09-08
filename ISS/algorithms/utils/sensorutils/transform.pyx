@@ -199,6 +199,41 @@ def vertices_to_carla_bbox(vertices: list(carla.Location)):
 
     return carla.BoundingBox(carla_location, carla_extent)
 
+def carla_bbox_to_vertices(carla_bbox: carla.BoundingBox):
+
+    """
+    Convert a carla bounding box to a list of vertices
+
+    :param carla_bbox: the carla bounding box
+    :type carla_bbox: carla.BoundingBox
+    :return: a list of vertices
+    :rtype: list(carla.Location)
+    """
+    carla_location = carla_bbox.location
+    carla_extent = carla_bbox.extent
+
+    min_x = carla_location.x - carla_extent.x
+    max_x = carla_location.x + carla_extent.x
+    min_y = carla_location.y - carla_extent.y
+    max_y = carla_location.y + carla_extent.y
+    min_z = carla_location.z - carla_extent.z
+    max_z = carla_location.z + carla_extent.z
+
+    vertices = [
+        carla.Location(x=min_x, y=min_y, z=min_z),
+        carla.Location(x=min_x, y=min_y, z=max_z),
+        carla.Location(x=min_x, y=max_y, z=min_z),
+        carla.Location(x=min_x, y=max_y, z=max_z),
+        carla.Location(x=max_x, y=min_y, z=min_z),
+        carla.Location(x=max_x, y=min_y, z=max_z),
+        carla.Location(x=max_x, y=max_y, z=min_z),
+        carla.Location(x=max_x, y=max_y, z=max_z)
+    ]
+
+    return vertices
+
+
+
 def carla_bbox_trans(carla_bbox: carla.BoundingBox, transform: carla.Transform):
     """
     Transform a carla bounding box with a carla transform
@@ -212,3 +247,17 @@ def carla_bbox_trans(carla_bbox: carla.BoundingBox, transform: carla.Transform):
     """
     world_vertices = carla_bbox.get_world_vertices(transform)
     return vertices_to_carla_bbox(world_vertices)
+
+def vertices_trans(vertices: list(carla.Location), loc: carla.Location, transform: carla.Transform):
+    """
+    Transform a list of vertices with a carla transform
+
+    :param vertices: a list of vertices
+    :type vertices: list(carla.Location)
+    :param transform: the carla transform
+    :type transform: carla.Transform
+    :return: the transformed vertices
+    :rtype: list(carla.Location)
+    """
+    trans_vertices = [transform.transform(vertex) for vertex in vertices]
+    return trans_vertices

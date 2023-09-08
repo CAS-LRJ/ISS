@@ -20,7 +20,7 @@ sys.path.append(ROOT_PATH)
 # from ISS.algorithms.utils.dataexchange.sensor.lidar import LiDAROutput
 # from ISS.algorithms.utils.dataexchange.perception.object_detection import ObjectDetectionOutput
 # from ISS.algorithms.utils.sensorutils.transform import Transform, Location, Rotation
-from ISS.algorithms.utils.sensorutils.transform import bbox_to_carla_bbox
+from ISS.algorithms.utils.sensorutils.transform import bbox_to_carla_bbox, carla_bbox_to_vertices, vertices_trans, transform_to_carla_transform, location_to_carla_location, vertices_to_carla_bbox
 from ISS.algorithms.perception.detection_3d.gt import Detection3Dgt
 
 RAW_DATA_PATH = "{}/resources/data/carla/{}".format(ROOT_PATH, 'raw_data')
@@ -60,7 +60,16 @@ def main():
                 print(object._bbox)
                 # draw bounding box
                 bbox = bbox_to_carla_bbox(object._bbox)
-                dh.draw_box(bbox, bbox.rotation)
+                vertices = carla_bbox_to_vertices(object._localbbox)
+                vertices = vertices_trans(vertices, location_to_carla_location(object._loc), transform_to_carla_transform(object._trans))
+                generate_bbox = vertices_to_carla_bbox(vertices)
+                real_vertices = carla_bbox_to_vertices(bbox)
+                print(object._loc)
+                for vertice in vertices:
+                    print(vertice)
+                for vertice in real_vertices:
+                    print(vertice)
+                dh.draw_box(generate_bbox, generate_bbox.rotation)
 
     
 
