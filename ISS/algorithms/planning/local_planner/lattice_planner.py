@@ -27,6 +27,7 @@ from ISS.algorithms.utils.mathutils.angle import pi_2_pi, zero_2_2pi
 from ISS.algorithms.utils.mathutils.quartic_polynomial import QuarticPolynomial
 from ISS.algorithms.utils.mathutils.quintic_polynomial import QuinticPolynomial
 from ISS.algorithms.utils.dataexchange.planning.trajectory import Trajectory
+from multiprocessing import Process
 import lanelet2
 import numpy as np
 import math
@@ -394,3 +395,15 @@ class LatticePlanner(object):
 
         self.steps_run += 1            
         return Trajectory(waypoints, speeds)
+    
+    def handle(self, terminating_value, location_queue, local_traj_queue):
+        pass
+
+    def run_proxies(self, data_proxies):
+        ## Spawn Process Here and Return its process object..
+        terminating_value = data_proxies['terminating_value']
+        location_queue = data_proxies['location_queue']
+        local_traj_queue = data_proxies['local_traj_queue']
+        process = Process(target=self.handle, args=[terminating_value, location_queue, local_traj_queue])
+        process.start()
+        return process

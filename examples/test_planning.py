@@ -1,4 +1,5 @@
 import lanelet2
+from lanelet2.core import BasicPoint2d
 from ISS.algorithms.planning.global_planner.lanelet2_planner import Lanelet2Planner
 from ISS.algorithms.planning.local_planner.lattice_planner import LatticePlanner
 from lanelet2.projection import UtmProjector
@@ -50,13 +51,29 @@ def test_global_planning_lanelet2():
     for ind, point in enumerate(spawn_points):
         world.debug.draw_string(point.location, str(ind), life_time=1200)
     start_point = spawn_points[0]
-    start_point = spawn_points[310]
+    # start_point = spawn_points[310]
+    start_point = spawn_points[309]
     start_point = (start_point.location.x, start_point.location.y, np.deg2rad(start_point.rotation.yaw))
     end_point = spawn_points[10]
     end_point = spawn_points[98]
     end_point = (end_point.location.x, end_point.location.y, np.deg2rad(end_point.rotation.yaw))
-    ## To-DO: Calculate the Rot....
-    print(start_point, end_point)
+    # ## To-DO: Calculate the Rot....
+    # from ISS.algorithms.planning.dubins import dubins
+    # print(start_point, end_point)
+    # fromLanelet = lanelet2.geometry.findNearest(loadedMap.laneletLayer, BasicPoint2d(start_point[0], -start_point[1]), 2)[1][1]
+    # fromLanelet_centerline = list(fromLanelet.centerline)
+    # start_ind = 0
+    # for ind in range(start_ind, len(fromLanelet_centerline)-1):           
+    #     point = fromLanelet_centerline[ind]
+    #     rot = calculate_rot_angle(np.array([fromLanelet_centerline[ind + 1].x - point.x, -(fromLanelet_centerline[ind + 1].y - point.y)]))
+    #     dubins_path = dubins.shortest_path(start_point, (point.x, -point.y, rot), TURNING_RADIUS)
+    #     dubins_points, dubins_dis = dubins_path.sample_many(0.1)
+    #     print(np.linalg.norm([start_point[0]- point.x, start_point[1] + point.y]), dubins_dis[-1], dubins_path.path_length())
+    #     # if len(dubins_points) > 0 and np.linalg.norm([start_point[0]- point.x, start_point[1] + point.y]) * 1.5 > dubins_dis[-1]:
+    #     for point in dubins_points:
+    #         world.debug.draw_string(carla.Location(point[0], point[1], 0), '*', life_time=1200)
+    #     time.sleep(2)
+
     traj = planner.plan(start_point, end_point, TURNING_RADIUS)
     traj.downsample(0.1)
     if traj != None:
