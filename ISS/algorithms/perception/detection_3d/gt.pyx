@@ -8,17 +8,21 @@ import numpy as np
 from typing import List
 
 class Detection3Dgt(Detection3DBase):
+    def __init__(self, world, ego):
+        self.world = world
+        self.ego = ego
+
     def _preprocess(self, detection_3d_input):
         pass
 
-    def detect(self, carla_world):
+    def detect(self):
         # directly return all actors in the world
         res = []
-        for actor in carla_world.get_actors():
+        for actor in self.world.get_actors():
             output = ObjectDetectionOutput()
             output._score = 1
             # "static", "vehicle", "walker", "traffic"
-            if actor.type_id.startswith("vehicle"):
+            if actor.type_id.startswith("vehicle") and actor.id != self.ego.id:
                 output._label = "vehicle"
                 print("VEHICLE: " + actor.type_id)
                 output._bbox = carla_bbox_to_bbox(carla_bbox_trans(actor.bounding_box, actor.get_transform()))

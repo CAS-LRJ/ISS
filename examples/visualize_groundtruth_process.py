@@ -38,18 +38,22 @@ def main():
         # random spawn things
         blib = world.get_blueprint_library()
         spoints = world.get_map().get_spawn_points()
+        # spawn ego vehicle
+        ego_vehicle = world.spawn_actor(blib.find("vehicle.audi.a2"), spoints[0])
+        print("Ego vehicle: ")
+        print(ego_vehicle.bounding_box)
         # spawn vehicle
         for i in range(10):
-            vehicle = world.spawn_actor(blib.find("vehicle.tesla.model3"), spoints[i])
+            vehicle = world.spawn_actor(blib.find("vehicle.tesla.model3"), spoints[i + 1])
             print(vehicle.bounding_box)
 
         time.sleep(5)
 
-        det3d = Detection3Dgt()
-        res = det3d.detect(world)
+        det3d = Detection3Dgt(world, ego_vehicle)
+        res = det3d.detect()
         print("RES:")
         if res == []:
-            print("FUCK!")
+            print("Object not detected!")
         else:
             for object in res:
                 print(object._label)
