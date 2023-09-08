@@ -94,7 +94,6 @@ def test_pid():
     lattice_settings['MIN_T'] = 4.0                # min prediction time [s]
     lattice_settings['TARGET_SPEED'] = 15.0 / 3.6  # target speed [m/s]
     lattice_settings['D_T_S'] = 5.0 / 3.6          # target speed sampling length [m/s]
-    lattice_settings['N_S_SAMPLE'] = 2             # sampling number of target speed
     lattice_settings['N_S_SAMPLE'] = 1             # sampling number of target speed    
     lattice_settings['ROBOT_RADIUS'] = 2.0         # robot radius [m]
     lattice_settings['K_J'] = 0.1

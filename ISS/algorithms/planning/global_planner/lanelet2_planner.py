@@ -124,13 +124,13 @@ class Lanelet2Planner(object):
         self.route = self.route_graph.getRoute(fromLanelet, toLanelet)
         assert fromLanelet != None and toLanelet != None
 
-        ## Assume the planner start from the closest lanelet!  
-        print(fromLanelet)      
+        ## Assume the planner start from the closest lanelet!
+        # Warning: Sometime the start lanelet is the second closest one! To-DO: Fix this      
         fromLanelet_centerline = list(fromLanelet.centerline)
         start_ind = 0
         min_dis = None
         for ind, point in enumerate(fromLanelet_centerline[:-1]):
-            dis = np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y])
+            dis = np.linalg.norm([start_pos[0] - point.x, start_pos[1] - self.reverse_y * point.y])
             if min_dis == None or dis < min_dis:
                 start_ind = ind
                 min_dis = dis
@@ -140,9 +140,9 @@ class Lanelet2Planner(object):
             rot = calculate_rot_angle(np.array([fromLanelet_centerline[ind + 1].x - point.x, self.reverse_y * (fromLanelet_centerline[ind + 1].y - point.y)]))
             dubins_path = dubins.shortest_path(start_pos, (point.x, self.reverse_y * point.y, rot), turning_radius)
             dubins_points, dubins_dis = dubins_path.sample_many(0.1)
-            if len(dubins_points) > 0 and np.linalg.norm([start_pos[0]- point.x, start_pos[1] - point.y]) * 1.5 > dubins_dis[-1]:
+            if len(dubins_points) > 0 and np.linalg.norm([start_pos[0]- point.x, start_pos[1] - self.reverse_y * point.y]) * 1.5 > dubins_dis[-1]:
                 # check_result = check_path(solid_points, dubins_points, solid_kdtree, vehicle_length, vehicle_width)        
-                check_result = self.collision_detector.check_path(dubins_points)
+                check_result = self.collision_detector.check_path(dubins_points)                
                 if check_result:
                     newNode = PlanningNode([start_pos] + list(dubins_points), fromLanelet.id, ind, 0, dubins_dis[-1])        
                     if cloesetNode == None or cloesetNode > newNode:
@@ -173,7 +173,7 @@ class Lanelet2Planner(object):
                     rot = calculate_rot_angle(np.array([toLanelet_centerline[ind+1].x - point.x, self.reverse_y * (toLanelet_centerline[ind+1].y - point.y)]))
                     dubins_path = dubins.shortest_path((point.x, self.reverse_y * point.y, rot), goal_pos, turning_radius)
                     dubins_points, dubins_dis = dubins_path.sample_many(0.1)
-                    if len(dubins_points) > 0 and np.linalg.norm([goal_pos[0]- point.x, goal_pos[1] - point.y]) * 1.5 > dubins_dis[-1]:                        
+                    if len(dubins_points) > 0 and np.linalg.norm([goal_pos[0]- point.x, goal_pos[1] - self.reverse_y * point.y]) * 1.5 > dubins_dis[-1]:                        
                         check_result = self.collision_detector.check_path(dubins_points)                        
                         if check_result:                            
                             point_list = currentNode.points
@@ -192,3 +192,11 @@ class Lanelet2Planner(object):
                 pqueue.put(result_node)
 
         return None
+
+    ## To-DO: Write Multiprocess Code for Global Planning
+    def handle(self, terminating_value, gplan_queries_queue, global_traj_queue):
+        pass
+
+    def run_proxies(self, data_proxies):
+        ## Spawn Process Here and Return its process object..
+        pass

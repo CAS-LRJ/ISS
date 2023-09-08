@@ -1,6 +1,7 @@
 import math
 import numpy as np
 from collections import deque
+from multiprocessing import Process
 from ISS.algorithms.utils.dataexchange.control.vehiclecontrol import VehicleControl
 
 def euclidean_distance(v1, v2):
@@ -32,7 +33,7 @@ class VehiclePIDController:
 
         self._lon_controller = PIDLongitudinalController(**args_longitudinal)
         self._lat_controller = PIDLateralController(**args_lateral)        
-        self.traj = None
+        self.traj = None        
         self.waypoint_index = 0
 
     def reset(self):
@@ -56,6 +57,9 @@ class VehiclePIDController:
         :param waypoint: target location encoded as a waypoint
         :return: distance (in meters) to the waypoint
         """
+        ## Braking if no traj or location was given
+        if self.traj == None or vehicle_location == None:
+            return VehicleControl()        
         ## Skip waypoints behind the vehicle
         current_location = (vehicle_location.x, vehicle_location.y, vehicle_location.yaw)
         current_speed = vehicle_location.velocity
@@ -93,6 +97,35 @@ class VehiclePIDController:
             steering = self._lat_controller.run_step(current_location, traj_point)
             control = VehicleControl(steering, throttle, 0.0, False, False)        
         return control
+            
+    def handle(self, terminating_value, traj_queue, location_queue, control_queue):
+        while terminating_value.value:
+            try:                
+                current_location = location_queue[-1]
+            except:
+                ## Pending Localization Module...
+                current_location = None
+
+            ## Refresh Traj if exists
+            try:                
+                new_traj = traj_queue.pop()
+                self.set_traj(new_traj)
+            except:
+                pass
+
+            control = self.run_step(current_location)
+            control_queue.push(control)
+
+    def run_proxies(self, data_proxies):
+        ## Spawn Process Here and Return its process object..
+        stop_condition = data_proxies['terminating_value']
+        traj_queue = data_proxies['pid_traj_queue']
+        location_queue = data_proxies['location_queue']
+        control_queue = data_proxies['control_queue']
+        process = Process(target=self.handle, args=[stop_condition, traj_queue, location_queue, control_queue])
+        process.daemon = True
+        process.start()
+        return process        
 
 
 class PIDLongitudinalController:
