@@ -4,6 +4,8 @@ import os
 import signal
 import time
 import open3d
+import yaml
+from easydict import EasyDict
 from pathlib import Path
 
 import carla
@@ -21,6 +23,8 @@ ROOT_PATH = Path(__file__).parent.as_posix()
 
 RAW_DATA_PATH = "{}/resources/data/carla/{}".format(ROOT_PATH, 'raw_data')
 DATASET_PATH = "{}/resources/data/carla/{}".format(ROOT_PATH, 'dataset')
+
+DATASET_CONFIG = "{}/config/{}".format(ROOT_PATH, "model_cfgs/kitti_models/pointpillar.yaml")
 
 sig_interrupt = False
 
@@ -51,6 +55,16 @@ class DataCollector:
 
     def destroy(self):
         self.actor_tree.destroy()
+        
+    def cfg_from_yaml_file(self, cfg_file):
+        with open(cfg_file, 'r') as f:
+            try:
+                config = yaml.safe_load(f, Loader=yaml.FullLoader)
+            except:
+                config = yaml.safe_load(f)
+
+        return EasyDict(config)
+
 
     def set_traffic_light_time(self, traffic_light_setting):
         actor_list = self.world.get_actors()
@@ -127,14 +141,15 @@ class DataCollector:
         os.makedirs(self.base_save_dir, exist_ok=True)
         carla_logfile = "{}/carla_raw_record.log".format(self.base_save_dir)
         self.carla_client.start_recorder(carla_logfile)
+        
         primary_player = self.get_vehicle_node_by_name("tesla3_player")
         if primary_player is not None:
-            lidar_sensor = primary_player.get_children()[0]
-            print(lidar_sensor.get_actor())
+            lidar_sensor = primary_player.get_children()[0] 
             
         vis = open3d.visualization.Visualizer()
         vis.create_window()
-        det_in = Detection3DInput()
+        dataset_cfg = self.cfg_from_yaml_file(DATASET_CONFIG)
+        det_in = Detection3DInput(dataset_cfg.DATA_CONFIG)
         # det_out = Detection3DOutput(names, [], 0.5, 'logs/2d_det_demo.mp4', True, True)
         
         try:
