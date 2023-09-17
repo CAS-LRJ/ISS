@@ -1,4 +1,5 @@
 import carla
+from multiprocessing import Process
 import math
 from ISS.algorithms.utils.dataexchange.localization.transforms import VehicleTransform
 
@@ -29,3 +30,20 @@ class GroundTruthLocalizationCarla(object):
         vehicletransform.velocity = math.hypot(vehicle_velocity.x, vehicle_velocity.y, vehicle_velocity.z)
         vehicletransform.acceleration = math.hypot(vehicle_acceleration.x, vehicle_acceleration.y, vehicle_acceleration.z)
         return vehicletransform
+    
+    def handle(self, ip, port, terminating_value, location_queue):
+        client = carla.Client(ip, port)
+        world = client.get_world()
+        ## Refresh the vehicle objects..
+        self.vehicle = world.get_actor(self.vehicle.id)
+        while terminating_value.value:
+            vehicletransform = self.run_step()            
+            location_queue.append(vehicletransform)                    
+
+    def run_proxies(self, data_proxies, ip, port):
+        ## Spawn Process Here and Return its process object..
+        terminating_value = data_proxies['terminating_value']
+        location_queue = data_proxies['location_queue']        
+        process = Process(target=self.handle, args=[ip, port, terminating_value, location_queue])
+        process.start()
+        return process

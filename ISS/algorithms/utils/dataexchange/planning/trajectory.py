@@ -25,3 +25,6 @@ class Trajectory(object):
         self.waypoints = new_waypoints
         if self.speed != None:
             self.speed = new_speed
+    
+    def cubic_resample(self, precision=0.1):
+        pass

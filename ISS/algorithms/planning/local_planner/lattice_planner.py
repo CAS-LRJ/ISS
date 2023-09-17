@@ -364,7 +364,7 @@ class LatticePlanner(object):
                 frenet_path = [(x, y, yaw) for x, y, yaw in zip(fplist[i].x, fplist[i].y, fplist[i].yaw)]
                 if not self.road_detector.check_path(frenet_path):
                     continue
-                if self.obstacle_detector != None and self.obstacle_detector.check_path(frenet_path):
+                if self.obstacle_detector != None and not self.obstacle_detector.check_path(frenet_path):
                     continue
             ok_ind.append(i)
 
@@ -396,14 +396,31 @@ class LatticePlanner(object):
         self.steps_run += 1            
         return Trajectory(waypoints, speeds)
     
-    def handle(self, terminating_value, location_queue, local_traj_queue):
-        pass
+    def handle(self, terminating_value, location_queue, local_traj_queue, obstacle_detector_queue):
+        while terminating_value.value:
+            try:
+                cur_location = location_queue[-1]
+            except:
+                cur_location = None                
+                continue
+
+            try:
+                last_obstacle = obstacle_detector_queue[-1]
+                self.obstacle_detector = last_obstacle
+            except:
+                continue
+
+            state_cartesian = (cur_location.x, cur_location.y, cur_location.yaw, cur_location.velocity, cur_location.acceleration)
+            trajectory = self.run_step(state_cartesian)
+            if len(trajectory.waypoints) > 0:
+                local_traj_queue.append(trajectory)        
 
     def run_proxies(self, data_proxies):
         ## Spawn Process Here and Return its process object..
         terminating_value = data_proxies['terminating_value']
         location_queue = data_proxies['location_queue']
         local_traj_queue = data_proxies['local_traj_queue']
-        process = Process(target=self.handle, args=[terminating_value, location_queue, local_traj_queue])
+        obstacle_detector_queue = data_proxies['obstacle_detector_queue']
+        process = Process(target=self.handle, args=[terminating_value, location_queue, local_traj_queue, obstacle_detector_queue])
         process.start()
         return process

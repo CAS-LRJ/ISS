@@ -178,7 +178,7 @@ class BoundingBox:
     def to_open3d(self):
         center = self.location.get_vector()
         rotation = self.rotation.get_rotation_matrix()
-        extent = self.extent.get_vector()
+        extent = self.extent.get_vector() * 2.
         return o3d.geometry.OrientedBoundingBox(center, rotation, extent)
 
     def __str__(self):

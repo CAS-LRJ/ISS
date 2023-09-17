@@ -34,6 +34,7 @@ class VehiclePIDController:
         self._lon_controller = PIDLongitudinalController(**args_longitudinal)
         self._lat_controller = PIDLateralController(**args_lateral)        
         self.traj = None        
+        self.goal = None
         self.waypoint_index = 0
 
     def reset(self):
@@ -42,13 +43,16 @@ class VehiclePIDController:
         self._lon_controller.reset()
         self._lat_controller.reset()    
     
+    def set_goal(self, goal):
+        self.goal = goal
+    
     def set_traj(self, traj):
         self.traj = traj
         self.waypoint_index = 0
         self._lon_controller.reset()
         self._lat_controller.reset()
 
-    def run_step(self, vehicle_location):
+    def run_step(self, vehicle_location, obstacle_detector=None):
         """
         Execute one step of control invoking both lateral and longitudinal PID controllers to reach a target waypoint
         at a given target_speed.
@@ -56,13 +60,18 @@ class VehiclePIDController:
         :param target_speed: desired vehicle speed
         :param waypoint: target location encoded as a waypoint
         :return: distance (in meters) to the waypoint
-        """
+        """        
         ## Braking if no traj or location was given
-        if self.traj == None or vehicle_location == None:
+        if self.traj == None or vehicle_location == None:            
             return VehicleControl()        
-        ## Skip waypoints behind the vehicle
         current_location = (vehicle_location.x, vehicle_location.y, vehicle_location.yaw)
         current_speed = vehicle_location.velocity
+        ## Braking if goal is reached
+        if self.goal != None:
+            dis_vec = (current_location[0] - self.goal[0], current_location[1] - self.goal[1])
+            if np.linalg.norm(dis_vec) < 0.2:
+                return VehicleControl()
+        ## Skip waypoints behind the vehicle        
         while self.waypoint_index < len(self.traj.waypoints) - 1:
             traj_point = self.traj.waypoints[self.waypoint_index]
             next_traj_point = self.traj.waypoints[self.waypoint_index + 1]
@@ -81,12 +90,15 @@ class VehiclePIDController:
             self.waypoint_index += 1
 
         traj_point = self.traj.waypoints[self.waypoint_index]
+        prev_traj_point = self.traj.waypoints[self.waypoint_index-1]
         v_vec = (current_location[0] - traj_point[0], current_location[1] - traj_point[1])
-        print(np.linalg.norm(v_vec))
+        w_vec = (traj_point[0] - prev_traj_point[0], traj_point[1] - prev_traj_point[1])
+        # print(np.linalg.norm(v_vec))
 
-        if np.linalg.norm(v_vec) < 0.2:
-            ## Smaller than threshold, Stop the vehicle
+        if np.sign(np.dot(v_vec, w_vec)) > 0. or (obstacle_detector != None and not obstacle_detector.check_point(traj_point) and not obstacle_detector.check_point(current_location, half=True)):
+            ## Obstacle Detected or Trajectory Finished, Stop the vehicle
             control = VehicleControl()
+            self.traj = None
         else:
             if self.traj.speed is not None:
                 target_speed = self.traj.speed[self.waypoint_index]
@@ -98,7 +110,7 @@ class VehiclePIDController:
             control = VehicleControl(steering, throttle, 0.0, False, False)        
         return control
             
-    def handle(self, terminating_value, traj_queue, location_queue, control_queue):
+    def handle(self, terminating_value, traj_queue, location_queue, control_queue, obstacle_detector_queue):
         while terminating_value.value:
             try:                
                 current_location = location_queue[-1]
@@ -108,21 +120,38 @@ class VehiclePIDController:
 
             ## Refresh Traj if exists
             try:                
-                new_traj = traj_queue.pop()
+                # new_traj = traj_queue.pop()
+                new_traj = traj_queue[-1]
                 self.set_traj(new_traj)
             except:
                 pass
 
-            control = self.run_step(current_location)
-            control_queue.push(control)
+            ## 
+            try:
+                last_obstacle = obstacle_detector_queue[-1]                
+            except:
+                continue            
+
+            control = self.run_step(current_location, last_obstacle)
+            control_queue.append(control)
+
+            ## Setting Terminating Value if reached goal
+            if self.goal != None and current_location != None:
+                dis_vec = (current_location.x - self.goal[0], current_location.y - self.goal[1])
+                if np.linalg.norm(dis_vec) < 0.2:
+                    terminating_value.value = 0                    
+        ## Clear the control queue
+        control = VehicleControl()
+        control_queue.append(control)
 
     def run_proxies(self, data_proxies):
         ## Spawn Process Here and Return its process object..
         stop_condition = data_proxies['terminating_value']
-        traj_queue = data_proxies['pid_traj_queue']
+        traj_queue = data_proxies['local_traj_queue']
         location_queue = data_proxies['location_queue']
         control_queue = data_proxies['control_queue']
-        process = Process(target=self.handle, args=[stop_condition, traj_queue, location_queue, control_queue])
+        obstacle_detector_queue = data_proxies['obstacle_detector_queue']
+        process = Process(target=self.handle, args=[stop_condition, traj_queue, location_queue, control_queue, obstacle_detector_queue])
         process.daemon = True
         process.start()
         return process        
