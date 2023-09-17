@@ -14,4 +14,5 @@ extensions = [Extension('mathutils.angle', ["mathutils/angle.pyx"]),
               Extension('sensorutils.geometry_types', ['sensorutils/geometry_types.pyx']),
               Extension('sensorutils.label_types', ['sensorutils/label_types.pyx']),
               Extension('spconvutils.VoxelGeneratorWrapper', ['spconvutils/VoxelGeneratorWrapper.pyx']),
-              Extension('visutils.open3d_vis_utils', ['visutils/open3d_vis_utils.pyx']),]
+              Extension('visutils.open3d_vis_utils', ['visutils/open3d_vis_utils.pyx']),
+              Extension('postprocessingutils.iou3dwrapper', ['postprocessingutils/iou3dwrapper.pyx']),]

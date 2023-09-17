@@ -1,8 +1,16 @@
 from setuptools import Extension, setup
 from Cython.Build import cythonize
+from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 import ISS.setup as ISS_setup
 import numpy as np
 import os
+
+def make_cuda_ext(name, module, sources):
+    cuda_ext = CUDAExtension(
+        name='%s.%s' % (module, name),
+        sources=[os.path.join(*module.split('.'), src) for src in sources]
+    )
+    return cuda_ext
 
 setups = [ISS_setup]
 setup_dirs = ['ISS']

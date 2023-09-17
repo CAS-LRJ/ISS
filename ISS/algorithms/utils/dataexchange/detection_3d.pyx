@@ -2,6 +2,7 @@ import numpy as np
 import open3d
 cimport numpy as np
 import cv2
+import torch
 from functools import partial
 from collections import defaultdict
 from PIL import Image, ImageDraw, ImageFont
@@ -9,6 +10,8 @@ from PIL import Image, ImageDraw, ImageFont
 from ISS.algorithms.sensors.carla_lidar import CarlaLiDAR
 from ISS.algorithms.utils.spconvutils.VoxelGeneratorWrapper import VoxelGeneratorWrapper
 from ISS.algorithms.utils.visutils.open3d_vis_utils import open3d_vis_utils
+from ISS.algorithms.utils.postprocessingutils.iou3dwrapper import iou3dWrapper
+from ISS.algorithms.perception.torchscriptwrapper import torchScriptWrapper
 
 class Detection3DInput(object):
     
@@ -79,6 +82,21 @@ class Detection3DInput(object):
         mask = (points[:, 0] >= limit_range[0]) & (points[:, 0] <= limit_range[3]) \
             & (points[:, 1] >= limit_range[1]) & (points[:, 1] <= limit_range[4])
         return mask
+
+    @staticmethod
+    def load_data_to_gpu(batch_dict):
+        for key, val in batch_dict.items():
+            if not isinstance(val, np.ndarray):
+                batch_dict[key] = torch.from_numpy(np.array([val])).cuda()
+                continue
+            elif key in ['frame_id', 'metadata', 'calib']:
+                batch_dict[key] = torch.from_numpy(val).cuda()
+            # elif key in ['images']:
+            #     batch_dict[key] = kornia.image_to_tensor(val).float().cuda().contiguous()
+            elif key in ['image_shape']:
+                batch_dict[key] = torch.from_numpy(val).int().cuda()
+            else:
+                batch_dict[key] = torch.from_numpy(val).float().cuda()
 
     @staticmethod
     def collate_batch(batch_list, _unused=False):
@@ -244,72 +262,58 @@ class Detection3DInput(object):
 
         return vis
 
-    
-    def padding_resize(self):
-        pass
 
 
 
 class Detection3DOutput(object):
 
-    def __init__(self, class_names, filtered_names, confidence_threshold, output_file=None, display=False, video_log=False):
+    def __init__(self, class_names, confidence_threshold):
         self.class_names = class_names
-        self.filtered_names = filtered_names
         self.confidence_threshold = confidence_threshold
-        self.display = display
-        self.output_file = output_file
-        self.video_log = video_log
-        self.video_writer = None
-        self.det_boxs = None
-        self.det_labels = None                
+        self.final_scores = None
+        self.final_labels = None
+        self.final_boxes = None
 
-    def from_output(self, det_input, model_output):
-        original_image = det_input.image        
-        top = det_input.padding_top
-        bottom = det_input.padding_bottom
-        left = det_input.padding_left
-        right = det_input.padding_right
-        scale_x = (det_input.resize - left - right) / det_input.resolution_x
-        scale_y = (det_input.resize - top - bottom) / det_input.resolution_y
-        self.det_boxes = model_output[0].tolist()[0]
-        self.det_labels = model_output[1].tolist()[0]
-        j = 0
-        self.det_boxes_scaled = []
-        self.det_labels_scaled = []
-        for box in self.det_boxes:
-            if box[4] >= self.confidence_threshold:                
-                clas = self.class_names[self.det_labels[j]]
-                x_min = (box[0] - left) / scale_x
-                y_min = (box[1] - top) / scale_y
-                x_max = (box[2] - left) / scale_x
-                y_max = (box[3] - top) / scale_y
-                self.det_boxes_scaled.append([x_min, y_min, x_max, y_max])
-                self.det_labels_scaled.append(self.det_labels[j])
-                # 创建可编辑图像
-                # print(x_min, y_min)
-                j += 1
-                draw = ImageDraw.Draw(original_image)
-                font = ImageFont.truetype("arial.ttf", 36)
-                # 绘制矩形框
-                draw.rectangle(xy=[(x_min, y_min), (x_max, y_max)], outline='red', width=3)
-                draw.text((x_min, y_min), clas, font=font)
-        self.annotated_image = original_image
-        self.display_image()
+    def from_output(self, det_input, model):
+        self.data_dict = det_input.data_dict
+        with torch.no_grad():
+            if self.data_dict["points"] is not None:
+                self.data_dict = det_input.collate_batch([self.data_dict])
+                det_input.load_data_to_gpu(self.data_dict)
+                # print(self.data_dict["voxels"].size())
+                # print(self.data_dict["points"].size())
+
+                pred_dicts, _ = model.forward(self.data_dict)
+                
+                cls_preds = pred_dicts["pred_scores"]
+                box_preds = pred_dicts["pred_boxes"]
+                label_preds = pred_dicts["pred_labels"]
+
+                selected, selected_scores = iou3dWrapper.class_agnostic_nms(
+                                    box_scores=cls_preds, box_preds=box_preds,
+                                    score_thresh=0.01
+                                )
+
+                self.final_scores = selected_scores
+                self.final_labels = label_preds[selected]
+                self.final_boxes = box_preds[selected]
+
+                for i in range(self.class_names.__len__()):
+                    class_selected = self.final_labels != i
+                    score_selected = self.final_scores >= self.confidence_threshold[i]
+                    self.final_scores = self.final_scores[class_selected | score_selected]
+                    self.final_labels = self.final_labels[class_selected | score_selected]
+                    self.final_boxes = self.final_boxes[class_selected | score_selected]
     
-    def display_image(self):
-        # 将 PIL 图像转换为 OpenCV 图像
-        cv_image = cv2.cvtColor(np.array(self.annotated_image), cv2.COLOR_RGB2BGR)        
+    def preview_scene(self, vis=None):
+        if vis is None:
+            vis = open3d.visualization.Visualizer()
+            vis.create_window()
 
-        if self.display:
-            # 在窗口中显示图像
-            cv2.imshow('Realtime Image Display', cv_image)
-            cv2.waitKey(1)  # 保持图像显示的时间间隔，单位为毫秒
+        if self.data_dict is not None:
+            open3d_vis_utils.draw_scenes(vis,
+                    points=self.data_dict['points'][:, 1:], ref_boxes=self.final_boxes,
+                    ref_scores=self.final_scores, ref_labels=self.final_labels, confidence=None, tracks=None
+                )
 
-        if self.video_log:
-            # 如果视频写入器未初始化，则根据第一张图像的大小创建写入器
-            if self.video_writer is None:
-                height, width, _ = cv_image.shape
-                fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # 可根据需要修改编码器
-                self.video_writer = cv2.VideoWriter(self.output_file, fourcc, 30.0, (width, height))
-            # 将图像写入视频文件
-            self.video_writer.write(cv_image)
+        return vis

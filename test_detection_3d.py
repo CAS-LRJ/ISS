@@ -17,6 +17,7 @@ from ISS.algorithms.sensors.carla_actor_factory import CarlaNodeType, CarlaNode
 from ISS.algorithms.sensors.carla_actor_tree import CarlaActorTree
 from ISS.algorithms.utils.sensorutils.transform import Transform, Location, Rotation
 from ISS.algorithms.utils.sensorutils.transform import transform_to_carla_transform
+from ISS.algorithms.perception.torchscriptwrapper import torchScriptWrapper
 
 # Project Root Path
 ROOT_PATH = Path(__file__).parent.as_posix()
@@ -148,10 +149,21 @@ class DataCollector:
             
         vis = open3d.visualization.Visualizer()
         vis.create_window()
+        vis_view_control = vis.get_view_control()
+        # vis_view_control.convert_from_pinhole_camera_parameters
+        open3d.io.read_pinhole_camera_trajectory("./config/vis_config/open3d_config.json")
+        # vis_view_control.set_lookat([ 34.5, 0, 4.75 ])
+        # vis_view_control.set_zoom(0.7)
+        # vis_view_control.change_field_of_view(60.0)
+        # vis_view_control.set_front([ -0.90, 0.0018, 0.43 ])
+        # vis_view_control.set_up([ 0.43, 0.007, 0.90 ])
+        # vis_view_control.set_constant_z_far(70)
         dataset_cfg = self.cfg_from_yaml_file(DATASET_CONFIG)
         det_in = Detection3DInput(dataset_cfg.DATA_CONFIG)
-        # det_out = Detection3DOutput(names, [], 0.5, 'logs/2d_det_demo.mp4', True, True)
-        
+        det_out = Detection3DOutput(class_names = ["null", 'Car', 'Pedestrian', 'Cyclist'], confidence_threshold = [1.0, 0.4, 0.5, 0.7])
+        torch_model = torchScriptWrapper(path = "./resources/models/detection_3d/point_pillar_model.pt")
+        torch_model.load_model()
+
         try:
             total_frame_count = 0
             while True:
@@ -164,21 +176,35 @@ class DataCollector:
                 world_snapshot = self.world.get_snapshot()
                 timestamp = world_snapshot.timestamp.elapsed_seconds
 
-                # print(self.actor_tree.get_children())
-                # print("World Tick -> FrameID: {} Timestamp: {} Cost: {:.3f}s".format(frame_id,
-                #                                                                      timestamp,
-                #                                                                      time.time()-tick_s))
-                # Save data to disk
                 if total_frame_count % self.frame_step == 0:
-                    save_s = time.time()
-                    
                     det_in.from_carla_lidar(lidar_sensor.get_actor())
-                    det_in.preview_scene(vis)
+                    det_out.from_output(det_in, torch_model)
+                    det_out.preview_scene(vis)
+                    
+                    # {
+                    #     "class_name" : "ViewTrajectory",
+                    #     "interval" : 29,
+                    #     "is_loop" : false,
+                    #     "trajectory" : 
+                    #     [
+                    #         {
+                    #             "boundingbox_max" : [ 69.118263244628906, 39.679920196533203, 16.415634155273438 ],
+                    #             "boundingbox_min" : [ -0.059999999999999998, -39.679874420166016, -6.9146575927734375 ],
+                    #             "field_of_view" : 60.0,
+                    #             "front" : [ -0.90307097537632919, 0.0017988087570628851, 0.42948757574567964 ],
+                    #             "lookat" : [ 34.529131622314452, 2.288818359375e-05, 4.75048828125 ],
+                    #             "up" : [ 0.42948904059539766, 0.0070563614983622357, 0.90304450154510629 ],
+                    #             "zoom" : 0.69999999999999996
+                    #         }
+                    #     ],
+                    #     "version_major" : 1,
+                    #     "version_minor" : 0
+                    # }
+                    
                     vis.poll_events()
                     vis.update_renderer()
                     vis.clear_geometries()
-                    # self.actor_tree.tick_data_saving(frame_id, timestamp)
-                    # print("Raw data saved, cost {:.3f}s".format(time.time()-save_s))
+
 
                 global sig_interrupt
                 if sig_interrupt:
