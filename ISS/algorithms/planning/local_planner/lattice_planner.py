@@ -83,6 +83,14 @@ class LatticePlanner(object):
         self.best_path = None
         self.road_detector = road_detector
         self.obstacle_detector = None
+
+        self.veh_info = { # Tesla Model 3
+            'length': 4.69,
+            'width': 2.0,
+            'wheelbase': 2.8,
+            'overhang_rear': 0.978,
+            'overhang_front': 0.874
+        }
     
     def _generate_target_course(self):
         x = [waypoint[0] for waypoint in self.waypoints_xy]
@@ -364,7 +372,7 @@ class LatticePlanner(object):
                 frenet_path = [(x, y, yaw) for x, y, yaw in zip(fplist[i].x, fplist[i].y, fplist[i].yaw)]
                 if not self.road_detector.check_path(frenet_path):
                     continue
-                if self.obstacle_detector != None and not self.obstacle_detector.check_path(frenet_path):
+                if self.obstacle_detector != None and not self.obstacle_detector.check_path(frenet_path, self.veh_info):
                     continue
             ok_ind.append(i)
 

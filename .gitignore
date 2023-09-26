@@ -21,3 +21,4 @@ resources/data/carla
 ## We do not update test scripts
 test.sh
 nohup.out
+examples/test_data_structure.ipynb
