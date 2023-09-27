@@ -1,5 +1,6 @@
 from ISS.algorithms.perception.detection_3d.base import Detection3DBase
 from ISS.algorithms.utils.dataexchange.perception.object_detection import ObjectDetectionOutput
+from ISS.algorithms.utils.dataexchange.planning.trajectory import TrajectoryPredictionOutput, AllPredictionOutput
 from ISS.algorithms.utils.sensorutils.transform import carla_bbox_to_bbox, carla_location_to_location, carla_transform_to_transform, vertices_to_carla_bbox, carla_bbox_trans
 
 import carla
@@ -7,7 +8,7 @@ import os
 import numpy as np
 from typing import List
 from multiprocessing import Process
-from ISS.algorithms.utils.vehicleutils.vehicleutils import CollisionChecker
+from ISS.algorithms.utils.vehicleutils.vehicleutils import CollisionChecker, bicycle_model_step
 
 class Detection3Dgt(Detection3DBase):
     def _preprocess(self, detection_3d_input):
@@ -93,3 +94,69 @@ class Detection3Dgt(Detection3DBase):
         process = Process(target=self.handle, args=[ip, port, vehicle_id, terminating_value, obstacle_detector_queue])
         process.start()
         return process
+
+
+class Detection3DgtPred(Detection3DBase):
+    def __init__(self,  settings):
+        super().__init__()
+        for key in settings:
+            self.__dict__[key] = settings[key]
+
+    def _detect(self, carla_world, vehicle_id=None):
+        # return the close actors in the world
+        ego_position = carla_world.get_actors()[vehicle_id].get_location()
+        res = {}
+        for actor in carla_world.get_actors():
+            if vehicle_id != None and vehicle_id == actor.id:
+                continue
+            if actor.get_location().distance(ego_position) > self.MAX_DISTANCE:
+                continue
+            output = ObjectDetectionOutput()
+            output._score = 1
+            # "static", "vehicle", "walker", "traffic"
+            if actor.type_id.startswith("vehicle"):
+                output._label = "vehicle"
+                output._bbox = actor.bounding_box
+            elif actor.type_id.startswith("walker"):
+                output._label = "walker"
+                output._bbox = actor.bounding_box
+            else:
+                #TODO: add more types
+                continue
+            output._loc = actor.get_location()
+            output._trans = actor.get_transform()
+            output._vel = actor.get_velocity()
+            res[id] = output
+        return res    
+    
+    def _generate_prediction(self, obstacles_dict):
+        # forward simulate the obstacles assuming no control
+        res = AllPredictionOutput()
+        for id, detect_output in obstacles_dict.items():
+            prediction_output = TrajectoryPredictionOutput(detect_output.get_state_bicycle_model(), detect_output.get_veh_info())
+            for i in range(int(self.T / self.dt)):
+                steer = 0
+                acc = 0
+                veh_info = prediction_output.get_veh_info()
+                next_state = bicycle_model_step(prediction_output.get_last_state(), acc, steer, veh_info['wheelbase'], self.dt)
+                prediction_output.add_state(next_state)
+            res.add_prediction(id, prediction_output)
+        return res
+
+    def handle(self, ip, port, vehicle_id, terminating_value, obstacle_detector_queue):
+        client = carla.Client(ip, port)
+        world = client.get_world()
+        ## Refresh the vehicle objects..        
+        while terminating_value.value:
+            obstacles_dict = self._detect(world, vehicle_id)
+            obstacle_detector_prediction = self._generate_prediction(obstacles_dict)
+            obstacle_detector_queue.append(obstacle_detector_prediction)                    
+
+    def run_proxies(self, data_proxies, ip, port, vehicle_id):
+        ## Spawn Process Here and Return its process object..
+        terminating_value = data_proxies['terminating_value']
+        obstacle_detector_queue = data_proxies['obstacle_detector_queue']        
+        process = Process(target=self.handle, args=[ip, port, vehicle_id, terminating_value, obstacle_detector_queue])
+        process.start()
+        return process
+        
