@@ -149,6 +149,10 @@ class Detection3DgtPred(Detection3DBase):
         ## Refresh the vehicle objects..        
         while terminating_value.value:
             obstacles_dict = self._detect(world, vehicle_id)
+<<<<<<< HEAD
+=======
+            print(len(obstacles_dict))
+>>>>>>> 2132e35d53f9fc285b131e62baef352b5303726b
             obstacle_detector_prediction = self._generate_prediction(obstacles_dict)
             obstacle_detector_queue.append(obstacle_detector_prediction)                    
 
