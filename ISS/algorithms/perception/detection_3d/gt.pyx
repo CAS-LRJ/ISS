@@ -104,32 +104,27 @@ class Detection3DgtPred(Detection3DBase):
 
     def _detect(self, carla_world, vehicle_id=None):
         # return the close actors in the world
-        ego_position = carla_world.get_actors()[vehicle_id].get_location()
+        ego_transform = carla_world.get_actor(vehicle_id).get_transform()
         res = {}
-        for actor in carla_world.get_actors():
+        for actor in carla_world.get_actors().filter('vehicle.*'):
             if vehicle_id != None and vehicle_id == actor.id:
                 continue
-            if actor.get_location().distance(ego_position) > self.MAX_DISTANCE:
+            if actor.get_location().distance(ego_transform.location) > self.MAX_DISTANCE:
                 continue
             output = ObjectDetectionOutput()
             output._score = 1
-            # "static", "vehicle", "walker", "traffic"
-            if actor.type_id.startswith("vehicle"):
-                output._label = "vehicle"
-                output._bbox = actor.bounding_box
-            elif actor.type_id.startswith("walker"):
-                output._label = "walker"
-                output._bbox = actor.bounding_box
-            else:
-                #TODO: add more types
-                continue
+            output._label = "vehicle"
+            output._bbox = actor.bounding_box
             output._loc = actor.get_location()
             output._trans = actor.get_transform()
             output._vel = actor.get_velocity()
-            res[id] = output
-        return res    
+            res[actor.id] = output
+        init_ego_state = np.array([ego_transform.location.x, 
+                                   ego_transform.location.y,
+                                   np.deg2rad(ego_transform.rotation.yaw)])
+        return res, init_ego_state    
     
-    def _generate_prediction(self, obstacles_dict):
+    def _generate_prediction(self, obstacles_dict, init_ego_state):
         # forward simulate the obstacles assuming no control
         res = AllPredictionOutput()
         for id, detect_output in obstacles_dict.items():
@@ -140,6 +135,7 @@ class Detection3DgtPred(Detection3DBase):
                 veh_info = prediction_output.get_veh_info()
                 next_state = bicycle_model_step(prediction_output.get_last_state(), acc, steer, veh_info['wheelbase'], self.dt)
                 prediction_output.add_state(next_state)
+            # prediction_output.transform_state_to_ego_frame(init_ego_state)
             res.add_prediction(id, prediction_output)
         return res
 
@@ -148,12 +144,13 @@ class Detection3DgtPred(Detection3DBase):
         world = client.get_world()
         ## Refresh the vehicle objects..        
         while terminating_value.value:
-            obstacles_dict = self._detect(world, vehicle_id)
-<<<<<<< HEAD
-=======
-            print(len(obstacles_dict))
->>>>>>> 2132e35d53f9fc285b131e62baef352b5303726b
-            obstacle_detector_prediction = self._generate_prediction(obstacles_dict)
+            obstacles_dict, init_ego_state = self._detect(world, vehicle_id)
+            obstacle_detector_prediction = self._generate_prediction(obstacles_dict, init_ego_state)
+            # if len(obstacle_detector_prediction.predicted_trajectories) > 0:
+            #     print("Number of SV: ", len(obstacle_detector_prediction.predicted_trajectories))
+            #     for key, val in obstacle_detector_prediction.predicted_trajectories.items():
+            #         print("SV ID: ", key)
+            #         print("SV Trajectory: ", val.states_in_ego_frame[:2])
             obstacle_detector_queue.append(obstacle_detector_prediction)                    
 
     def run_proxies(self, data_proxies, ip, port, vehicle_id):

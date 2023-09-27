@@ -36,6 +36,14 @@ class VehiclePIDController:
         self.traj = None        
         self.goal = None
         self.waypoint_index = 0
+        
+        self.veh_info = { # Tesla Model 3
+            'length': 4.69,
+            'width': 2.0,
+            'wheelbase': 2.8,
+            'overhang_rear': 0.978,
+            'overhang_front': 0.874
+        }
 
     def reset(self):
         self.traj = None
@@ -90,14 +98,31 @@ class VehiclePIDController:
             self.waypoint_index += 1
 
         traj_point = self.traj.waypoints[self.waypoint_index]
+        next_traj_point = None
+        if (self.waypoint_index < len(self.traj.waypoints) - 1):
+            next_traj_point = self.traj.waypoints[self.waypoint_index + 1]
         prev_traj_point = self.traj.waypoints[self.waypoint_index-1]
         v_vec = (current_location[0] - traj_point[0], current_location[1] - traj_point[1])
         w_vec = (traj_point[0] - prev_traj_point[0], traj_point[1] - prev_traj_point[1])
         # print(np.linalg.norm(v_vec))
 
-        if np.sign(np.dot(v_vec, w_vec)) > 0. or (obstacle_detector != None and not obstacle_detector.check_point(traj_point) and not obstacle_detector.check_point(current_location, half=True)):
+        if next_traj_point != None:
+            if not obstacle_detector.check_point(next_traj_point, self.veh_info):   
+                print("WARNING: Controller hard brake!")
+                ## Obstacle Detected or Trajectory Finished, Stop the vehicle
+                control = VehicleControl()
+                control.steer = 0.0
+                control.brake = 1.0
+                return control
+
+        if np.sign(np.dot(v_vec, w_vec)) > 0. or (obstacle_detector != None and \
+            not obstacle_detector.check_point(traj_point, self.veh_info) and \
+            not obstacle_detector.check_point(current_location, self.veh_info)):
+            print("WARNING: Controller hard brake!")
             ## Obstacle Detected or Trajectory Finished, Stop the vehicle
             control = VehicleControl()
+            control.steer = 0.0
+            control.brake = 1.0
             self.traj = None
         else:
             if self.traj.speed is not None:
@@ -107,7 +132,7 @@ class VehiclePIDController:
                 target_speed = 10.0 / 3.6
             throttle = self._lon_controller.run_step(current_speed, target_speed)
             steering = self._lat_controller.run_step(current_location, traj_point)
-            control = VehicleControl(steering, throttle, 0.0, False, False)        
+            control = VehicleControl(steering, throttle, 0.0, False, False)
         return control
             
     def handle(self, terminating_value, traj_queue, location_queue, control_queue, obstacle_detector_queue):

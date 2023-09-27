@@ -399,8 +399,11 @@ class LatticePlanner(object):
         if self.best_path is not None:            
             for ind in range(len(self.best_path.x)):
                 waypoints.append([self.best_path.x[ind], self.best_path.y[ind], self.best_path.yaw[ind]])
+                # print("x: {}, y: {}, yaw: {}".format(self.best_path.x[ind], self.best_path.y[ind], self.best_path.yaw[ind]))
                 speeds.append(math.hypot(self.best_path.s_d[ind], self.best_path.d_d[ind]))        
-
+        else:
+            print("WARNING: Lattice planner no solution!!")
+        
         self.steps_run += 1            
         return Trajectory(waypoints, speeds)
     
