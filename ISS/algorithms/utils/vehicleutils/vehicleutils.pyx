@@ -70,6 +70,24 @@ cdef tuple bicycle_model_move(double x,
 
     return (x, y, yaw)
 
+def kinematic_bicycle_model(state, acc, steer, L):
+    d_state = np.zeros(4)
+    d_state[0] = state[3] * math.cos(state[2])
+    d_state[1] = state[3] * math.sin(state[2])
+    d_state[2] = state[3] * math.tan(steer) / L
+    d_state[3] = acc
+    return d_state
+
+def bicycle_model_step(state, acc, steer, L, dt):
+    # Runge-Kutta 4th Order
+    k1 = kinematic_bicycle_model(state, acc, steer, L)
+    k2 = kinematic_bicycle_model(state + k1 * 0.5 * dt, acc, steer, L)
+    k3 = kinematic_bicycle_model(state + k2 * 0.5 * dt, acc, steer, L)
+    k4 = kinematic_bicycle_model(state + k3 * dt, acc, steer, L)
+    state = state + (k1 + 2. * k2 + 2. * k3 + k4) * dt / 6.
+    return state
+
+
 ## 2D Collision Checker
 class CollisionChecker(object):
 
@@ -107,3 +125,56 @@ class CollisionChecker(object):
                 if collision_check(path[i][:2], potential_points, path[i][2], self.vehicle_length, self.vehicle_width) > 0:
                     return False
         return True
+
+
+# Collision check for two polygons
+def check_collision_polygons(P1, P2):
+    """
+    Check if two polygons overlap.
+    We follow https://hackmd.io/@US4ofdv7Sq2GRdxti381_A/ryFmIZrsl?type=view 
+    Args:
+        p1 (List): List of the vertices of a polygon
+        p2 (List): List of the vertices of a polygon
+    Returns:
+        bool: True if the two polygons overlap, False otherwise.
+    """
+
+    P1 = [np.array(v, "float64") for v in P1]
+    P2 = [np.array(v, "float64") for v in P2]
+
+    _, norms1 = find_edges_norms(P1)
+    _, norms2 = find_edges_norms(P2)
+    norms = norms1 + norms2
+    for n in norms:
+        if is_separating_axis(n, P1, P2):
+            return False
+    return True
+
+def is_separating_axis(n, P1, P2):
+    min1, max1 = float("+inf"), float("-inf")
+    min2, max2 = float("+inf"), float("-inf")
+    for v in P1:
+        proj = np.dot(v, n)
+        min1 = min(min1, proj)
+        max1 = max(max1, proj)
+    for v in P2:
+        proj = np.dot(v, n)
+        min2 = min(min2, proj)
+        max2 = max(max2, proj)
+
+    if max1 >= min2 and max2 >= min1:
+        return False
+
+    return True
+
+def find_edges_norms(P):
+    edges = []
+    norms = []
+    num_edge = len(P)
+    for i in range(num_edge):
+        edge = P[(i + 1) % num_edge] - P[i]
+        norm = np.array([-edge[1], edge[0]])
+        edges.append(edge)
+        norms.append(norm)
+    return edges, norms
+
