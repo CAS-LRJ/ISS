@@ -11,7 +11,7 @@ from ISS.algorithms.utils.dataexchange.sensor.lidar import LiDAROutput, LiDARSeg
 class CarlaLiDAR(CarlaSensor):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor):
         super().__init__(uid, name, base_save_dir, parent, carla_actor)
-        self.stype(SensorType.LIDAR)
+        self.set_stype(SensorType.LIDAR)
 
     def realtime_data(self, sensor_data) -> LiDAROutput:
         # Save as a Nx4 numpy array. Each row is a point (x, y, z, intensity)

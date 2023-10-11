@@ -22,9 +22,10 @@ class SensorType(Enum):
     SEMANTICLIDAR = 6
     RADAR = 7
     IMU = 8
-    VEHICLE = 9
-    INFRASTRUCTURE = 10
-    OTHERTYPE = 11
+    GNSS = 9
+    VEHICLE = 10
+    INFRASTRUCTURE = 11
+    OTHERTYPE = 12
 
 class Sensor:
         

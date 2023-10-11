@@ -10,6 +10,7 @@ extensions = [Extension('mathutils.angle', ["mathutils/angle.pyx"]),
               Extension('dataexchange.sensor.camera', ['dataexchange/sensor/camera.pyx']),
               Extension('dataexchange.sensor.lidar', ['dataexchange/sensor/lidar.pyx']),
               Extension('dataexchange.sensor.radar', ['dataexchange/sensor/radar.pyx']),
+              Extension('dataexchange.sensor.gnss', ['dataexchange/sensor/gnss.pyx']),
               Extension('sensorutils.transform', ['sensorutils/transform.pyx']),
               Extension('sensorutils.geometry_types', ['sensorutils/geometry_types.pyx']),
               Extension('sensorutils.label_types', ['sensorutils/label_types.pyx']),]
