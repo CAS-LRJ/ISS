@@ -1,0 +1,13 @@
+CLASS_NAMES: ['Car', 'Pedestrian', 'Cyclist']
+
+DATA_CONFIG: 
+    POINT_CLOUD_RANGE: [0.0, -39.68, -3, 69.12, 39.68, 1]
+    NUM_POINT_FEATURES: 4
+    DATA_PROCESSOR:
+        - NAME: transform_points_to_voxels
+          VOXEL_SIZE: [0.16, 0.16, 4]
+          MAX_POINTS_PER_VOXEL: 32
+          MAX_NUMBER_OF_VOXELS: {
+            'train': 16000,
+            'test': 8000
+          }

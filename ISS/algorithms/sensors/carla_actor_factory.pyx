@@ -124,7 +124,7 @@ class CarlaActorFactory(object):
                 root.add_child(node)
             if node is not None:
                 # If it has sensor setting, then create subtree
-                if actor_info["sensors_setting"] is not None:
+                if "sensors_setting" in actor_info and actor_info["sensors_setting"] is not None:
                     sensor_info_file = actor_info["sensors_setting"]
                     with open("{}/config/{}".format(ROOT_PATH, sensor_info_file)) as sensor_handle:
                         sensors_setting = json.loads(sensor_handle.read())
