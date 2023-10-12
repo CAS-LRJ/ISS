@@ -20,8 +20,8 @@ sys.path.append(ROOT_PATH)
 # from ISS.algorithms.utils.dataexchange.sensor.lidar import LiDAROutput
 # from ISS.algorithms.utils.dataexchange.perception.object_detection import ObjectDetectionOutput
 # from ISS.algorithms.utils.sensorutils.transform import Transform, Location, Rotation
-from ISS.algorithms.utils.sensorutils.transform import bbox_to_carla_bbox
-from ISS.algorithms.perception.detection_3d.gt import Detection3Dgt
+from ISS.algorithms.sensors.carla_gnss import CarlaGNSS
+from ISS.algorithms.utils.dataexchange.sensor.gnss import GNSSOutput
 
 RAW_DATA_PATH = "{}/resources/data/carla/{}".format(ROOT_PATH, 'raw_data')
 DATASET_PATH = "{}/resources/data/carla/{}".format(ROOT_PATH, 'dataset')
@@ -38,26 +38,15 @@ def main():
         # random spawn things
         blib = world.get_blueprint_library()
         spoints = world.get_map().get_spawn_points()
-        # spawn vehicle
-        for i in range(10):
-            vehicle = world.spawn_actor(blib.find("vehicle.tesla.model3"), spoints[i])
-            print(vehicle.bounding_box)
+        vehicle = world.spawn_actor(blib.find("vehicle.tesla.model3"), spoints[0])
+        gnss = world.spawn_actor(blib.find("sensor.other.gnss"), carla.Transform(), attach_to=vehicle)
 
         time.sleep(5)
 
-        det3d = Detection3Dgt()
-        res = det3d.detect(world)
-        print("RES:")
-        if res == []:
-            print("FUCK!")
-        else:
-            for object in res:
-                print(object._label)
-                print(object._bbox)
-                # draw bounding box
-                bbox = bbox_to_carla_bbox(object._bbox)
-                dh.draw_box(bbox, bbox.rotation)
-
+        # test data is correct
+        gnss_data = CarlaGNSS(carla_actor=gnss)
+        output = gnss_data.realtime_data()
+        print(output)
     
 
 if __name__ == "__main__":
