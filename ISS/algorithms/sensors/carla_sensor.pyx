@@ -21,11 +21,14 @@ class CarlaSensor(CarlaActor):
         self.sensor_type = copy.deepcopy(self.get_type_id())
         self.save_dir = base_save_dir + '/{}'.format(name)
         # Fix queue capacity to 2000, acting as fake circular queue
-        self.queue = Queue(2000)
+        # self.queue = Queue(2000)
+        self.data_cache = {
+            "data": None
+        }
         weak_self = weakref.ref(self)
         self.carla_actor.listen(lambda sensor_data: CarlaSensor.data_callback(weak_self,
                                                                          sensor_data,
-                                                                         self.queue))
+                                                                         self.data_cache))
 
         self.csv_fieldnames = ['frame',
                                'timestamp',
@@ -33,9 +36,13 @@ class CarlaSensor(CarlaActor):
                                'roll', 'pitch', 'yaw']
         self._first_frame = True
 
+    # @staticmethod
+    # def data_callback(weak_self, sensor_data, data_queue: Queue):
+    #     data_queue.put(sensor_data)
+
     @staticmethod
-    def data_callback(weak_self, sensor_data, data_queue: Queue):
-        data_queue.put(sensor_data)
+    def data_callback(weak_self, sensor_data, data_cache:dict):
+        data_cache["data"] = sensor_data
 
     def save_to_disk(self, frame_id, timestamp, debug=False):
         sensor_frame_id = 0
