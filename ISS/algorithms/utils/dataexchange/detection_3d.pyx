@@ -228,7 +228,7 @@ class Detection3DInput(object):
         self.points = points
 
     def from_carla_lidar(self, lidar:CarlaLiDAR):
-        sensor_data = lidar.queue.get(True, 1.0)
+        sensor_data = lidar.data_cache["data"]
         # print(sensor_data)
         if sensor_data is not None:
             lidar_output = lidar.realtime_data(sensor_data)
