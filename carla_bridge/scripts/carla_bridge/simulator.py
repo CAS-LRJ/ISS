@@ -7,6 +7,7 @@ import rospy
 from tqdm import tqdm
 
 from carla_agent.behavior_agent import BehaviorAgent
+from iss_msgs.msg import ControlCommand
 
 class Simulator:
     def __init__(self, world, traffic_manager):
@@ -43,17 +44,28 @@ class Simulator:
         if self.params["simple_agent_demo"]:
             self._agent = BehaviorAgent(self._vehicles["ego_vehicle"], behavior='normal')
             self._agent.set_destination(self._spawn_points[self.params["ego_destination"]].location)
+            self._agent_timer = rospy.Timer(rospy.Duration(1 / self.params["agent_control_frequency"]), self._agent_tick)
+        else:
+            self._agent_sub = rospy.Subscriber("carla_bridge/control_command", ControlCommand, self._agent_sub_callback)
         rospy.loginfo("Simulation started!")
         self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
         self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
         self._progress_bar = tqdm(total=self.params["simulation_duration"] + 0.1, unit="sec")
         self._step_cnt = 0
-        self._agent_timer = rospy.Timer(rospy.Duration(1 / self.params["agent_control_frequency"]), self._agent_tick)
         rospy.spin()
     
     def _agent_tick(self, event):
         self._control = self._agent.run_step()
-    
+
+    def _agent_sub_callback(self, msg):
+        self._control.steer = min(max(msg.steer, -1.0), 1.0)
+        if msg.throtto < 0:
+            self._control.throttle = 0
+            self._control.brake = min(-msg.throtto, 1.0) / 2
+        else:
+            self._control.throttle = min(msg.throtto, 1.0)
+            self._control.brake = 0
+        
     def _carla_tick(self, event):
         self._progress_bar.update(self.params["fixed_delta_seconds"])
         self._step_cnt += 1
@@ -62,7 +74,7 @@ class Simulator:
         self._world.tick()
         if self._step_cnt >= self._total_steps:
             self._carla_timer.shutdown()
-            self._agent_timer.shutdown()
+            self._agent_timer.shutdown() if self.params["simple_agent_demo"] else None
             self._progress_bar.close()
             self.destory()
             self._world.tick()
