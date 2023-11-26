@@ -1,36 +1,26 @@
 # ISS
+This repo provides ROS-noetic support for the ISS project. The ISS project works with CARLA 0.9.13.
 
 ## Install
-Anaconda can be used for installation. Run following command to create a virtual environment:
+- Install [ROS-noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) and [CARLA 0.9.13](https://carla.readthedocs.io/en/0.9.13/start_quickstart/).
+- Anaconda can be used for installation. Run following command to create a virtual environment:
 ```
 conda create --name iss python=3.8
 pip3 install -r requirements.txt
-```
-Then activate the virtual environment:
-```
 conda activate iss
 ```
-
-## Build
-
-Run following command to build the project:
-```bash
-python setup.py build_ext --inplace
+- Install this repo:
 ```
-We suggest using virtual environment under Windows system. Cython 3.0.0 is currently not supported, so please use Cython 0.29.xx instead. 0.29.{33, 36} are tested. For simulators' version control, we are currently using **CARLA 0.9.13** and **BeamNG 0.27.2.0**, therefore you should use **carla==0.9.13** and **beamngpy==1.25.1** in your virtual enviroment.
-
-**Cautious**: Microsoft Visual C++ 14.0 or greater is required. To compile this project locally, you should have *visual-cpp-build-tools* pre-installed.
-
+mkdir -p ~/catkin_ws/src && cd ~/catkin_ws/src
+git clone -b ros1-dev <this repo>
+cd .. && catkin_make
+```
 ## Run tasks
-
-### CARLA Data Collector
-Run following command to start CARLA 0.9.13 Server:
+- Run CARLA server:
 ```
-${CARLA_ROOT}/CarlaUE4.sh -prefernvidia
+cd <CARLA root>/CarlaUE4.sh
 ```
-
-Run following command to collect various kinds of sensor data from CARLA:
-```bash
-python run_carla.py
+- Run example:
 ```
-Make sure the CARLA 0.9.13 Server is opened before execution of `run_carla.py`. Data will be saved in `resources/data/carla`, which can be changed by modifying `{RAW_DATA, DATASET}_PATH`.
+roslaunch carla_bridge carla_bridge.launch
+``` 

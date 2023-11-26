@@ -1,0 +1,14 @@
+<launch>
+
+    <node pkg="carla_bridge" type="carla_bridge_node.py" name="carla_bridge_node" output="screen">
+        <param name="fixed_delta_seconds" value="0.05"/>
+        <param name="num_non_ego_vehicles" value="10"/>
+        <param name="graphic_rendering" value="true"/>
+        <param name="simulation_duration" value="10"/>
+        <param name="simple_agent_demo" value="true"/>
+        <param name="ego_init" value="1"/>
+        <param name="ego_destination" value="2"/>
+        <param name="agent_control_frequency" value="10"/>
+    </node>
+
+</launch>
