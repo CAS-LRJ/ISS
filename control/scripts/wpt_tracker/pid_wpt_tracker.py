@@ -134,52 +134,7 @@ class VehiclePIDController:
             steering = self._lat_controller.run_step(current_location, traj_point)
             control = VehicleControl(steering, throttle, 0.0, False, False)
         return control
-            
-    def handle(self, terminating_value, traj_queue, location_queue, control_queue, obstacle_detector_queue):
-        while terminating_value.value:
-            try:                
-                current_location = location_queue[-1]
-            except:
-                ## Pending Localization Module...
-                current_location = None
-
-            ## Refresh Traj if exists
-            try:                
-                # new_traj = traj_queue.pop()
-                new_traj = traj_queue[-1]
-                self.set_traj(new_traj)
-            except:
-                pass
-
-            ## 
-            try:
-                last_obstacle = obstacle_detector_queue[-1]                
-            except:
-                continue            
-
-            control = self.run_step(current_location, last_obstacle)
-            control_queue.append(control)
-
-            ## Setting Terminating Value if reached goal
-            if self.goal != None and current_location != None:
-                dis_vec = (current_location.x - self.goal[0], current_location.y - self.goal[1])
-                if np.linalg.norm(dis_vec) < 0.2:
-                    terminating_value.value = 0                    
-        ## Clear the control queue
-        control = VehicleControl()
-        control_queue.append(control)
-
-    def run_proxies(self, data_proxies):
-        ## Spawn Process Here and Return its process object..
-        stop_condition = data_proxies['terminating_value']
-        traj_queue = data_proxies['local_traj_queue']
-        location_queue = data_proxies['location_queue']
-        control_queue = data_proxies['control_queue']
-        obstacle_detector_queue = data_proxies['obstacle_detector_queue']
-        process = Process(target=self.handle, args=[stop_condition, traj_queue, location_queue, control_queue, obstacle_detector_queue])
-        process.daemon = True
-        process.start()
-        return process        
+        
 
 
 class PIDLongitudinalController:

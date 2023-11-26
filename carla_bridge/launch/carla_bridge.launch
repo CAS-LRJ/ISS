@@ -5,6 +5,8 @@
         <param name="num_non_ego_vehicles" value="10"/>
         <param name="graphic_rendering" value="true"/>
         <param name="simulation_duration" value="10"/>
+        <param name="gt_state_estimation_frequency" value="10"/>
+        <param name="gt_object_detection_frequency" value="10"/>
         <param name="simple_agent_demo" value="true"/>
         <param name="ego_init" value="1"/>
         <param name="ego_destination" value="2"/>
