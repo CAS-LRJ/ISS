@@ -25,3 +25,5 @@ class GTStateEstimator:
         state.velocity = np.hypot(vehicle_velocity.x, vehicle_velocity.y)
         state.acceleration = np.hypot(vehicle_acceleration.x, vehicle_acceleration.y)
         self._state_estimation_pub.publish(state)
+    
+    

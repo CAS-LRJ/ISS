@@ -5,5 +5,4 @@ float64 score
 
 State state
 
-# BoundingBox3D bbox
 

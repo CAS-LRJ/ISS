@@ -6,6 +6,7 @@ from scipy.spatial.transform import Rotation as R
 import rospy
 from tqdm import tqdm
 
+from carla_bridge.gt_object_detector import GTObjectDetector
 from carla_bridge.gt_state_estimator import GTStateEstimator
 from carla_agent.behavior_agent import BehaviorAgent
 from iss_msgs.msg import ControlCommand
@@ -47,6 +48,7 @@ class CARLABridgeNode:
             self._agent.set_destination(self._spawn_points[self.params["ego_destination"]].location)
             self._agent_timer = rospy.Timer(rospy.Duration(1 / self.params["agent_control_frequency"]), self._agent_tick)
         else:
+            self._gt_object_detector = GTObjectDetector(self._vehicles["ego_vehicle"].get_id(), self._world)
             self._gt_state_estimator = GTStateEstimator(self._vehicles["ego_vehicle"])
             self._agent_sub = rospy.Subscriber("carla_bridge/control_command", ControlCommand, self._agent_sub_callback)
         rospy.loginfo("Simulation started!")

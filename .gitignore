@@ -22,3 +22,4 @@ resources/data/carla
 test.sh
 nohup.out
 examples/test_data_structure.ipynb
+.vscode/

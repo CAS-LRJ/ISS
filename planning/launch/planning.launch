@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="planning" type="lattice_planner_node.py" name="lattice_planner" output="screen">
+        <param name="planning_frequency" value="10"/>
+    </node>
+
+</launch>

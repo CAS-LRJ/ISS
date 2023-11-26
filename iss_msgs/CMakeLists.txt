@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   sensor_msgs
   std_msgs
-  vision_msgs
+  
   message_generation
 )
 
@@ -80,7 +80,7 @@ generate_messages(
   nav_msgs
   sensor_msgs
   std_msgs
-  vision_msgs
+  
 )
 
 ################################################
@@ -115,7 +115,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES iss_msgs
- CATKIN_DEPENDS geometry_msgs nav_msgs sensor_msgs std_msgs vision_msgs message_runtime
+ CATKIN_DEPENDS geometry_msgs nav_msgs sensor_msgs std_msgs  message_runtime
 #  DEPENDS system_lib
 )
 

@@ -31,6 +31,8 @@ class GTObjectDetector:
             detection.state.velocity = np.hypot(actor.get_velocity().x, actor.get_velocity().y)
             detection.state.acceleration = np.hypot(actor.get_acceleration().x, actor.get_acceleration().y)
             # detection.bbox.size = 
+            all_detections.append(detection)
+        self._object_detection_pub(all_detections)
             
             
             
