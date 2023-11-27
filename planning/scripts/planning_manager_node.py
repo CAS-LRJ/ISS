@@ -14,11 +14,11 @@ from motion_predictor.constant_velocity_predictor import ConstVelPredictor
 from local_planner.lattice_planner import LatticePlanner
 
 from iss_msgs.msg import State, StateArray, ObjectDetection3DArray
-from iss_msgs.srv import SetGoal
+from iss_msgs.srv import SetGoal, SetGoalResponse
 
 class PlanningManagerNode:
     def __init__(self) -> None:
-        self._ego_state_sub = rospy.Subscriber("carla_bridge/gt_state", State._ego_state_callback)
+        self._ego_state_sub = rospy.Subscriber("carla_bridge/gt_state", State, self._ego_state_callback)
         self._obstacle_sub = rospy.Subscriber("carla_bridge/obstacles", ObjectDetection3DArray, self._obstacle_callback)
         self._ego_state = State()
         self._obstacles = {}
@@ -31,12 +31,22 @@ class PlanningManagerNode:
         traffic_rules = lanelet2.traffic_rules.create(lanelet2.traffic_rules.Locations.Germany,
                                                   lanelet2.traffic_rules.Participants.Vehicle)
         solid_checker = get_solid_checker(loadedMap)
-        self._global_planner = Lanelet2Planner(loadedMap, traffic_rules, solid_checker)
+        lanelet2_settings = dict()
+        lanelet2_settings['TURNING_RADIUS'] = 5
+        lanelet2_settings["GOAL_TORELANCE"] = 2
+        self._global_planner = Lanelet2Planner(loadedMap, traffic_rules, solid_checker, lanelet2_settings)
         
         # Motion predictor
         predictor_settings = dict()
         predictor_settings['dt'] = 0.5
         predictor_settings['MAX_T'] = 6.0
+        predictor_settings['ego_veh_info'] = { # Tesla Model 3
+            'length': 4.69,
+            'width': 2.0,
+            'wheelbase': 2.8,
+            'overhang_rear': 0.978,
+            'overhang_front': 0.874
+        }
         self._motion_predictor = ConstVelPredictor(predictor_settings)
         
         # Motion Planner
@@ -65,13 +75,14 @@ class PlanningManagerNode:
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
     
     def _set_goal_srv_callback(self, req):
-        start_point = (self._ego_state.pose.pose.position.x, self._ego_state.pose.pose.position.y, self._ego_state.yaw)
-        end_point = (req.goal.x, req.goal.y, req.goal.yaw)
+        start_point = (self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle)
+        end_point = (req.x, req.y, req.yaw)
         trajectory = self._global_planner.run_step(start_point, end_point)
+        trajectory.downsample(0.1)
         self._lattice_planner.update(trajectory.get_waypoints())
         local_planning_frequency = rospy.get_param("~local_planning_frequency", 10)
-        self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/local_planning_frequency), self._local_planning_timer_callback)
-        return True
+        # self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/local_planning_frequency), self._local_planning_timer_callback)
+        return SetGoalResponse(True)
     
     def _ego_state_callback(self, state_msg):
         self._ego_state = state_msg
@@ -81,7 +92,10 @@ class PlanningManagerNode:
 
     def _local_planning_timer_callback(self, event):
         trajectory = self._lattice_planner.run_step(self._ego_state, self._motion_predictor)
-        self._trajectory_pub.publish(trajectory)
+        self._trajectory_pub.publish(trajectory.to_ros_msg())
+        if self._global_planner.is_goal_reached():
+            self._lattice_planner_timer.shutdown()
+            rospy.loginfo("Goal reached!")
 
 if __name__ == "__main__":
     rospy.init_node("planning_manager_node", anonymous=True)

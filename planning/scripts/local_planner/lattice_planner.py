@@ -31,7 +31,7 @@ import numpy as np
 import math
 from scipy.spatial import KDTree
 from lanelet2.core import BasicPoint2d
-from iss_msgs.msg import State, StateArray, DetectionArray
+from iss_msgs.msg import State, StateArray
 
 ## To-DO: Use Mapping Object, Mapping should give the left and right waypoint.
 
@@ -64,6 +64,7 @@ class LatticePlanner(object):
         self.lanelet_map = lanelet_map
         self.traffic_rules = traffic_rules
         self.route_graph = lanelet2.routing.RoutingGraph(self.lanelet_map, self.traffic_rules)
+        self.road_detector = road_detector
 
         # Parameters
         for keys in settings:
@@ -71,27 +72,16 @@ class LatticePlanner(object):
         
         # Initialize
         self.waypoints_xy = None
-        self.steps_plan = 0
-        self.rx, self.ry, self.ryaw, self.rk, self.csp = self._generate_target_course()
-        point_xy = np.array([item for item in zip(self.rx, self.ry)])
-        self.ref_kdtree = KDTree(point_xy)
         self.state_frenet = None
         self.state_cartesian = None
         self.state_cartesian_prev = None
         self.best_path = None
-        self.road_detector = road_detector
-        
-
-        self.veh_info = { # Tesla Model 3
-            'length': 4.69,
-            'width': 2.0,
-            'wheelbase': 2.8,
-            'overhang_rear': 0.978,
-            'overhang_front': 0.874
-        }
     
     def update(self, waypoints):
         self.waypoints_xy = waypoints
+        self.rx, self.ry, self.ryaw, self.rk, self.csp = self._generate_target_course()
+        point_xy = np.array([item for item in zip(self.rx, self.ry)])
+        self.ref_kdtree = KDTree(point_xy)
     
     def _generate_target_course(self):
         x = [waypoint[0] for waypoint in self.waypoints_xy]
@@ -374,7 +364,7 @@ class LatticePlanner(object):
                 if not self.road_detector.check_path(frenet_path):
                     continue
                 if self.obstacle_detection != None:
-                    if self.obs_predictor.collision_check(frenet_path, self.veh_info):
+                    if self.obs_predictor.collision_check(frenet_path):
                         continue
             ok_ind.append(i)
 

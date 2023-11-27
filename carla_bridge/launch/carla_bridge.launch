@@ -1,5 +1,5 @@
 <launch>
-    <arg name="simple_agent_demo" default="true"/>
+    <arg name="simple_agent_demo" default="false"/>
 
     <node pkg="carla_bridge" type="carla_bridge_node.py" name="carla_bridge_node" output="screen">
         <param name="carla_host" value="localhost"/>

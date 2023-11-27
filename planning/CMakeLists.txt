@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -105,7 +105,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES planning
-#  CATKIN_DEPENDS iss_msgs roscpp rospy
+ CATKIN_DEPENDS iss_msgs roscpp rospy
 #  DEPENDS system_lib
 )
 
@@ -160,14 +160,21 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  # scripts/local_planner/__init__.py
-  # scripts/local_planner/lattice_planner_node.py
-  # scripts/local_planner/lattice_planner.py
-  # scripts/mathutils/__init__.py 
-  # scripts/mathutils/angle.py 
-  # scripts/mathutils/cubic_spline.py 
-  # scripts/mathutils/quartic_polynomial.py 
-  # scripts/mathutils/quintic_polynomial.py
+  scripts/global_planner/__init__.py
+  scripts/global_planner/lanelet2_planner.py
+  scripts/motion_predictor/__init__.py
+  scripts/motion_predictor/collision_check.py
+  scripts/motion_predictor/constant_velocity_predictor.py
+  scripts/local_planner/__init__.py
+  scripts/local_planner/lattice_planner.py
+  scripts/planning_utils/__init__.py 
+  scripts/planning_utils/angle.py 
+  scripts/planning_utils/cubic_spline.py 
+  scripts/planning_utils/lanelet2_utils.py
+  scripts/planning_utils/quartic_polynomial.py 
+  scripts/planning_utils/quintic_polynomial.py
+  scripts/planning_utils/trajectory.py
+  scripts/planning_manager_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

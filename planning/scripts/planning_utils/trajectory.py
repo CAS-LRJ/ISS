@@ -1,7 +1,11 @@
 import numpy as np
 
 class Trajectory:
-    def __init__(self, waypoints) -> None:
+    def __init__(self, bbox_size=None) -> None:
+        self.waypoints = None # list of [x, y, heading_angle]
+        self.states = None # list of [x, y, heading_angle, velocity]
+
+    def update_waypoints(self, waypoints):
         # list of (x, y, yaw)
         self.waypoints = waypoints
 
@@ -17,3 +21,11 @@ class Trajectory:
 
     def get_waypoints(self):
         return self.waypoints
+    
+    def collision_check_state(self, state, target_bbox_size):
+        return
+    
+    def collision_check_trajectory(self, trajectory, target_bbox_size):
+        return
+    
+        

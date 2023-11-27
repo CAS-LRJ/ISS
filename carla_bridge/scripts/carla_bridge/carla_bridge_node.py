@@ -51,6 +51,7 @@ class CARLABridgeNode:
             self._agent_timer = rospy.Timer(rospy.Duration(1 / self.params["agent_control_frequency"]), self._agent_tick)
         else:
             self._agent_sub = rospy.Subscriber("carla_bridge/control_command", ControlCommand, self._agent_sub_callback)
+            self._call_set_goal_srv(self._spawn_points[self.params["ego_destination"]])
         self._gt_object_detector = GTObjectDetector(self._vehicles["ego_vehicle"].id, self._world)
         self._gt_state_estimator = GTStateEstimator(self._vehicles["ego_vehicle"])
         rospy.loginfo("Simulation started!")
@@ -59,6 +60,16 @@ class CARLABridgeNode:
         self._progress_bar = tqdm(total=self.params["simulation_duration"] + 0.1, unit="sec")
         self._step_cnt = 0
         rospy.spin()
+    
+    def _call_set_goal_srv(self, goal):
+        rospy.wait_for_service('planning/set_goal')
+        try:
+            set_goal = rospy.ServiceProxy('planning/set_goal', SetGoal)
+            resp = set_goal(goal.location.x, -goal.location.y, -np.deg2rad(goal.rotation.yaw))
+            return resp.success
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)
+            return False
     
     def _agent_tick(self, event):
         self._control = self._agent.run_step()

@@ -40,15 +40,21 @@ class PlanningNode:
 
 class Lanelet2Planner(object):
 
-    def __init__(self, lanelet_map, traffic_rules, collision_detector) -> None:
+    def __init__(self, lanelet_map, traffic_rules, collision_detector, lanelet2_settings) -> None:
         self.lanelet_map = lanelet_map
         self.traffic_rules = traffic_rules
         self.collision_detector = collision_detector
         self.route_graph = lanelet2.routing.RoutingGraph(
             self.lanelet_map, self.traffic_rules)
         self.route = None
+        self.goal_pos = None
+        self.turning_radius = lanelet2_settings["TURNING_RADIUS"]
+        self.goal_torelance = lanelet2_settings["GOAL_TORELANCE"]
 
-    def explore(self, node, turning_radius):
+    def is_goal_reached(self, ego_state):
+        return np.linalg.norm([ego_state.x - self.goal_pos[0], ego_state.y - self.goal_pos[1]]) < self.goal_torelance
+
+    def explore(self, node,):
         current_lanelet = self.lanelet_map.laneletLayer[node.current_lanelet_id]
         lanechange_lanelets = []
         left_lanelet = self.route.leftRelation(current_lanelet)
@@ -85,7 +91,7 @@ class Lanelet2Planner(object):
                     np.array([tar_nextpoint.x - tar_point.x, (tar_nextpoint.y - tar_point.y)]))
 
                 dubins_path = dubins.shortest_path(
-                    (cur_point.x, cur_point.y, cur_rot), (tar_point.x, tar_point.y, tar_rot), turning_radius)
+                    (cur_point.x, cur_point.y, cur_rot), (tar_point.x, tar_point.y, tar_rot), self.turning_radius)
                 dubins_points, dubins_dis = dubins_path.sample_many(0.1)
                 if len(dubins_points) > 0 and np.linalg.norm([cur_point.x - tar_point.x, cur_point.y - tar_point.y]) * 1.5 > dubins_dis[-1]:
                     check_result = self.collision_detector.check_path(
@@ -129,7 +135,8 @@ class Lanelet2Planner(object):
                 results.append(newNode)
         return results
 
-    def plan(self, start_pos, goal_pos, turning_radius):
+    def run_step(self, start_pos, goal_pos):
+        self.goal_pos = goal_pos
         self.reach_map = dict()
         fromLanelet = lanelet2.geometry.findNearest(
             self.lanelet_map.laneletLayer, BasicPoint2d(start_pos[0], start_pos[1]), 1)[0][1]
@@ -155,7 +162,7 @@ class Lanelet2Planner(object):
             rot = calculate_rot_angle(np.array(
                 [fromLanelet_centerline[ind + 1].x - point.x, (fromLanelet_centerline[ind + 1].y - point.y)]))
             dubins_path = dubins.shortest_path(
-                start_pos, (point.x, point.y, rot), turning_radius)
+                start_pos, (point.x, point.y, rot), self.turning_radius)
             dubins_points, dubins_dis = dubins_path.sample_many(0.1)
             if len(dubins_points) > 0 and np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) * 1.5 > dubins_dis[-1]:
                 # check_result = check_path(solid_points, dubins_points, solid_kdtree, vehicle_length, vehicle_width)
@@ -192,7 +199,7 @@ class Lanelet2Planner(object):
                     rot = calculate_rot_angle(np.array(
                         [toLanelet_centerline[ind+1].x - point.x, (toLanelet_centerline[ind+1].y - point.y)]))
                     dubins_path = dubins.shortest_path(
-                        (point.x, point.y, rot), goal_pos, turning_radius)
+                        (point.x, point.y, rot), goal_pos, self.turning_radius)
                     dubins_points, dubins_dis = dubins_path.sample_many(0.1)
                     if len(dubins_points) > 0 and np.linalg.norm([goal_pos[0] - point.x, goal_pos[1] - point.y]) * 1.5 > dubins_dis[-1]:
                         check_result = self.collision_detector.check_path(
@@ -207,10 +214,11 @@ class Lanelet2Planner(object):
                             point_list = point_list + \
                                 list(dubins_points) + [goal_pos]
                             # Global path does not need any speed information
-                            traj = Trajectory(point_list)
+                            traj = Trajectory()
+                            traj.update_waypoints(point_list)
                             return traj
 
-            results = self.explore(currentNode, turning_radius)
+            results = self.explore(currentNode, self.turning_radius)
             for result_node in results:
                 self.reach_map[result_node.current_lanelet_id] = result_node.current_index
                 pqueue.put(result_node)
