@@ -53,18 +53,18 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   ControlCommand.msg
-  Detection.msg
-  DetectionArray.msg
+  BBox3D.msg
+  ObjectDetection3D.msg
+  ObjectDetection3DArray.msg
   State.msg
   StateArray.msg
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  SetGoal.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -80,7 +80,6 @@ generate_messages(
   nav_msgs
   sensor_msgs
   std_msgs
-  
 )
 
 ################################################

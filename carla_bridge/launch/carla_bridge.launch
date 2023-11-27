@@ -1,15 +1,19 @@
 <launch>
+    <arg name="simple_agent_demo" default="true"/>
 
     <node pkg="carla_bridge" type="carla_bridge_node.py" name="carla_bridge_node" output="screen">
+        <param name="carla_host" value="localhost"/>
+        <param name="carla_port" value="2000"/>
+        <param name="map_name" value="Town06"/>
         <param name="fixed_delta_seconds" value="0.05"/>
-        <param name="num_non_ego_vehicles" value="10"/>
         <param name="graphic_rendering" value="true"/>
-        <param name="simulation_duration" value="10"/>
+        <param name="num_non_ego_vehicles" value="10"/>
+        <param name="simulation_duration" value="30"/>
         <param name="gt_state_estimation_frequency" value="10"/>
         <param name="gt_object_detection_frequency" value="10"/>
-        <param name="simple_agent_demo" value="true"/>
+        <param name="simple_agent_demo" value="$(arg simple_agent_demo)"/>
         <param name="ego_init" value="1"/>
-        <param name="ego_destination" value="2"/>
+        <param name="ego_destination" value="10"/>
         <param name="agent_control_frequency" value="10"/>
     </node>
 

@@ -1,7 +1,7 @@
 # ISS
-This repo provides ROS-noetic support for the ISS project. The ISS project works with CARLA 0.9.13.
+This repo provides ROS-noetic support for the ISS project, compatible with CARLA 0.9.13. The development of this repository is ongoing.
 
-**Node**: In this repo, we follow the right-handed coordinate system, which is different from the left-handed coordinate system in CARLA. The conversion between these two coordinate systems is done in the `carla_bridge` node.
+**Note**: This repository utilizes **ROS's right-handed** coordinate system. This is distinct from **CARLA's left-handed** coordinate system. The ``carla_bridge`` node is responsible for handling the necessary conversions between these two coordinate systems.
 
 ## Install
 - Install [ROS-noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) and [CARLA 0.9.13](https://carla.readthedocs.io/en/0.9.13/start_quickstart/).
@@ -20,9 +20,9 @@ cd .. && catkin_make
 ## Run tasks
 - Run CARLA server:
 ```
-cd <CARLA root>/CarlaUE4.sh
+./<CARLA root>/CarlaUE4.sh -quality-level=Low
 ```
 - Run example:
 ```
-roslaunch carla_bridge carla_bridge.launch
+roslaunch carla_bridge carla_bridge.launch simple_agent_demo:=true
 ``` 

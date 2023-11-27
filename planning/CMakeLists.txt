@@ -160,14 +160,14 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  scripts/local_planner/__init__.py
-  scripts/local_planner/lattice_planner_node.py
-  scripts/local_planner/lattice_planner.py
-  scripts/mathutils/__init__.py 
-  scripts/mathutils/angle.py 
-  scripts/mathutils/cubic_spline.py 
-  scripts/mathutils/quartic_polynomial.py 
-  scripts/mathutils/quintic_polynomial.py
+  # scripts/local_planner/__init__.py
+  # scripts/local_planner/lattice_planner_node.py
+  # scripts/local_planner/lattice_planner.py
+  # scripts/mathutils/__init__.py 
+  # scripts/mathutils/angle.py 
+  # scripts/mathutils/cubic_spline.py 
+  # scripts/mathutils/quartic_polynomial.py 
+  # scripts/mathutils/quintic_polynomial.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

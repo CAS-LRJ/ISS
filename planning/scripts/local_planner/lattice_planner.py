@@ -22,17 +22,16 @@ Ref:
 ## To-DO: Cythonize
 ## To-DO Critical: Use Mapping objects to replace fixed lanelet setting
 import json
-from mathutils.cubic_spline import Spline2D
-from mathutils.angle import pi_2_pi, zero_2_2pi
-from mathutils.quartic_polynomial import QuarticPolynomial
-from mathutils.quintic_polynomial import QuinticPolynomial
+from planning_utils.cubic_spline import Spline2D
+from planning_utils.angle import pi_2_pi, zero_2_2pi
+from planning_utils.quartic_polynomial import QuarticPolynomial
+from planning_utils.quintic_polynomial import QuinticPolynomial
 import lanelet2
 import numpy as np
 import math
 from scipy.spatial import KDTree
 from lanelet2.core import BasicPoint2d
 from iss_msgs.msg import State, StateArray, DetectionArray
-
 
 ## To-DO: Use Mapping Object, Mapping should give the left and right waypoint.
 
@@ -60,7 +59,7 @@ class FrenetPath:
 
 class LatticePlanner(object):
 
-    def __init__(self, lanelet_map, traffic_rules, waypoints, settings, road_detector) -> None:
+    def __init__(self, lanelet_map, traffic_rules, settings, road_detector) -> None:
         # Map
         self.lanelet_map = lanelet_map
         self.traffic_rules = traffic_rules
@@ -71,8 +70,7 @@ class LatticePlanner(object):
             self.__dict__[keys] = settings[keys]        
         
         # Initialize
-        self.waypoints_xy = waypoints
-        self.steps_run = 0
+        self.waypoints_xy = None
         self.steps_plan = 0
         self.rx, self.ry, self.ryaw, self.rk, self.csp = self._generate_target_course()
         point_xy = np.array([item for item in zip(self.rx, self.ry)])
@@ -82,7 +80,7 @@ class LatticePlanner(object):
         self.state_cartesian_prev = None
         self.best_path = None
         self.road_detector = road_detector
-        self.obstacle_detection = None
+        
 
         self.veh_info = { # Tesla Model 3
             'length': 4.69,
@@ -91,6 +89,9 @@ class LatticePlanner(object):
             'overhang_rear': 0.978,
             'overhang_front': 0.874
         }
+    
+    def update(self, waypoints):
+        self.waypoints_xy = waypoints
     
     def _generate_target_course(self):
         x = [waypoint[0] for waypoint in self.waypoints_xy]
@@ -373,7 +374,7 @@ class LatticePlanner(object):
                 if not self.road_detector.check_path(frenet_path):
                     continue
                 if self.obstacle_detection != None:
-                    if self.check_path(frenet_path, self.veh_info):
+                    if self.obs_predictor.collision_check(frenet_path, self.veh_info):
                         continue
             ok_ind.append(i)
 
@@ -384,19 +385,16 @@ class LatticePlanner(object):
         #     print("ok number of all fplist: {}".format(len(ok_ind)))
         return [fplist[i] for i in ok_ind]
 
-    def check_path(self, path, veh_info):
-        return True
-
     def run_step(self, ego_state, obstacle_detections):
         # update cartesian coordinate (x, y, yaw, v, a)
         self.state_cartesian_prev = self.state_cartesian
         self.state_cartesian = (ego_state.x, ego_state.y, ego_state.yaw, ego_state.velocity, ego_state.acceleration)        
 
-        if self.steps_run % 1 == 0:
-            # get curr ego_vehicle's frenet coordinate
-            self._get_frenet_state()            
-            self.best_path = self.frenet_optimal_planning()
-            self.steps_plan += 1
+        self.obs_predictor.update(obstacle_detections)
+
+        # get curr ego_vehicle's frenet coordinate
+        self._get_frenet_state()            
+        self.best_path = self.frenet_optimal_planning()
 
         trajectory = StateArray()
         if self.best_path is not None:            
@@ -410,6 +408,5 @@ class LatticePlanner(object):
         else:
             print("WARNING: Lattice planner no solution!!")
         
-        self.steps_run += 1            
         return trajectory
 

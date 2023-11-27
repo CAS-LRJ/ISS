@@ -26,4 +26,6 @@ class GTStateEstimator:
         state.acceleration = np.hypot(vehicle_acceleration.x, vehicle_acceleration.y)
         self._state_estimation_pub.publish(state)
     
-    
+    def shutdown(self):
+        self._timer.shutdown()
+        self._state_estimation_pub.unregister()

@@ -10,6 +10,7 @@ from carla_bridge.gt_object_detector import GTObjectDetector
 from carla_bridge.gt_state_estimator import GTStateEstimator
 from carla_agent.behavior_agent import BehaviorAgent
 from iss_msgs.msg import ControlCommand
+from iss_msgs.srv import SetGoal
 
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
@@ -40,6 +41,7 @@ class CARLABridgeNode:
         self._vehicles = {}
         self._add_vehicles()
         self._world.tick()
+        self._set_spectator(self._vehicles["ego_vehicle"].get_transform())
         self._control = carla.VehicleControl()
 
     def run(self):
@@ -48,9 +50,9 @@ class CARLABridgeNode:
             self._agent.set_destination(self._spawn_points[self.params["ego_destination"]].location)
             self._agent_timer = rospy.Timer(rospy.Duration(1 / self.params["agent_control_frequency"]), self._agent_tick)
         else:
-            self._gt_object_detector = GTObjectDetector(self._vehicles["ego_vehicle"].get_id(), self._world)
-            self._gt_state_estimator = GTStateEstimator(self._vehicles["ego_vehicle"])
             self._agent_sub = rospy.Subscriber("carla_bridge/control_command", ControlCommand, self._agent_sub_callback)
+        self._gt_object_detector = GTObjectDetector(self._vehicles["ego_vehicle"].id, self._world)
+        self._gt_state_estimator = GTStateEstimator(self._vehicles["ego_vehicle"])
         rospy.loginfo("Simulation started!")
         self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
         self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
@@ -73,10 +75,12 @@ class CARLABridgeNode:
     def _carla_tick(self, event):
         self._progress_bar.update(self.params["fixed_delta_seconds"])
         self._step_cnt += 1
-        self._set_spectator(self._vehicles["ego_vehicle"].get_transform())
+        
         self._vehicles["ego_vehicle"].apply_control(self._control)
         self._world.tick()
         if self._step_cnt >= self._total_steps:
+            self._gt_object_detector.shutdown()
+            self._gt_state_estimator.shutdown()
             self._carla_timer.shutdown()
             self._agent_timer.shutdown() if self.params["simple_agent_demo"] else None
             self._progress_bar.close()
@@ -119,14 +123,19 @@ class CARLABridgeNode:
     
     def destory(self):
         # self._traffic_manager.set_synchronous_mode(False)
-        self._world.apply_settings(self._original_settings)
         for vehicle in self._vehicles.values():
             vehicle.destroy()
+        self._world.tick()
+        self._world.apply_settings(self._original_settings)
             
 
 if __name__ == "__main__":
     rospy.init_node("carla_bridge_node")
-    client = carla.Client('localhost', 2000)
+    carla_host = rospy.get_param('~carla_host', 'localhost')
+    carla_port = rospy.get_param('~carla_port', 2000)
+    client = carla.Client(carla_host, carla_port)
     client.set_timeout(5.0)
+    map_name = rospy.get_param('~map_name', 'Town06')
+    client.load_world(map_name)
     simulator = CARLABridgeNode(client.get_world(), client.get_trafficmanager())
     simulator.run()
