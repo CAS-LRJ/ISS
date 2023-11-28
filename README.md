@@ -5,18 +5,24 @@ This repo provides ROS-noetic support for the ISS project, compatible with CARLA
 
 ## Install
 - Install [ROS-noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) and [CARLA 0.9.13](https://carla.readthedocs.io/en/0.9.13/start_quickstart/).
-- Anaconda can be used for installation. Run following command to create a virtual environment:
-```
-conda create --name iss python=3.8
-pip3 install -r requirements.txt
-conda activate iss
-```
 - Install this repo:
 ```
 mkdir -p ~/catkin_ws/src && cd ~/catkin_ws/src
 git clone -b ros1-dev <this repo>
-cd .. && catkin_make
+cd <this repo>
 ```
+- Anaconda can be used for installation. Run following command to create a virtual environment:
+```
+conda create --name iss python=3.8
+conda activate iss
+pip3 install -r requirements.txt
+```
+- Build:
+```
+cd ~/catkin_ws/src && catkin_make
+source devel/setup.bash
+```
+
 ## Run tasks
 - Run CARLA server:
 ```
