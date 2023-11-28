@@ -20,8 +20,7 @@ class PlanningManagerNode:
     def __init__(self) -> None:
         self._ego_state_sub = rospy.Subscriber("carla_bridge/gt_state", State, self._ego_state_callback)
         self._obstacle_sub = rospy.Subscriber("carla_bridge/obstacles", ObjectDetection3DArray, self._obstacle_callback)
-        self._ego_state = State()
-        self._obstacles = {}
+        self._ego_state = None
         
         # Global planner 
         rospack = rospkg.RosPack()
@@ -71,16 +70,23 @@ class PlanningManagerNode:
         lattice_settings['K_LON'] = 0.8
         self._lattice_planner = LatticePlanner(loadedMap, traffic_rules, lattice_settings, solid_checker)
         
-        self._trajectory_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
+        self._global_planner_pub = rospy.Publisher("planning/lanelet2_planner/trajectory", StateArray, queue_size=1, latch=True)
+        self._local_planner_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
     
     def _set_goal_srv_callback(self, req):
+        while self._ego_state == None:
+            rospy.sleep(0.1)
         start_point = (self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle)
         end_point = (req.x, req.y, req.yaw)
         trajectory = self._global_planner.run_step(start_point, end_point)
-        trajectory.downsample(0.1)
+        if trajectory == None:
+            rospy.logerr("Global planning: Failed")
+            return SetGoalResponse(False)
+        rospy.loginfo("Global planning: Success")
+        self._global_planner_pub.publish(trajectory.to_ros_msg())
         self._lattice_planner.update(trajectory.get_waypoints())
-        local_planning_frequency = rospy.get_param("~local_planning_frequency", 10)
+        local_planning_frequency = rospy.get_param("~local_planning_frequency")
         # self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/local_planning_frequency), self._local_planning_timer_callback)
         return SetGoalResponse(True)
     

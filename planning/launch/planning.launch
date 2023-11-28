@@ -1,6 +1,8 @@
 <launch>
 
     <node pkg="planning" type="planning_manager_node.py" name="planning_manager_node" output="screen">
+        <remap from="planning/lanelet2_planner/trajectory" to="planning/global_planner/trajectory"/>
+        <remap from="planning/lattice_planner/trajectory" to="planning/local_planner/trajectory"/>
         <param name="local_planning_frequency" value="10"/>
     </node>
 

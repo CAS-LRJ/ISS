@@ -54,7 +54,7 @@ class Lanelet2Planner(object):
     def is_goal_reached(self, ego_state):
         return np.linalg.norm([ego_state.x - self.goal_pos[0], ego_state.y - self.goal_pos[1]]) < self.goal_torelance
 
-    def explore(self, node,):
+    def explore(self, node):
         current_lanelet = self.lanelet_map.laneletLayer[node.current_lanelet_id]
         lanechange_lanelets = []
         left_lanelet = self.route.leftRelation(current_lanelet)
@@ -173,11 +173,10 @@ class Lanelet2Planner(object):
                         [start_pos] + list(dubins_points), fromLanelet.id, ind, 0, dubins_dis[-1])
                     if cloesetNode == None or cloesetNode > newNode:
                         cloesetNode = newNode
-
+        assert cloesetNode != None
         pqueue = PriorityQueue()
         pqueue.put(cloesetNode)
         self.reach_map[cloesetNode.current_lanelet_id] = cloesetNode.current_index
-
         while not pqueue.empty():
             currentNode = pqueue.get()
             # print(currentNode.current_lanelet_id)
@@ -192,12 +191,12 @@ class Lanelet2Planner(object):
                 #     if min_dis == None or dis < min_dis:
                 #         start_ind = ind
                 #         min_dis = dis
-
                 for ind in range(start_ind, len(toLanelet_centerline)-1):
                     point = toLanelet_centerline[ind]
                     # print(point.x, point.y)
                     rot = calculate_rot_angle(np.array(
                         [toLanelet_centerline[ind+1].x - point.x, (toLanelet_centerline[ind+1].y - point.y)]))
+                    
                     dubins_path = dubins.shortest_path(
                         (point.x, point.y, rot), goal_pos, self.turning_radius)
                     dubins_points, dubins_dis = dubins_path.sample_many(0.1)
@@ -218,9 +217,10 @@ class Lanelet2Planner(object):
                             traj.update_waypoints(point_list)
                             return traj
 
-            results = self.explore(currentNode, self.turning_radius)
+            results = self.explore(currentNode)
             for result_node in results:
                 self.reach_map[result_node.current_lanelet_id] = result_node.current_index
                 pqueue.put(result_node)
 
         return None
+

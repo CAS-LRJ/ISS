@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 from carla_bridge.gt_object_detector import GTObjectDetector
 from carla_bridge.gt_state_estimator import GTStateEstimator
+from carla_bridge.carla_visualizer import CARLAVisualizer
 from carla_agent.behavior_agent import BehaviorAgent
 from iss_msgs.msg import ControlCommand
 from iss_msgs.srv import SetGoal
@@ -15,14 +16,14 @@ from iss_msgs.srv import SetGoal
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
         self.params =  {
-            "fixed_delta_seconds": rospy.get_param('~fixed_delta_seconds', 0.05),
-            "num_non_ego_vehicles": rospy.get_param('~num_non_ego_vehicles', 10),
-            "graphic_rendering": rospy.get_param('~graphic_rendering', True),
-            "simulation_duration": rospy.get_param('~simulation_duration', 10),
-            "simple_agent_demo": rospy.get_param('~simple_agent_demo', True),
-            "ego_init": rospy.get_param('~ego_init', 1),
-            "ego_destination": rospy.get_param('~ego_destination', 2),
-            "agent_control_frequency": rospy.get_param('~agent_control_frequency', 10),
+            "fixed_delta_seconds": rospy.get_param('~fixed_delta_seconds'),
+            "num_non_ego_vehicles": rospy.get_param('~num_non_ego_vehicles'),
+            "graphic_rendering": rospy.get_param('~graphic_rendering'),
+            "simulation_duration": rospy.get_param('~simulation_duration'),
+            "simple_agent_demo": rospy.get_param('~simple_agent_demo'),
+            "ego_init": rospy.get_param('~ego_init'),
+            "ego_destination": rospy.get_param('~ego_destination'),
+            "agent_control_frequency": rospy.get_param('~agent_control_frequency'),
         }
         self._world = world
         self._original_settings = self._world.get_settings()
@@ -45,20 +46,22 @@ class CARLABridgeNode:
         self._control = carla.VehicleControl()
 
     def run(self):
-        if self.params["simple_agent_demo"]:
-            self._agent = BehaviorAgent(self._vehicles["ego_vehicle"], behavior='normal')
-            self._agent.set_destination(self._spawn_points[self.params["ego_destination"]].location)
-            self._agent_timer = rospy.Timer(rospy.Duration(1 / self.params["agent_control_frequency"]), self._agent_tick)
-        else:
-            self._agent_sub = rospy.Subscriber("carla_bridge/control_command", ControlCommand, self._agent_sub_callback)
-            self._call_set_goal_srv(self._spawn_points[self.params["ego_destination"]])
         self._gt_object_detector = GTObjectDetector(self._vehicles["ego_vehicle"].id, self._world)
         self._gt_state_estimator = GTStateEstimator(self._vehicles["ego_vehicle"])
-        rospy.loginfo("Simulation started!")
         self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
         self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
         self._progress_bar = tqdm(total=self.params["simulation_duration"] + 0.1, unit="sec")
         self._step_cnt = 0
+
+        if self.params["simple_agent_demo"]:
+            self._simple_agent = BehaviorAgent(self._vehicles["ego_vehicle"], behavior='normal')
+            self._simple_agent.set_destination(self._spawn_points[self.params["ego_destination"]].location)
+            self._simple_agent_timer = rospy.Timer(rospy.Duration(1 / self.params["agent_control_frequency"]), self._simple_agent_tick)
+        else:
+            self._carla_visualizer = CARLAVisualizer(self._world)
+            self._agent_sub = rospy.Subscriber("carla_bridge/control_command", ControlCommand, self._agent_sub_callback)
+            self._call_set_goal_srv(self._spawn_points[self.params["ego_destination"]])
+        rospy.loginfo("Ego vehicle started!")
         rospy.spin()
     
     def _call_set_goal_srv(self, goal):
@@ -71,8 +74,8 @@ class CARLABridgeNode:
             print("Service call failed: %s"%e)
             return False
     
-    def _agent_tick(self, event):
-        self._control = self._agent.run_step()
+    def _simple_agent_tick(self, event):
+        self._control = self._simple_agent.run_step()
 
     def _agent_sub_callback(self, msg):
         self._control.steer = min(max(msg.steer, -1.0), 1.0)
