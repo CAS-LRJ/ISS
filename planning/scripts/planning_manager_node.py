@@ -79,15 +79,15 @@ class PlanningManagerNode:
             rospy.sleep(0.1)
         start_point = (self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle)
         end_point = (req.x, req.y, req.yaw)
-        trajectory = self._global_planner.run_step(start_point, end_point)
-        if trajectory == None:
+        global_traj = self._global_planner.run_step(start_point, end_point)
+        if global_traj == None:
             rospy.logerr("Global planning: Failed")
             return SetGoalResponse(False)
         rospy.loginfo("Global planning: Success")
-        self._global_planner_pub.publish(trajectory.to_ros_msg())
-        self._lattice_planner.update(trajectory.get_waypoints())
+        self._global_planner_pub.publish(global_traj.to_ros_msg())
+        self._lattice_planner.update(global_traj.get_waypoints())
         local_planning_frequency = rospy.get_param("~local_planning_frequency")
-        # self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/local_planning_frequency), self._local_planning_timer_callback)
+        self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/local_planning_frequency), self._local_planning_timer_callback)
         return SetGoalResponse(True)
     
     def _ego_state_callback(self, state_msg):
@@ -97,9 +97,12 @@ class PlanningManagerNode:
         self._motion_predictor.update(obstacle_msg)    
 
     def _local_planning_timer_callback(self, event):
-        trajectory = self._lattice_planner.run_step(self._ego_state, self._motion_predictor)
-        self._trajectory_pub.publish(trajectory.to_ros_msg())
-        if self._global_planner.is_goal_reached():
+        local_traj = self._lattice_planner.run_step(self._ego_state, self._motion_predictor)
+        if local_traj.is_empty():
+            rospy.logwarn("Local planning: Failed")
+            return
+        self._local_planner_pub.publish(local_traj.to_ros_msg())
+        if self._global_planner.is_goal_reached(self._ego_state):
             self._lattice_planner_timer.shutdown()
             rospy.loginfo("Goal reached!")
 

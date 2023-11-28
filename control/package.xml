@@ -58,6 +58,9 @@
   <exec_depend>iss_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
+  <build_depend>planning</build_depend>
+  <build_export_depend>planning</build_export_depend>
+  <exec_depend>planning</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

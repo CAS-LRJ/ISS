@@ -1,12 +1,13 @@
 import math
 import numpy as np
 from collections import deque
-from multiprocessing import Process
-from ISS.algorithms.utils.dataexchange.control.vehiclecontrol import VehicleControl
+import threading
+from planning_utils.trajectory import Trajectory
+
+mutex = threading.Lock()
 
 def euclidean_distance(v1, v2):
     return math.sqrt(sum([(a - b) ** 2 for a, b in zip(v1, v2)]))
-
 
 class VehiclePIDController:
     """
@@ -27,13 +28,13 @@ class VehiclePIDController:
                              K_I -- Integral term
         """
         if not args_lateral:            
-            args_lateral = {'K_P': 1., 'K_I': 0., 'K_D': 0.}
+            args_lateral = {'K_P': 1, 'K_I': 0., 'K_D': 0.}
         if not args_longitudinal:            
             args_longitudinal = {'K_P': 1., 'K_I': 0., 'K_D': 0.}
 
         self._lon_controller = PIDLongitudinalController(**args_longitudinal)
         self._lat_controller = PIDLateralController(**args_lateral)        
-        self.traj = None        
+        self.traj = []
         self.goal = None
         self.waypoint_index = 0
         
@@ -51,16 +52,13 @@ class VehiclePIDController:
         self._lon_controller.reset()
         self._lat_controller.reset()    
     
-    def set_goal(self, goal):
-        self.goal = goal
-    
     def set_traj(self, traj):
         self.traj = traj
         self.waypoint_index = 0
         self._lon_controller.reset()
         self._lat_controller.reset()
 
-    def run_step(self, vehicle_location, obstacle_detector=None):
+    def run_step(self, vehicle_location):
         """
         Execute one step of control invoking both lateral and longitudinal PID controllers to reach a target waypoint
         at a given target_speed.
@@ -69,20 +67,20 @@ class VehiclePIDController:
         :param waypoint: target location encoded as a waypoint
         :return: distance (in meters) to the waypoint
         """        
+        if len(self.traj) == 0:
+            return 0.0, 0.0
+        
         ## Braking if no traj or location was given
-        if self.traj == None or vehicle_location == None:            
-            return VehicleControl()        
-        current_location = (vehicle_location.x, vehicle_location.y, vehicle_location.yaw)
+        current_location = (vehicle_location.x, vehicle_location.y, vehicle_location.heading_angle)
         current_speed = vehicle_location.velocity
-        ## Braking if goal is reached
-        if self.goal != None:
-            dis_vec = (current_location[0] - self.goal[0], current_location[1] - self.goal[1])
-            if np.linalg.norm(dis_vec) < 0.2:
-                return VehicleControl()
+        
+        print("***")
+        print(len(self.traj))
+        print(self.waypoint_index)
         ## Skip waypoints behind the vehicle        
-        while self.waypoint_index < len(self.traj.waypoints) - 1:
-            traj_point = self.traj.waypoints[self.waypoint_index]
-            next_traj_point = self.traj.waypoints[self.waypoint_index + 1]
+        while self.waypoint_index < len(self.traj) - 1:
+            traj_point = self.traj[self.waypoint_index]
+            next_traj_point = self.traj[self.waypoint_index + 1]
             v_vec = (current_location[0] - traj_point[0], current_location[1] - traj_point[1])
             w_vec = (next_traj_point[0] - traj_point[0], next_traj_point[1] - traj_point[1])
             if np.sign(np.dot(v_vec, w_vec)) < 0.:
@@ -90,50 +88,35 @@ class VehiclePIDController:
             self.waypoint_index += 1
 
         ## Waypoint should have a distance from current location
-        while self.waypoint_index < len(self.traj.waypoints) - 1:
-            traj_point = self.traj.waypoints[self.waypoint_index]
+        while self.waypoint_index < len(self.traj) - 1:
+            traj_point = self.traj[self.waypoint_index]
             v_vec = (current_location[0] - traj_point[0], current_location[1] - traj_point[1])
             if np.linalg.norm(v_vec) > 4.:
                 break
             self.waypoint_index += 1
-
-        traj_point = self.traj.waypoints[self.waypoint_index]
+        
+        print(self.waypoint_index)
+        traj_point = self.traj[self.waypoint_index]
+        
         next_traj_point = None
-        if (self.waypoint_index < len(self.traj.waypoints) - 1):
-            next_traj_point = self.traj.waypoints[self.waypoint_index + 1]
-        prev_traj_point = self.traj.waypoints[self.waypoint_index-1]
+        if (self.waypoint_index < len(self.traj) - 1):
+            next_traj_point = self.traj[self.waypoint_index + 1]
+        prev_traj_point = self.traj[self.waypoint_index-1]
         v_vec = (current_location[0] - traj_point[0], current_location[1] - traj_point[1])
         w_vec = (traj_point[0] - prev_traj_point[0], traj_point[1] - prev_traj_point[1])
         # print(np.linalg.norm(v_vec))
 
-        if next_traj_point != None:
-            if not obstacle_detector.check_point(next_traj_point, self.veh_info):   
-                print("WARNING: Controller hard brake!")
-                ## Obstacle Detected or Trajectory Finished, Stop the vehicle
-                control = VehicleControl()
-                control.steer = 0.0
-                control.brake = 1.0
-                return control
 
-        if np.sign(np.dot(v_vec, w_vec)) > 0. or (obstacle_detector != None and \
-            not obstacle_detector.check_point(traj_point, self.veh_info) and \
-            not obstacle_detector.check_point(current_location, self.veh_info)):
-            print("WARNING: Controller hard brake!")
-            ## Obstacle Detected or Trajectory Finished, Stop the vehicle
-            control = VehicleControl()
-            control.steer = 0.0
-            control.brake = 1.0
-            self.traj = None
-        else:
-            if self.traj.speed is not None:
-                target_speed = self.traj.speed[self.waypoint_index]
-            else:
-                ## If no speed given, set defualt speed to 10km/h
-                target_speed = 10.0 / 3.6
-            throttle = self._lon_controller.run_step(current_speed, target_speed)
-            steering = self._lat_controller.run_step(current_location, traj_point)
-            control = VehicleControl(steering, throttle, 0.0, False, False)
-        return control
+        target_speed = self.traj[self.waypoint_index][3]
+        
+        print("---")
+        print(current_location)
+        print(target_speed)
+        print(traj_point)
+        
+        throttle = self._lon_controller.run_step(current_speed, target_speed)
+        steering =  - self._lat_controller.run_step(current_location, traj_point)
+        return throttle, steering
         
 
 
@@ -226,10 +209,10 @@ class PIDLateralController:
 
         :param waypoint: target waypoint
         :return: steering control in the range [-1, 1] where:
-            -1 represent maximum steering to left
-            +1 maximum steering to right
+            +1 maximum steering to left
+            -1 represent maximum steering to right
         """
-        return self._pid_control(vehicle_location, waypoint)
+        return -self._pid_control(vehicle_location, waypoint)
 
     def _pid_control(self, vehicle_location, waypoint):
         """

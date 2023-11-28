@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import carla
 import random
 import numpy as np
@@ -59,9 +61,9 @@ class CARLABridgeNode:
             self._simple_agent_timer = rospy.Timer(rospy.Duration(1 / self.params["agent_control_frequency"]), self._simple_agent_tick)
         else:
             self._carla_visualizer = CARLAVisualizer(self._world)
-            self._agent_sub = rospy.Subscriber("carla_bridge/control_command", ControlCommand, self._agent_sub_callback)
+            self._agent_sub = rospy.Subscriber("control/control_command", ControlCommand, self._agent_sub_callback)
             self._call_set_goal_srv(self._spawn_points[self.params["ego_destination"]])
-        rospy.loginfo("Ego vehicle started!")
+        # rospy.loginfo("Ego vehicle started!")
         rospy.spin()
     
     def _call_set_goal_srv(self, goal):
@@ -78,12 +80,12 @@ class CARLABridgeNode:
         self._control = self._simple_agent.run_step()
 
     def _agent_sub_callback(self, msg):
-        self._control.steer = min(max(msg.steer, -1.0), 1.0)
-        if msg.throtto < 0:
+        self._control.steer = min(max(-msg.steering, -1.0), 1.0)
+        if msg.throttle < 0:
             self._control.throttle = 0
-            self._control.brake = min(-msg.throtto, 1.0) / 2
+            self._control.brake = min(-msg.throttle, 1.0) / 2
         else:
-            self._control.throttle = min(msg.throtto, 1.0)
+            self._control.throttle = min(msg.throttle, 1.0)
             self._control.brake = 0
         
     def _carla_tick(self, event):

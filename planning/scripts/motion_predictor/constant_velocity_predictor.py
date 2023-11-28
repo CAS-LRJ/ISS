@@ -23,11 +23,15 @@ class ConstVelPredictor:
         self._dt = predictor_settings['dt']
         self._horizon = predictor_settings['MAX_T']
         self._ego_veh_info = predictor_settings['ego_veh_info']
+        self._obstacle_detections = None
 
     def update(self, obstacle_detections):
         self._obstacle_detections = obstacle_detections
 
     def collision_check(self, path):
+        if self._obstacle_detections is None:
+            return False
+        return False
         all_pred_trajs = []
         for obstacle in self._obstacle_detections:
             L = obstacle.bbox.size.x

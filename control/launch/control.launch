@@ -2,7 +2,7 @@
 
     <node pkg="control" type="wpt_tracker_node.py" name="control_node" output="screen">
         <param name="control_frequency" value="10"/>
-        <remap from="wpt_tracker/control_command" to="carla_bridge/control_command"/>
+        <remap from="control/wpt_tracker/control_command" to="control/control_command"/>
     </node>
 
 </launch>
