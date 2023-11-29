@@ -18,6 +18,10 @@ conda create --name iss python=3.8
 conda activate iss
 pip3 install -r requirements.txt
 ```
+- Install other dependencies
+```
+sudo apt-get install ros-noetic-teleop-twist-keyboard
+```
 - Build:
 ```
 cd ~/catkin_ws/src && catkin_make

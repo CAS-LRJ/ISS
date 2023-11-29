@@ -11,9 +11,9 @@ from tqdm import tqdm
 from carla_bridge.gt_object_detector import GTObjectDetector
 from carla_bridge.gt_state_estimator import GTStateEstimator
 from carla_bridge.carla_visualizer import CARLAVisualizer
-from carla_agent.behavior_agent import BehaviorAgent
+from carla_bridge.controller_bridge import ControllerBridge
+
 from iss_msgs.msg import ControlCommand
-from iss_msgs.srv import SetGoal
 
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
@@ -45,54 +45,29 @@ class CARLABridgeNode:
         self._add_vehicles()
         self._world.tick()
         self._set_spectator(self._vehicles["ego_vehicle"].get_transform())
-        self._control = carla.VehicleControl()
 
     def run(self):
         self._gt_object_detector = GTObjectDetector(self._vehicles["ego_vehicle"].id, self._world)
         self._gt_state_estimator = GTStateEstimator(self._vehicles["ego_vehicle"])
+        self._controller_bridge = ControllerBridge(self._vehicles["ego_vehicle"])
         self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
         self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
         self._progress_bar = tqdm(total=self.params["simulation_duration"] + 0.1, unit="sec")
         self._step_cnt = 0
 
         if self.params["simple_agent_demo"]:
-            self._simple_agent = BehaviorAgent(self._vehicles["ego_vehicle"], behavior='normal')
-            self._simple_agent.set_destination(self._spawn_points[self.params["ego_destination"]].location)
-            self._simple_agent_timer = rospy.Timer(rospy.Duration(1 / self.params["agent_control_frequency"]), self._simple_agent_tick)
+            self._controller_bridge.start_simple_agent(self._spawn_points[self.params["ego_destination"]], self.params["agent_control_frequency"])
         else:
+            self._controller_bridge.start_iss_agent(self._spawn_points[self.params["ego_destination"]])
             self._carla_visualizer = CARLAVisualizer(self._world)
-            self._agent_sub = rospy.Subscriber("control/control_command", ControlCommand, self._agent_sub_callback)
-            self._call_set_goal_srv(self._spawn_points[self.params["ego_destination"]])
-        # rospy.loginfo("Ego vehicle started!")
         rospy.spin()
     
-    def _call_set_goal_srv(self, goal):
-        rospy.wait_for_service('planning/set_goal')
-        try:
-            set_goal = rospy.ServiceProxy('planning/set_goal', SetGoal)
-            resp = set_goal(goal.location.x, -goal.location.y, -np.deg2rad(goal.rotation.yaw))
-            return resp.success
-        except rospy.ServiceException as e:
-            print("Service call failed: %s"%e)
-            return False
-    
-    def _simple_agent_tick(self, event):
-        self._control = self._simple_agent.run_step()
-
-    def _agent_sub_callback(self, msg):
-        self._control.steer = min(max(-msg.steering, -1.0), 1.0)
-        if msg.throttle < 0:
-            self._control.throttle = 0
-            self._control.brake = min(-msg.throttle, 1.0) / 2
-        else:
-            self._control.throttle = min(msg.throttle, 1.0)
-            self._control.brake = 0
         
     def _carla_tick(self, event):
         self._progress_bar.update(self.params["fixed_delta_seconds"])
         self._step_cnt += 1
         
-        self._vehicles["ego_vehicle"].apply_control(self._control)
+        self._controller_bridge.apply_control()
         self._world.tick()
         if self._step_cnt >= self._total_steps:
             self._gt_object_detector.shutdown()

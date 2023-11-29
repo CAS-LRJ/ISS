@@ -8,6 +8,7 @@ opencv-python==4.8.0.76
 scikit-learn==1.3.0
 matplotlib==3.5.3
 pandas==2.0.3
+cvxpy
 ipykernel
 ipywidgets
 transforms3d
