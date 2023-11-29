@@ -143,7 +143,7 @@ class LatticePlanner(object):
                 right_lane.centerline[0].x - current_lane.centerline[0].x, right_lane.centerline[0].y - current_lane.centerline[0].y)
 
         # set d_r>0 and d_l< 0.
-        d_r, d_l = abs(d_r), -abs(d_l)
+        d_r, d_l = 2 * abs(d_r), -2 * abs(d_l)
         width_range = np.arange(d_l, d_r+0.01, self.D_S)
 
         for Ti in np.arange(self.MIN_T, self.MAX_T + self.DT, self.DT):
@@ -180,6 +180,7 @@ class LatticePlanner(object):
                 # square of diff from target speed
                 ds = (self.TARGET_SPEED - fp.s_d[-1]) ** 2
 
+                # cost
                 fp.cd = self.K_J * Jp + self.K_T * \
                     Ti + self.K_D * fp.d[-1] ** 2
                 # fp.cd = self.K_J * Jp + self.K_T * Ti + self.K_D * np.mean(np.array(fp.d) ** 2)
@@ -191,8 +192,8 @@ class LatticePlanner(object):
                 frenet_paths.append(fp)
 
         # print("ego vehicle location : {}".format(self.ego_vehicle.get_location()))
-        # if len(frenet_paths) < 1:
-        #     print("Waring! There is no frenet_paths.")
+        if len(frenet_paths) < 1:
+            print("Waring! There is no frenet_paths.")
 
         return frenet_paths
 
@@ -355,7 +356,6 @@ class LatticePlanner(object):
             if min_cost >= fp.cf:
                 min_cost = fp.cf
                 best_path = fp
-
         return best_path
 
     def _check_paths(self, fplist, motion_predictor):
@@ -371,18 +371,11 @@ class LatticePlanner(object):
             else:
                 frenet_path = [(x, y, yaw) for x, y, yaw in zip(
                     fplist[i].x, fplist[i].y, fplist[i].yaw)]
-                # TODO: check path
                 # if not self.road_detector.check_path(frenet_path):
                 #     continue 
                 if motion_predictor.collision_check(frenet_path):
                     continue
             ok_ind.append(i)
-
-        # print("number of all fplist: {}".format(len(fplist)))
-        # if len(fplist) < 1:
-        #     print("Warning! There is no fplist.")
-        # if len(ok_ind) < 1:
-        #     print("ok number of all fplist: {}".format(len(ok_ind)))
         return [fplist[i] for i in ok_ind]
 
     def run_step(self, ego_state, motion_predictor):
@@ -393,8 +386,9 @@ class LatticePlanner(object):
 
         # get curr ego_vehicle's frenet coordinate
         self._get_frenet_state()
+        print("s: %.2f d: %.2f" % (self.state_frenet[0], self.state_frenet[3]))
         self.best_path = self.frenet_optimal_planning(motion_predictor)
-
+        
         trajectory = Trajectory()
         states_list = []
         if self.best_path is not None:

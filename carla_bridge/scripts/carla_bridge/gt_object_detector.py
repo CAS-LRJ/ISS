@@ -14,7 +14,7 @@ class GTObjectDetector:
         gt_object_detection_frequency = rospy.get_param('~gt_object_detection_frequency', 10)
         self._timer = rospy.Timer(rospy.Duration(1 / gt_object_detection_frequency), self._timer_callback)
         self._object_detection_pub = rospy.Publisher("carla_bridge/gt_object_detection", ObjectDetection3DArray, queue_size=1)
-        self._MAX_DISTANCE = 100
+        self._MAX_DISTANCE = 20
         
     def _timer_callback(self, event):
         ego_location = self._world.get_actor(self._vehicle_id).get_location()

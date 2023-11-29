@@ -3,6 +3,7 @@
 import carla
 import random
 import numpy as np
+import random
 from scipy.spatial.transform import Rotation as R
 
 import rospy
@@ -44,7 +45,7 @@ class CARLABridgeNode:
         self._vehicles = {}
         self._add_vehicles()
         self._world.tick()
-        self._set_spectator(self._vehicles["ego_vehicle"].get_transform())
+        
 
     def run(self):
         self._gt_object_detector = GTObjectDetector(self._vehicles["ego_vehicle"].id, self._world)
@@ -66,7 +67,7 @@ class CARLABridgeNode:
     def _carla_tick(self, event):
         self._progress_bar.update(self.params["fixed_delta_seconds"])
         self._step_cnt += 1
-        
+        self._set_spectator(self._vehicles["ego_vehicle"].get_transform())
         self._controller_bridge.apply_control()
         self._world.tick()
         if self._step_cnt >= self._total_steps:
@@ -97,11 +98,21 @@ class CARLABridgeNode:
             vehicle.set_autopilot(True, self._traffic_manager_port)
     
     def _add_vehicles(self):
-        self._add_ego_vehicle(self._spawn_points[self.params["ego_init"]])
+        ego_spawn_point = self._spawn_points[self.params["ego_init"]]
+        nonego_spawn_points = []       
+        for p in self._spawn_points:
+            if p != ego_spawn_point and \
+                np.hypot(p.location.x - ego_spawn_point.location.x,
+                         p.location.y - ego_spawn_point.location.y) < 50:
+                nonego_spawn_points.append(p)
+        self._add_ego_vehicle(ego_spawn_point)
         for i in range(self.params["num_non_ego_vehicles"]):
-            spawn_point = random.choice(self._spawn_points)
-            self._add_non_ego_vehicle(spawn_point, "non_ego_vehicle_" + str(i))
-    
+            random.shuffle(nonego_spawn_points)
+            if i < len(nonego_spawn_points):
+                self._add_non_ego_vehicle(nonego_spawn_points[i], "non_ego_vehicle_" + str(i))
+            else:
+                break
+            
     def _set_spectator(self, transform):
         new_transform = carla.Transform(transform.location, transform.rotation)
         r = R.from_euler('xyz', [0, 0, new_transform.rotation.yaw], degrees=True)
