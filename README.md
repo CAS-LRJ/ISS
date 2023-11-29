@@ -33,7 +33,13 @@ source devel/setup.bash
 ```
 bash <CARLA root>/CarlaUE4.sh -quality-level=Low -windowed
 ```
-- Run example:
+- Try the simple agent build by CARLA team (in a new terminal):
 ```
 roslaunch carla_bridge carla_bridge.launch simple_agent_demo:=true
 ``` 
+- Try ISS agent (launch the following command one by one, each in a new terminal):
+```
+roslaunch planning planning.launch
+roslaunch control control.launch
+roslaunch carla_bridge carla_bridge.launch
+```
