@@ -24,7 +24,6 @@ Ref:
 import json
 from planning_utils.trajectory import Trajectory
 from planning_utils.cubic_spline import Spline2D
-from planning_utils.angle import pi_2_pi, zero_2_2pi
 from planning_utils.quartic_polynomial import QuarticPolynomial
 from planning_utils.quintic_polynomial import QuinticPolynomial
 import lanelet2
@@ -372,8 +371,9 @@ class LatticePlanner(object):
             else:
                 frenet_path = [(x, y, yaw) for x, y, yaw in zip(
                     fplist[i].x, fplist[i].y, fplist[i].yaw)]
-                if not self.road_detector.check_path(frenet_path):
-                    continue
+                # TODO: check path
+                # if not self.road_detector.check_path(frenet_path):
+                #     continue 
                 if motion_predictor.collision_check(frenet_path):
                     continue
             ok_ind.append(i)

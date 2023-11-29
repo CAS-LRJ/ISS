@@ -74,9 +74,7 @@ class VehiclePIDController:
         current_location = (vehicle_location.x, vehicle_location.y, vehicle_location.heading_angle)
         current_speed = vehicle_location.velocity
         
-        print("***")
-        print(len(self.traj))
-        print(self.waypoint_index)
+
         ## Skip waypoints behind the vehicle        
         while self.waypoint_index < len(self.traj) - 1:
             traj_point = self.traj[self.waypoint_index]
@@ -95,7 +93,6 @@ class VehiclePIDController:
                 break
             self.waypoint_index += 1
         
-        print(self.waypoint_index)
         traj_point = self.traj[self.waypoint_index]
         
         next_traj_point = None
@@ -108,12 +105,6 @@ class VehiclePIDController:
 
 
         target_speed = self.traj[self.waypoint_index][3]
-        
-        print("---")
-        print(current_location)
-        print(target_speed)
-        print(traj_point)
-        
         throttle = self._lon_controller.run_step(current_speed, target_speed)
         steering =  - self._lat_controller.run_step(current_location, traj_point)
         return throttle, steering

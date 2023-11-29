@@ -6,12 +6,13 @@ find_package(catkin REQUIRED COMPONENTS
   iss_msgs
   roscpp
   rospy
+  planning
 )
 
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES carla_bridge
- CATKIN_DEPENDS iss_msgs roscpp rospy
+ CATKIN_DEPENDS iss_msgs roscpp rospy planning
 #  DEPENDS system_lib
 )
 
