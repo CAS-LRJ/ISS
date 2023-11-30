@@ -6,7 +6,7 @@ Anaconda can be used for installation. Run the following command to create a vir
 git clone <this repo> && cd <this repo>
 conda create --name iss python=3.8
 conda activate iss
-pip3 install -r requirements.txt
+pip3 install -r requirements_mini.txt
 ```
 
 ## Build
