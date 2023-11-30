@@ -6,4 +6,8 @@
         <param name="local_planning_frequency" value="10"/>
     </node>
 
+    <include file="$(find control)/launch/control.launch"/>
+
+    <include file="$(find carla_bridge)/launch/carla_bridge.launch"/>
+
 </launch>

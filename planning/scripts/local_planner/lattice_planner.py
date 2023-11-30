@@ -22,6 +22,7 @@ Ref:
 # To-DO: Cythonize
 # To-DO Critical: Use Mapping objects to replace fixed lanelet setting
 import json
+import time
 from planning_utils.trajectory import Trajectory
 from planning_utils.cubic_spline import Spline2D
 from planning_utils.quartic_polynomial import QuarticPolynomial
@@ -56,6 +57,7 @@ class FrenetPath:
         self.yaw = []
         self.ds = []
         self.c = []
+        self.T = 0 # duration
 
 
 class LatticePlanner(object):
@@ -124,7 +126,6 @@ class LatticePlanner(object):
         if self.state_frenet == None:
             return frenet_paths
         s, s_d, s_dd, d, d_d, d_dd = self.state_frenet
-
         # A crude solution
         # To-DO: Replace here with mapping objects
         current_lane = lanelet2.geometry.findNearest(self.lanelet_map.laneletLayer, BasicPoint2d(
@@ -143,7 +144,8 @@ class LatticePlanner(object):
                 right_lane.centerline[0].x - current_lane.centerline[0].x, right_lane.centerline[0].y - current_lane.centerline[0].y)
 
         # set d_r>0 and d_l< 0.
-        d_r, d_l = 2 * abs(d_r), -2 * abs(d_l)
+        # d_r, d_l = 2 * abs(d_r), -2 * abs(d_l)
+        d_r, d_l = 7, -7
         width_range = np.arange(d_l, d_r+0.01, self.D_S)
 
         for Ti in np.arange(self.MIN_T, self.MAX_T + self.DT, self.DT):
@@ -155,8 +157,8 @@ class LatticePlanner(object):
 
             lon_qp_list = []
             # Longitudinal motion planning ( just for Velocity keeping)
-            for tv in np.arange(self.TARGET_SPEED - self.D_T_S * self.N_S_SAMPLE,
-                                self.TARGET_SPEED + self.D_T_S * (self.N_S_SAMPLE + 1), self.D_T_S):
+            for tv in np.arange(self.TARGET_SPEED - self.D_T_S * (self.N_S_SAMPLE + 2),
+                                self.TARGET_SPEED + self.D_T_S * (self.N_S_SAMPLE - 1), self.D_T_S):
                 lon_qp = QuarticPolynomial(s, s_d, s_dd, tv, 0.0, Ti)
                 lon_qp_list.append(lon_qp)
 
@@ -164,6 +166,7 @@ class LatticePlanner(object):
                      for lat_qp in lat_qp_list for lon_qp in lon_qp_list)
             for lat_qp, lon_qp in pairs:
                 fp = FrenetPath()
+                fp.T = Ti
                 fp.t = [t for t in np.arange(0.0, Ti, self.dt)]
                 fp.d = [lat_qp.calc_point(t) for t in fp.t]
                 fp.d_d = [lat_qp.calc_first_derivative(t) for t in fp.t]
@@ -191,10 +194,6 @@ class LatticePlanner(object):
 
                 frenet_paths.append(fp)
 
-        # print("ego vehicle location : {}".format(self.ego_vehicle.get_location()))
-        if len(frenet_paths) < 1:
-            print("Waring! There is no frenet_paths.")
-
         return frenet_paths
 
     def _get_frenet_state(self):
@@ -207,8 +206,6 @@ class LatticePlanner(object):
         x_r, y_r = self.csp.calc_position(s_r)
         x1_r, y1_r = self.rx[idx_r], self.ry[idx_r]
 
-        # print("reference line: idx_r={}, s_r = {}, x_r = {}, y_r = {}".format(idx_r, s_r, x_r, y_r))
-        # print("reference line: x1_r = {}, y1_r = {}".format(x1_r, y1_r))
         k_r = self.csp.calc_curvature(s_r)
         yaw_r = self.csp.calc_yaw(s_r)
         dyaw_r = self.csp.calc_curvature_d(s_r)
@@ -253,7 +250,7 @@ class LatticePlanner(object):
 
         return self.state_frenet
 
-    def calc_curvature_paths(self, fp):
+    def _calc_curvature_paths(self, fp):
         """
         Calculate curvature
 
@@ -327,6 +324,9 @@ class LatticePlanner(object):
                 fy = iy + di * math.sin(i_yaw + math.pi / 2.0)
                 fp.x.append(fx)
                 fp.y.append(fy)
+            
+            # calc global velocity
+            
 
             if not fp_valid:
                 continue
@@ -340,15 +340,14 @@ class LatticePlanner(object):
 
             fp.yaw.append(fp.yaw[-1])
             fp.ds.append(fp.ds[-1])
-            filtered_fplist.append(self.calc_curvature_paths(fp))
+            filtered_fplist.append(self._calc_curvature_paths(fp))
 
         return filtered_fplist
 
-    def frenet_optimal_planning(self, motion_predictor):
+    def _path_planning(self, motion_predictor):
         fplist = self._calc_frenet_paths()
         fplist = self._calc_global_paths(fplist)
         fplist = self._check_paths(fplist, motion_predictor)
-
         # find minimum cost path
         min_cost = float("inf")
         best_path = None
@@ -360,22 +359,32 @@ class LatticePlanner(object):
 
     def _check_paths(self, fplist, motion_predictor):
         ok_ind = []
+        speed = 0
+        accel = 0
+        obstacle = 0
+        road = 0
         for i, _ in enumerate(fplist):
             if any([self.MAX_SPEED < v for v in fplist[i].s_d]):
+                speed += 1
                 continue
-            elif any([self.MAX_ACCEL < abs(a) for a in fplist[i].s_dd]):
+            elif any([self.MAX_ACCEL < a for a in fplist[i].s_dd]) and \
+                (fplist[i].s_dd[0] < self.MAX_ACCEL):
+                accel += 1
                 continue
             # elif any([self.MAX_CURVATURE < abs(c) for c in fplist[i].c]):
-            #     # print("curvature : {}".format(fplist[i].c))
             #     continue
             else:
                 frenet_path = [(x, y, yaw) for x, y, yaw in zip(
                     fplist[i].x, fplist[i].y, fplist[i].yaw)]
                 # if not self.road_detector.check_path(frenet_path):
+                #     road += 1
                 #     continue 
                 if motion_predictor.collision_check(frenet_path):
+                    obstacle += 1
                     continue
             ok_ind.append(i)
+        # print("before path num: ", len(fplist))
+        # print("speed: ", speed, "accel: ", accel, "obstacle: ", obstacle, "road: ", road)
         return [fplist[i] for i in ok_ind]
 
     def run_step(self, ego_state, motion_predictor):
@@ -386,8 +395,7 @@ class LatticePlanner(object):
 
         # get curr ego_vehicle's frenet coordinate
         self._get_frenet_state()
-        print("s: %.2f d: %.2f" % (self.state_frenet[0], self.state_frenet[3]))
-        self.best_path = self.frenet_optimal_planning(motion_predictor)
+        self.best_path = self._path_planning(motion_predictor)
         
         trajectory = Trajectory()
         states_list = []

@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from motion_predictor.collision_check import find_vertices, check_collision_polygons
+from scipy.spatial import KDTree
 from iss_msgs.msg import ObjectDetection3DArray, ObjectDetection3D
 
 def kinematic_bicycle_model(bicycle_model_state, acc, steer, L):
@@ -20,19 +21,36 @@ def bicycle_model_step(bicycle_model_state, acc, steer, L, dt):
     bicycle_model_state = bicycle_model_state + (k1 + 2. * k2 + 2. * k3 + k4) * dt / 6.
     return bicycle_model_state
 
+def get_circle_centers(x, y, heading_angle, length, width, num_circles=3):
+    # represent the vehicle circles, the state is the center of the bicycle model
+    centers = []
+    for j in range(num_circles):
+        center = [0, 0]
+        center[0] = x + length / (2 * num_circles) * (2 * j - num_circles - 1) * math.cos(heading_angle)
+        center[1] = y + length / (2 * num_circles) * (2 * j - num_circles - 1) * math.sin(heading_angle)
+        centers.append(center)
+    r = 0.5 * math.sqrt((length / num_circles) ** 2 + (width / 2) ** 2)
+    return centers, r
+    
 class ConstVelPredictor:
     def __init__(self, predictor_settings) -> None:
         self._dt = predictor_settings['dt']
         self._horizon = predictor_settings['MAX_T']
         self._ego_veh_info = predictor_settings['ego_veh_info']
-        self._obstacle_detections = None
+        self._obstacles = None
 
     def update(self, obstacle_detections):
-        self._obstacle_detections = obstacle_detections
-
+        obstacle_list = []
+        for obstacle in obstacle_detections.detections:
+            obstacle_centers, r = get_circle_centers(obstacle.state.x, obstacle.state.y, obstacle.state.heading_angle, obstacle.bbox.size.x, obstacle.bbox.size.y)
+            obstacle_list.extend(obstacle_centers)
+        if len(obstacle_list) > 0:
+            self._obstacles = KDTree(np.array(obstacle_list))
+            
     def collision_check(self, path):
-        if self._obstacle_detections is None:
+        if self._obstacles == None:
             return False
+        
         # all_pred_trajs = []
         # for obstacle in self._obstacle_detections:
         #     L = obstacle.bbox.size.x
@@ -44,20 +62,19 @@ class ConstVelPredictor:
         #     acc = 0.0
         #     steer = 0.0
         #     all_pred_trajs.append(self._predict(bicycle_model_state, acc, steer, L))
-        for obstacle in self._obstacle_detections:
-            for wpt in path:
-                obs_length = obstacle.bbox.size.x
-                obs_width = obstacle.bbox.size.y
-                obs_heading = obstacle.state.heading_angle
-                obs_center = np.array([obstacle.state.x, obstacle.state.y])
-                ego_length = self._ego_veh_info['length']
-                ego_width = self._ego_veh_info['width']
-                ego_heading = self._ego_veh_info['heading_angle']
-                ego_center = np.array([wpt[0], wpt.y[1]])
-                obs_Poly = find_vertices(obs_center, obs_heading, obs_length, obs_width)
-                ego_Poly = find_vertices(ego_center, ego_heading, ego_length, ego_width)
-                if check_collision_polygons(obs_Poly, ego_Poly):
+        
+        ego_length = self._ego_veh_info['length']
+        ego_width = self._ego_veh_info['width']
+        for wpt in path:
+            ego_heading = wpt[2]
+            ego_center = [wpt[0], wpt[1]]
+            ego_circle_centers, ego_radius = get_circle_centers(ego_center[0], ego_center[1], ego_heading, ego_length, ego_width)
+            for ego_circle_center in ego_circle_centers:
+                ego_circle_center_array = np.array(ego_circle_center)
+                dist, ind = self._obstacles.query(ego_circle_center_array)
+                if dist < 2 * ego_radius:
                     return True
+        return False
             
         
 
@@ -67,3 +84,4 @@ class ConstVelPredictor:
             bicycle_model_state = bicycle_model_step(bicycle_model_state, acc, steer, L, self._dt)
             pred_traj.append(bicycle_model_state)
         return pred_traj
+    

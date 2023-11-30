@@ -43,7 +43,11 @@ class GTObjectDetector:
             roll = np.deg2rad(actor.get_transform().rotation.roll)
             pitch = np.deg2rad(actor.get_transform().rotation.pitch)
             yaw = -np.deg2rad(actor.get_transform().rotation.yaw)
-            detection.bbox.center.orientation = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+            quaternion = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+            detection.bbox.center.orientation.x = quaternion[0]
+            detection.bbox.center.orientation.y = quaternion[1]
+            detection.bbox.center.orientation.z = quaternion[2]
+            detection.bbox.center.orientation.w = quaternion[3]
             all_detections.detections.append(detection)
         self._object_detection_pub.publish(all_detections)
             

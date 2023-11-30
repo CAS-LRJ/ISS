@@ -53,7 +53,7 @@ class CARLABridgeNode:
         self._controller_bridge = ControllerBridge(self._vehicles["ego_vehicle"])
         self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
         self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
-        self._progress_bar = tqdm(total=self.params["simulation_duration"] + 0.1, unit="sec")
+        # self._progress_bar = tqdm(total=self.params["simulation_duration"] + 0.1, unit="sec")
         self._step_cnt = 0
 
         if self.params["simple_agent_demo"]:
@@ -65,7 +65,7 @@ class CARLABridgeNode:
     
         
     def _carla_tick(self, event):
-        self._progress_bar.update(self.params["fixed_delta_seconds"])
+        # self._progress_bar.update(self.params["fixed_delta_seconds"])
         self._step_cnt += 1
         self._set_spectator(self._vehicles["ego_vehicle"].get_transform())
         self._controller_bridge.apply_control()
@@ -75,7 +75,7 @@ class CARLABridgeNode:
             self._gt_state_estimator.shutdown()
             self._carla_timer.shutdown()
             self._agent_timer.shutdown() if self.params["simple_agent_demo"] else None
-            self._progress_bar.close()
+            # self._progress_bar.close()
             self.destory()
             self._world.tick()
             rospy.signal_shutdown("Simulation finished!")

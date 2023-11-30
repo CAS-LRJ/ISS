@@ -4,6 +4,7 @@ import rospy
 import rospkg
 import os
 import numpy as np
+import time
 
 import lanelet2
 from lanelet2.projection import UtmProjector
@@ -19,7 +20,7 @@ from iss_msgs.srv import SetGoal, SetGoalResponse
 class PlanningManagerNode:
     def __init__(self) -> None:
         self._ego_state_sub = rospy.Subscriber("carla_bridge/gt_state", State, self._ego_state_callback)
-        self._obstacle_sub = rospy.Subscriber("carla_bridge/obstacles", ObjectDetection3DArray, self._obstacle_callback)
+        self._obstacle_sub = rospy.Subscriber("carla_bridge/gt_object_detection", ObjectDetection3DArray, self._obstacle_callback)
         self._ego_state = None
         
         # Global planner 
@@ -50,19 +51,18 @@ class PlanningManagerNode:
         
         # Motion Planner
         lattice_settings = dict()
-        lattice_settings['MAX_SPEED'] = 50.0 / 3.6     # maximum speed [m/s]
-        lattice_settings['MAX_ACCEL'] = 4.0            # maximum acceleration [m/ss], tesla model3: 6.88
+        lattice_settings['MAX_SPEED'] = 60.0 / 3.6     # maximum speed [m/s]
+        lattice_settings['MAX_ACCEL'] = 6.5            # maximum acceleration [m/ss], tesla model3: 6.88
         lattice_settings['MAX_CURVATURE'] = 1.0      # maximum curvature [1/m], tesla model3's turning radius: 5.8    
-        lattice_settings['D_S'] = 0.5                  # sample Frenet d
+        lattice_settings['D_S'] = 1                  # sample Frenet d
         lattice_settings['D_ROAD_W'] = 1.0             # road width sampling length [m]
-        lattice_settings['DT'] = 0.2                   # prediction timestep length (s)
-        lattice_settings['dt'] = 0.25                   # sample time
+        lattice_settings['DT'] = 1                   # prediction timestep length (s)
+        lattice_settings['dt'] = 0.2                   # sample time
         lattice_settings['MAX_T'] = 6.0                # max prediction time [s]
         lattice_settings['MIN_T'] = 4.0                # min prediction time [s]
         lattice_settings['TARGET_SPEED'] = 15.0 / 3.6  # target speed [m/s]
-        lattice_settings['D_T_S'] = 2.5 / 3.6          # target speed sampling length [m/s]
+        lattice_settings['D_T_S'] = 5 / 3.6          # target speed sampling length [m/s]
         lattice_settings['N_S_SAMPLE'] = 4             # sampling number of target speed    
-        lattice_settings['ROBOT_RADIUS'] = 2.0         # robot radius [m]
         lattice_settings['K_J'] = 0.1
         lattice_settings['K_T'] = 0.1
         lattice_settings['K_D'] = 1.0
