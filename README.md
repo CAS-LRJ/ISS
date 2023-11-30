@@ -1,19 +1,17 @@
 # ISS
 
 ## Install
-Anaconda can be used for installation. Run following command to create a virtual environment:
+Anaconda can be used for installation. Run the following command to create a virtual environment:
 ```
+git clone <this repo> && cd <this repo>
 conda create --name iss python=3.8
-pip3 install -r requirements.txt
-```
-Then activate the virtual environment:
-```
 conda activate iss
+pip3 install -r requirements.txt
 ```
 
 ## Build
 
-Run following command to build the project:
+Run the following command to build the project:
 ```bash
 python setup.py build_ext --inplace
 ```
