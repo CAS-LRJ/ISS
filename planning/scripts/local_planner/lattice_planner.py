@@ -410,5 +410,5 @@ class LatticePlanner(object):
                                     0,
                                     0,
                                     0])
-        trajectory.update_states(states_list)
+        trajectory.update_states(states_list, self.dt)
         return trajectory

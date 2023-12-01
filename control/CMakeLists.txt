@@ -164,6 +164,7 @@ catkin_install_python(PROGRAMS
   scripts/wpt_tracker/__init__.py
   scripts/wpt_tracker/pid_wpt_tracker.py
   scripts/wpt_tracker/wpt_tracker_node.py
+  scripts/wpt_tracker/linear_mpc_tracker.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
