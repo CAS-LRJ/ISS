@@ -1,5 +1,7 @@
 # ISS
 
+**Note:** The code is tested in Ubuntu 20.04.
+
 ## Install
 Anaconda can be used for installation. Run the following command to create a virtual environment:
 ```
