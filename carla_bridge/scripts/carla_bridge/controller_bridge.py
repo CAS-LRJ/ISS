@@ -11,6 +11,7 @@ class ControllerBridge:
         self._vehicle = vehicle
         self._tele_op_sub = rospy.Subscriber("/carla_bridge/cmd_vel", Twist, self._teleop_callback)
         self._control = carla.VehicleControl()
+        self._agent_sub = None
     
     def start_iss_agent(self, destination):
         self._agent_sub = rospy.Subscriber("control/control_command", ControlCommand, self._agent_sub_callback)
@@ -28,6 +29,7 @@ class ControllerBridge:
     
     def _agent_sub_callback(self, msg):
         self._set_control(msg.throttle, msg.steering)
+        # rospy.loginfo("[simulator] throttle: %.2f,  steering: %.2f" % (msg.throttle, msg.steering))
 
     def start_simple_agent(self, destination, agent_control_frequency):
         self._simple_agent = BehaviorAgent(self._vehicle, behavior='normal')
@@ -51,7 +53,7 @@ class ControllerBridge:
         self._control.steer = min(max(-steering, -1.0), 1.0)
         if throttle < 0:
             self._control.throttle = 0
-            self._control.brake = min(-throttle, 1.0) / 2
+            self._control.brake = min(-throttle, 1.0)
         else:
             self._control.throttle = min(throttle, 1.0)
             self._control.brake = 0

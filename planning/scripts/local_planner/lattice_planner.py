@@ -27,6 +27,7 @@ from planning_utils.trajectory import Trajectory
 from planning_utils.cubic_spline import Spline2D
 from planning_utils.quartic_polynomial import QuarticPolynomial
 from planning_utils.quintic_polynomial import QuinticPolynomial
+from planning_utils.angle import zero_2_2pi
 import lanelet2
 import numpy as np
 import math
@@ -184,8 +185,7 @@ class LatticePlanner(object):
                 ds = (self.TARGET_SPEED - fp.s_d[-1]) ** 2
 
                 # cost
-                fp.cd = self.K_J * Jp + self.K_T * \
-                    Ti + self.K_D * fp.d[-1] ** 2
+                fp.cd = self.K_J * Jp + self.K_T * Ti + self.K_D * fp.d[-1] ** 2
                 # fp.cd = self.K_J * Jp + self.K_T * Ti + self.K_D * np.mean(np.array(fp.d) ** 2)
                 # fp.cd = self.K_J * Jp + self.K_T * Ti + self.K_D * (np.max(np.array(fp.d) ** 2) + fp.d[-1] ** 2)
                 # fp.cd = self.K_J * Jp + self.K_T * Ti + self.K_D * np.sum(np.array(fp.d) ** 2) * 2.
@@ -403,7 +403,7 @@ class LatticePlanner(object):
             for ind in range(len(self.best_path.x)):
                 states_list.append([self.best_path.x[ind],
                                     self.best_path.y[ind],
-                                    self.best_path.yaw[ind],
+                                    zero_2_2pi(self.best_path.yaw[ind]),
                                     math.hypot(
                                         self.best_path.s_d[ind], self.best_path.d_d[ind]),
                                     0,

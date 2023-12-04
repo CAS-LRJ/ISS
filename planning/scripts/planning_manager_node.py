@@ -52,12 +52,12 @@ class PlanningManagerNode:
         # Motion Planner
         lattice_settings = dict()
         lattice_settings['MAX_SPEED'] = 50.0 / 3.6     # maximum speed [m/s]
-        lattice_settings['MAX_ACCEL'] = 6.5            # maximum acceleration [m/ss], tesla model3: 6.88
+        lattice_settings['MAX_ACCEL'] = 5            # maximum acceleration [m/ss], tesla model3: 6.88
         lattice_settings['MAX_CURVATURE'] = 1.0      # maximum curvature [1/m], tesla model3's turning radius: 5.8    
         lattice_settings['D_S'] = 1                  # sample Frenet d
         lattice_settings['D_ROAD_W'] = 1.0             # road width sampling length [m]
         lattice_settings['DT'] = 1                   # prediction timestep length (s)
-        lattice_settings['dt'] = 0.5                   # sample time
+        lattice_settings['dt'] = 0.25                   # sample time
         lattice_settings['MAX_T'] = 6.0                # max prediction time [s]
         lattice_settings['MIN_T'] = 4.0                # min prediction time [s]
         lattice_settings['TARGET_SPEED'] = 15.0 / 3.6  # target speed [m/s]
@@ -65,7 +65,7 @@ class PlanningManagerNode:
         lattice_settings['N_S_SAMPLE'] = 4             # sampling number of target speed    
         lattice_settings['K_J'] = 0.1
         lattice_settings['K_T'] = 0.1
-        lattice_settings['K_D'] = 1.0
+        lattice_settings['K_D'] = 2.0
         lattice_settings['K_LAT'] = 1.0
         lattice_settings['K_LON'] = 0.8
         self._lattice_planner = LatticePlanner(loadedMap, traffic_rules, lattice_settings, solid_checker)

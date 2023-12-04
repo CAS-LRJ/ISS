@@ -27,13 +27,16 @@ class Trajectory:
     def update_states(self, states_list, time_step):
         if len(states_list) != 0:
             self._states = np.array(states_list)
-        self._time_step = time_step
+            self._time_step = time_step
 
     def get_waypoints(self):
         return self._states[:, :3].tolist()
 
     def get_states(self):
         return self._states.tolist()
+    
+    def get_states_array(self):
+        return self._states.copy()
 
     # interpolate the states to get the reference trajectory, the first state is the closest planned state to the current state
     def get_ref_trajectory(self, ego_state, N, dt, dim=4):
@@ -47,17 +50,18 @@ class Trajectory:
         planned_time_points = np.arange(0, self._states.shape[0] * self._time_step, self._time_step)
         ref_trajectory = np.zeros((N, self._states.shape[1]))
         time_steps = np.arange(planned_time_points[closest_index], planned_time_points[closest_index] + N*dt, dt)
-        for i in range(dim):
-            # Create an interpolator for each state element
-            state_interpolator = interp1d(planned_time_points[closest_index:], self._states[closest_index:, i], fill_value="extrapolate", bounds_error=False)
-            # Interpolate and fill the ref_trajectory
-            ref_trajectory[:, i] = state_interpolator(time_steps[:ref_trajectory.shape[0]])
-        # print(len(self._states))
-        # print(self._states[:3, :dim])
-        # print(self._states[-3:, :dim])
-        # print(ref_trajectory[:3, :dim])
-        # print(ref_trajectory[-3:, :dim])
-        # print("---")
+        try:
+            for i in range(dim):
+                # Create an interpolator for each state element
+                state_interpolator = interp1d(planned_time_points[closest_index:], self._states[closest_index:, i], fill_value="extrapolate", bounds_error=False)
+                # Interpolate and fill the ref_trajectory
+                ref_trajectory[:, i] = state_interpolator(time_steps[:ref_trajectory.shape[0]])
+        except:
+            print(planned_time_points[closest_index:].shape)
+            print(self._states[closest_index:, i].shape)
+            print(planned_time_points)
+            print(self._states)
+            raise ValueError("Error in trajectory interpolation")
         return ref_trajectory[:, :dim].T
             
     def get_time_step(self):
@@ -105,5 +109,8 @@ class Trajectory:
 
 
 if __name__ == "__main__":
-    a = np.array([[1, 2, 3], [4, 5, 6]])
-    print(a.tolist())
+    a = np.array([1, 2, 3])
+    b = np.array([10, 20, 30])
+    interpolator = interp1d(a, b, fill_value="extrapolate", bounds_error=False)
+    print(interpolator(1.5))
+    

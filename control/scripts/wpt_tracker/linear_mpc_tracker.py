@@ -3,8 +3,11 @@ import numpy as np
 import cvxpy as cp
 import bisect
 import rospy
+from scipy.interpolate import interp1d
 
 from planning_utils.trajectory import Trajectory
+
+np.set_printoptions(precision=2, suppress=True)
 
 def kinematic_bicycle_model(bicycle_model_state, acc, steer, L):
     d_bicycle_model_state = np.zeros(4)
@@ -31,11 +34,11 @@ class VehicleLinearMPCController:
         
         self._N = settings['N']
         self._dt = settings['dt']
-        self._acc_max = settings['acc_max']
-        self._steering_max = settings['steer_max']
         self._steering_rate_max = settings['steer_rate_max']
         self._speed_max = settings['speed_max']
         self._ego_veh_info = settings['ego_veh_info']
+        self._steering_max = self._ego_veh_info["steer_max"]
+        self._acc_max = self._ego_veh_info["acc_max"]
         self._Q = settings['Q']
         self._Qf = settings['Qf']
         self._R = settings['R']
@@ -43,9 +46,11 @@ class VehicleLinearMPCController:
         self._u_sol = np.zeros((self._nu, self._N))
         self._z_ref = None
         self._trajectory = None
+        self._start = False
+        self._acc_interpolator = interp1d(list(self._acc_table.keys()), list(self._acc_table.values()), fill_value="extrapolate", bounds_error=False)
     
     def set_traj(self, trajectory: Trajectory):
-        self._trajectory = trajectory
+        self._trajectory = trajectory        
     
     def run_step(self, ego_state):
         if self._trajectory is None:
@@ -56,10 +61,17 @@ class VehicleLinearMPCController:
         self._solve_linear_mpc(z_bar)
         acc, steering = self._u_sol[:, 0]
         steering = max(min(steering/self._ego_veh_info['steer_max'], 1), -1)
-        index = bisect.bisect(list(self._acc_table.keys()), abs(acc)/self._ego_veh_info['acc_max'])-1
-        throttle = list(self._acc_table.values())[index]
-        if ego_state.velocity < 0.1:
+        # print(steering, self._ego_veh_info['steer_max'])
+        # index = bisect.bisect(list(self._acc_table.keys()), abs(acc)/self._ego_veh_info['acc_max'])-1
+        if acc > 0:
+            throttle = self._acc_interpolator(acc/self._ego_veh_info['acc_max'])
+        else:
+            throttle = acc/self._ego_veh_info['acc_max']
+        if ego_state.velocity < 0.05 and self._start == False:
             throttle = 0.3
+        else:
+            self._start = True
+        # rospy.loginfo("[controller] throttle: %.2f,  steering: %.2f" % (throttle, steering))
         return throttle, steering
 
     def _forward_simulate(self, z0):
@@ -106,12 +118,22 @@ class VehicleLinearMPCController:
         constraints += [cp.abs(u_opt[0, :]) <= self._acc_max]
         constraints += [cp.abs(u_opt[1, :]) <= self._steering_max]
         prob = cp.Problem(cp.Minimize(cost), constraints)
-        prob.solve(solver=cp.OSQP, verbose=False)
+        # prob.solve(solver=cp.OSQP, verbose=False)
+        prob.solve(solver='ECOS', verbose=False)
+        # print("------------------")
+        # print("current state: ", z_bar[:, 0])
+        # print("local planner traj: ")
+        # print(self._trajectory.get_states_array()[:, :4])
+        # print("ref traj: ")
+        # print(self._z_ref.T)
         if prob.status == cp.OPTIMAL or prob.status == cp.OPTIMAL_INACCURATE:
             self._u_sol = u_opt.value
+            # print("mpc traj: ")
+            # print(z_opt.value.T)
+            # print("mpc control: ")
+            # print(u_opt.value.T)
         else:
             rospy.logwarn("Control: Failed")
-            self._u_sol = np.zeros((self._nu, self._N))
             
 
     
