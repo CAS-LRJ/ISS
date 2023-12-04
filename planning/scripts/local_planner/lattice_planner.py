@@ -160,7 +160,8 @@ class LatticePlanner(object):
             # Longitudinal motion planning ( just for Velocity keeping)
             for tv in np.arange(self.TARGET_SPEED - self.D_T_S * (self.N_S_SAMPLE + 2),
                                 self.TARGET_SPEED + self.D_T_S * (self.N_S_SAMPLE - 1), self.D_T_S):
-                lon_qp = QuarticPolynomial(s, s_d, s_dd, tv, 0.0, Ti)
+                # lon_qp = QuarticPolynomial(s, s_d, s_dd, tv, 0.0, Ti)
+                lon_qp = QuarticPolynomial(s, s_d, 0, tv, 0.0, Ti)
                 lon_qp_list.append(lon_qp)
 
             pairs = ((lat_qp, lon_qp)

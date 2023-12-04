@@ -7,7 +7,7 @@
         <param name="map_name" value="Town06"/>
         <param name="fixed_delta_seconds" value="0.05"/>
         <param name="graphic_rendering" value="true"/>
-        <param name="num_non_ego_vehicles" value="0"/>
+        <param name="num_non_ego_vehicles" value="50"/>
         <param name="simulation_duration" value="60"/>
         <param name="gt_state_estimation_frequency" value="10"/>
         <param name="gt_object_detection_frequency" value="10"/>

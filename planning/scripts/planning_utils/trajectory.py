@@ -15,7 +15,7 @@ class Trajectory:
         prev_point = None
         for ind in range(len(waypoints)):
             point = waypoints[ind]
-            if prev_point == None or np.linalg.norm([prev_point[0] - point[0], prev_point[1] - point[1]]) > downsample_precision:
+            if prev_point is None or np.linalg.norm([prev_point[0] - point[0], prev_point[1] - point[1]]) > downsample_precision:
                 prev_point = point
                 new_waypoints.append(point)
         self._states = np.zeros([len(new_waypoints), 8])
@@ -57,6 +57,7 @@ class Trajectory:
                 # Interpolate and fill the ref_trajectory
                 ref_trajectory[:, i] = state_interpolator(time_steps[:ref_trajectory.shape[0]])
         except:
+            print("------------------")
             print(planned_time_points[closest_index:].shape)
             print(self._states[closest_index:, i].shape)
             print(planned_time_points)

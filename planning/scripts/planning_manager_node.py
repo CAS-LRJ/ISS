@@ -60,7 +60,7 @@ class PlanningManagerNode:
         lattice_settings['dt'] = 0.25                   # sample time
         lattice_settings['MAX_T'] = 6.0                # max prediction time [s]
         lattice_settings['MIN_T'] = 4.0                # min prediction time [s]
-        lattice_settings['TARGET_SPEED'] = 15.0 / 3.6  # target speed [m/s]
+        lattice_settings['TARGET_SPEED'] = 30.0 / 3.6  # target speed [m/s]
         lattice_settings['D_T_S'] = 5 / 3.6          # target speed sampling length [m/s]
         lattice_settings['N_S_SAMPLE'] = 4             # sampling number of target speed    
         lattice_settings['K_J'] = 0.1

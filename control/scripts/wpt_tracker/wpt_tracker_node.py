@@ -30,7 +30,7 @@ class WPTTrackerNode:
                 "steer_max": np.deg2rad(70.0),
                 "acc_max": 8
             },
-            "Q": np.diag([1.0, 1.0, 1.0, 3.0]),
+            "Q": np.diag([1.0, 1.0, 1.0, 4.0]),
             "Qf": np.diag([2.0, 2.0, 2.0, 4.0]),
             "R": np.diag([0.2, 1]),
             "Rd": np.diag([0.1, 1])
@@ -42,8 +42,8 @@ class WPTTrackerNode:
     def _timer_callback(self, event):
         if self._ego_state is None:
             return
-        # throttle, steering = self._pid_tracker.run_step(self._ego_state)
-        throttle, steering = self._mpc_tracker.run_step(self._ego_state)
+        throttle, steering = self._pid_tracker.run_step(self._ego_state)
+        # throttle, steering = self._mpc_tracker.run_step(self._ego_state)
         self._ctrl_pub.publish(ControlCommand(steering=steering, throttle=throttle))
     
     def _state_callback(self, msg):
@@ -51,8 +51,8 @@ class WPTTrackerNode:
     
     def _trajectory_callback(self, msg):
         self._trajectory.from_ros_msg(msg)
-        self._mpc_tracker.set_traj(self._trajectory)
-        # self._pid_tracker.set_traj(self._trajectory.get_states())
+        # self._mpc_tracker.set_traj(self._trajectory)
+        self._pid_tracker.set_traj(self._trajectory.get_states())
         
 
 if __name__ == "__main__":
