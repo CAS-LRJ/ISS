@@ -151,7 +151,7 @@ class DataCollector:
         vis.create_window()
         vis_view_control = vis.get_view_control()
         # vis_view_control.convert_from_pinhole_camera_parameters
-        open3d.io.read_pinhole_camera_trajectory("./config/vis_config/open3d_config.json")
+        # open3d.io.read_pinhole_camera_trajectory("./config/vis_config/open3d_config.json")
         # vis_view_control.set_lookat([ 34.5, 0, 4.75 ])
         # vis_view_control.set_zoom(0.7)
         # vis_view_control.change_field_of_view(60.0)
@@ -167,6 +167,21 @@ class DataCollector:
         try:
             total_frame_count = 0
             while True:
+                ## Set Spec
+                spec = self.world.get_spectator()
+                veh = primary_player.get_actor().carla_actor               
+                ego_vehicle_location = veh.get_transform().location
+                ego_vehicle_rotation = veh.get_transform().rotation                
+                offset = carla.Vector3D(x=-20.0, y=0, z=50)        
+                left_rear_location = ego_vehicle_location + ego_vehicle_rotation.get_right_vector() * offset.y + \
+                                    ego_vehicle_rotation.get_forward_vector() * offset.x + \
+                                    ego_vehicle_rotation.get_up_vector() * offset.z
+                rotation_reset = carla.Rotation(pitch=-45.0,
+                                                yaw=ego_vehicle_rotation.yaw,
+                                                roll=ego_vehicle_rotation.roll
+                                                )
+                spectator_transform = carla.Transform(left_rear_location, rotation_reset)
+                spec.set_transform(spectator_transform)
                 # print("----------")
                 # Tick Control
                 self.actor_tree.tick_controller()

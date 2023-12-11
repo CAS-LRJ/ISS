@@ -303,7 +303,7 @@ class Detection3DOutput(object):
                     score_selected = self.final_scores >= self.confidence_threshold[i]
                     self.final_scores = self.final_scores[class_selected | score_selected]
                     self.final_labels = self.final_labels[class_selected | score_selected]
-                    self.final_boxes = self.final_boxes[class_selected | score_selected]
+                    self.final_boxes = self.final_boxes[class_selected | score_selected]                    
     
     def preview_scene(self, vis=None):
         if vis is None:
