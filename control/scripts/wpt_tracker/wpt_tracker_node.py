@@ -30,9 +30,9 @@ class WPTTrackerNode:
                 "steer_max": np.deg2rad(70.0),
                 "acc_max": 8
             },
-            "Q": np.diag([1.0, 1.0, 1.0, 4.0]),
-            "Qf": np.diag([2.0, 2.0, 2.0, 4.0]),
-            "R": np.diag([0.2, 1]),
+            "Q": np.diag([2.0, 2.0, 1.0, 4.0]),
+            "Qf": np.diag([2.0, 2.0, 1.0, 4.0]),
+            "R": np.diag([0.1, 1]),
             "Rd": np.diag([0.1, 1])
         }
         self._pid_tracker = VehiclePIDController()
