@@ -21,6 +21,14 @@ cimport cython
 
 cdef extern from "dubins.h":
 
+    ctypedef enum DubinsPathType:
+        LSL = 0
+        LSR = 1
+        RSL = 2
+        RSR = 3
+        RLR = 4
+        LRL = 5
+
     # The handle for the c- version of the path structure
     # The variables in the struct will all be accessed through the API
     # and don't need to be exposed here
@@ -29,7 +37,7 @@ cdef extern from "dubins.h":
 
     # The c-version of the initialisation function 
     cdef int dubins_shortest_path(DubinsPath* path, double q0[3], double q1[3], double rho);
-    cdef int dubins_path(DubinsPath* path, double q0[3], double q1[3], double rho, int pathType);
+    cdef int dubins_path(DubinsPath* path, double q0[3], double q1[3], double rho, DubinsPathType pathType);
     
     # Enough "glue code to make sure that the path can be sampled
     ctypedef int (*DubinsPathSamplingCallback)(double q[3], double t, void* user_data)

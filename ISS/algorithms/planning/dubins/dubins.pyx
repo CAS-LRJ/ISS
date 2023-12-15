@@ -84,8 +84,8 @@ cdef class _DubinsPath:
         for i in [0, 1, 2]:
             _q0[i] = q0[i]
             _q1[i] = q1[i]
-        path = _DubinsPath()
-        code = core.dubins_path(path.ppth, _q0, _q1, _rho, word)
+        path = _DubinsPath()        
+        code = core.dubins_path(path.ppth, _q0, _q1, _rho, <core.DubinsPathType>word)
         if code != 0:
             return None
         return path
