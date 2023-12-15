@@ -23,3 +23,7 @@ test.sh
 nohup.out
 examples/test_data_structure.ipynb
 .vscode/
+
+ros1_ws/devel/
+ros1_ws/logs/
+ros1_ws/build/
