@@ -3,16 +3,15 @@ project(carla_bridge)
 
 
 find_package(catkin REQUIRED COMPONENTS
-  iss_msgs
+  iss_manager
   roscpp
   rospy
-  planning
 )
 
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES carla_bridge
- CATKIN_DEPENDS iss_msgs roscpp rospy planning
+ CATKIN_DEPENDS iss_manager roscpp rospy 
 #  DEPENDS system_lib
 )
 

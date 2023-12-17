@@ -5,7 +5,7 @@ import bisect
 import rospy
 from scipy.interpolate import interp1d
 
-from planning_utils.trajectory import Trajectory
+from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
 
 np.set_printoptions(precision=2, suppress=True)
 

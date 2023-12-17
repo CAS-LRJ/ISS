@@ -23,11 +23,11 @@ Ref:
 # To-DO Critical: Use Mapping objects to replace fixed lanelet setting
 import json
 import time
-from planning_utils.trajectory import Trajectory
-from planning_utils.cubic_spline import Spline2D
-from planning_utils.quartic_polynomial import QuarticPolynomial
-from planning_utils.quintic_polynomial import QuinticPolynomial
-from planning_utils.angle import zero_2_2pi
+from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
+from ISS.algorithms.planning.planning_utils.cubic_spline import Spline2D
+from ISS.algorithms.planning.planning_utils.quartic_polynomial import QuarticPolynomial
+from ISS.algorithms.planning.planning_utils.quintic_polynomial import QuinticPolynomial
+from ISS.algorithms.planning.planning_utils.angle import zero_2_2pi
 import lanelet2
 import numpy as np
 import math
@@ -410,6 +410,7 @@ class LatticePlanner(object):
                                     0,
                                     0,
                                     0,
-                                    0])
-        trajectory.update_states(states_list, self.dt)
+                                    0,
+                                    self.best_path.t[ind]])
+        trajectory.update_states_from_list(states_list)
         return trajectory

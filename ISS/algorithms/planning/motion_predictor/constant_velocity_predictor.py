@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from motion_predictor.collision_check import find_vertices, check_collision_polygons
+from ISS.algorithms.planning.motion_predictor.collision_check import find_vertices, check_collision_polygons
 from scipy.spatial import KDTree
 
 def kinematic_bicycle_model(bicycle_model_state, acc, steer, L):

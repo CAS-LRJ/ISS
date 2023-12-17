@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from collections import deque
-from planning_utils.trajectory import Trajectory
+from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
 
 def euclidean_distance(v1, v2):
     return math.sqrt(sum([(a - b) ** 2 for a, b in zip(v1, v2)]))

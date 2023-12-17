@@ -14,7 +14,7 @@ from carla_bridge.gt_state_estimator import GTStateEstimator
 from carla_bridge.carla_visualizer import CARLAVisualizer
 from carla_bridge.controller_bridge import ControllerBridge
 
-from iss_msgs.msg import ControlCommand
+from iss_manager.msg import ControlCommand
 
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):

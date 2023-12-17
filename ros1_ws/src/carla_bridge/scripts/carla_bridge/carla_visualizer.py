@@ -1,7 +1,7 @@
 import carla
 import rospy
 
-from iss_msgs.msg import StateArray, State
+from iss_manager.msg import StateArray, State
 
 color_map = { 
     'red': carla.Color(255, 0, 0),

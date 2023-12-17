@@ -10,8 +10,8 @@ from lanelet2.core import (AllWayStop, AttributeMap, BasicPoint2d,
 from lanelet2.projection import (UtmProjector, MercatorProjector,
                                  LocalCartesianProjector, GeocentricProjector)
 
-from planning_utils.angle import calculate_rot_angle
-from planning_utils.trajectory import Trajectory
+from ISS.algorithms.planning.planning_utils.angle import calculate_rot_angle
+from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
 
 # To-DO: Use mapping objects instead of fixed lanelet2
 

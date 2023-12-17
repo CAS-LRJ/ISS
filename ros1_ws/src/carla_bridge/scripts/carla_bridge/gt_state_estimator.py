@@ -1,8 +1,8 @@
 import rospy
-from iss_msgs.msg import State
+from iss_manager.msg import State
 import numpy as np
 
-from planning_utils.angle import zero_2_2pi
+from ISS.algorithms.planning.planning_utils.angle import zero_2_2pi
 
 
 class GTStateEstimator:

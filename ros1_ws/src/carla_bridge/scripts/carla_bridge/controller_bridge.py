@@ -3,8 +3,8 @@ import numpy as np
 import carla
 from carla_agent.behavior_agent import BehaviorAgent
 from geometry_msgs.msg import Twist
-from iss_msgs.msg import ControlCommand
-from iss_msgs.srv import SetGoal
+from iss_manager.msg import ControlCommand
+from iss_manager.srv import SetGoal
 
 class ControllerBridge:
     def __init__(self, vehicle) -> None:

@@ -2,9 +2,9 @@ import rospy
 import numpy as np
 
 import tf.transformations
-from iss_msgs.msg import ObjectDetection3DArray, ObjectDetection3D
+from iss_manager.msg import ObjectDetection3DArray, ObjectDetection3D
 
-from planning_utils.angle import zero_2_2pi
+from ISS.algorithms.planning.planning_utils.angle import zero_2_2pi
 
 
 class GTObjectDetector:

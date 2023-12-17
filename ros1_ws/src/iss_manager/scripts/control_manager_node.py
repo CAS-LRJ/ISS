@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
-from wpt_tracker.pid_wpt_tracker import VehiclePIDController
-from wpt_tracker.linear_mpc_tracker import VehicleLinearMPCController
-from iss_msgs.msg import ControlCommand, StateArray, State
-from planning_utils.trajectory import Trajectory
 import rospy
 import numpy as np
+
+from ISS.algorithms.control.pid_wpt_tracker import VehiclePIDController
+from ISS.algorithms.control.linear_mpc_tracker import VehicleLinearMPCController
+from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
+
+from iss_manager.data_utils import traj_from_ros_msg
+from iss_manager.msg import ControlCommand, StateArray, State
 
 class WPTTrackerNode:
     def __init__(self) -> None:
@@ -50,9 +53,9 @@ class WPTTrackerNode:
         self._ego_state = msg
     
     def _trajectory_callback(self, msg):
-        self._trajectory.from_ros_msg(msg)
+        self._trajectory = traj_from_ros_msg(msg)
         # self._mpc_tracker.set_traj(self._trajectory)
-        self._pid_tracker.set_traj(self._trajectory.get_states())
+        self._pid_tracker.set_traj(self._trajectory.get_states_list())
         
 
 if __name__ == "__main__":

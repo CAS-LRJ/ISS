@@ -8,11 +8,13 @@ import time
 
 import lanelet2
 from lanelet2.projection import UtmProjector
-from planning_utils.lanelet2_utils import get_solid_checker
 
-from global_planner.lanelet2_planner import Lanelet2Planner
-from motion_predictor.constant_velocity_predictor import ConstVelPredictor
-from local_planner.lattice_planner import LatticePlanner
+from ISS.algorithms.planning.planning_utils.lanelet2_utils import get_solid_checker
+from ISS.algorithms.planning.global_planner.lanelet2_planner import Lanelet2Planner
+from ISS.algorithms.planning.motion_predictor.constant_velocity_predictor import ConstVelPredictor
+from ISS.algorithms.planning.local_planner.lattice_planner import LatticePlanner
+
+from iss_manager.data_utils import traj_to_ros_msg
 
 from iss_manager.msg import State, StateArray, ObjectDetection3DArray
 from iss_manager.srv import SetGoal, SetGoalResponse
@@ -25,7 +27,7 @@ class PlanningManagerNode:
         
         # Global planner 
         rospack = rospkg.RosPack()
-        lanelet2_town06 = os.path.join(rospack.get_path('planning'), "maps", "Town06_hy.osm")
+        lanelet2_town06 = os.path.join(rospack.get_path('iss_manager'), "maps", "Town06_hy.osm")
         projector = UtmProjector(lanelet2.io.Origin(0., 0.))
         loadedMap, load_errors = lanelet2.io.loadRobust(lanelet2_town06, projector)
         traffic_rules = lanelet2.traffic_rules.create(lanelet2.traffic_rules.Locations.Germany,
@@ -73,6 +75,7 @@ class PlanningManagerNode:
         self._global_planner_pub = rospy.Publisher("planning/lanelet2_planner/trajectory", StateArray, queue_size=1, latch=True)
         self._local_planner_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
+        self._lattice_planner_timer = None
     
     def _set_goal_srv_callback(self, req):
         while self._ego_state == None:
@@ -84,7 +87,7 @@ class PlanningManagerNode:
             rospy.logerr("Global planning: Failed")
             return SetGoalResponse(False)
         rospy.loginfo("Global planning: Success")
-        self._global_planner_pub.publish(global_traj.to_ros_msg())
+        self._global_planner_pub.publish(traj_to_ros_msg(global_traj))
         self._lattice_planner.update(global_traj.get_waypoints())
         local_planning_frequency = rospy.get_param("~local_planning_frequency")
         self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/local_planning_frequency), self._local_planning_timer_callback)
@@ -101,7 +104,7 @@ class PlanningManagerNode:
         if local_traj.is_empty():
             rospy.logwarn("Local planning: Failed")
             return
-        self._local_planner_pub.publish(local_traj.to_ros_msg())
+        self._local_planner_pub.publish(traj_to_ros_msg(local_traj))
         if self._global_planner.is_goal_reached(self._ego_state):
             self._lattice_planner_timer.shutdown()
             rospy.loginfo("Goal reached!")

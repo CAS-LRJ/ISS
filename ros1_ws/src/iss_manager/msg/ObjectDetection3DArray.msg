@@ -1,3 +1,3 @@
 Header header
 
-iss_msgs/ObjectDetection3D[] detections
+ObjectDetection3D[] detections

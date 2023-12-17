@@ -1,5 +1,5 @@
 ## We do not update compiled build files and cache files
-build/*
+build/
 *.pyc
 ## We do not update compiled pyd files, translated cpp files
 *.pyd
@@ -27,3 +27,7 @@ examples/test_data_structure.ipynb
 ros1_ws/devel/
 ros1_ws/logs/
 ros1_ws/build/
+ros1_ws/.catkin_tools/
+
+ISS.egg-info/
+dist/ISS-0.0-py3.9.egg
