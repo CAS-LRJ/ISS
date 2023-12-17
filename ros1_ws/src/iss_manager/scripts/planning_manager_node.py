@@ -14,8 +14,8 @@ from global_planner.lanelet2_planner import Lanelet2Planner
 from motion_predictor.constant_velocity_predictor import ConstVelPredictor
 from local_planner.lattice_planner import LatticePlanner
 
-from iss_msgs.msg import State, StateArray, ObjectDetection3DArray
-from iss_msgs.srv import SetGoal, SetGoalResponse
+from iss_manager.msg import State, StateArray, ObjectDetection3DArray
+from iss_manager.srv import SetGoal, SetGoalResponse
 
 class PlanningManagerNode:
     def __init__(self) -> None:
