@@ -146,7 +146,7 @@ class LatticePlanner(object):
 
         # set d_r>0 and d_l< 0.
         # d_r, d_l = 2 * abs(d_r), -2 * abs(d_l)
-        d_r, d_l = 7, -7
+        d_r, d_l = self.d_r, -self.d_l
         width_range = np.arange(d_l, d_r+0.01, self.D_S)
 
         for Ti in np.arange(self.MIN_T, self.MAX_T + self.DT, self.DT):

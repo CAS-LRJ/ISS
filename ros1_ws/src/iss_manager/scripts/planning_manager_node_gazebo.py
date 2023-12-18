@@ -11,6 +11,7 @@ from lanelet2.projection import UtmProjector
 
 from ISS.algorithms.planning.planning_utils.lanelet2_utils import get_solid_checker
 from ISS.algorithms.planning.global_planner.lanelet2_planner import Lanelet2Planner
+from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
 from ISS.algorithms.planning.motion_predictor.constant_velocity_predictor import ConstVelPredictor
 from ISS.algorithms.planning.local_planner.lattice_planner import LatticePlanner
 
@@ -26,17 +27,7 @@ class PlanningManagerNode:
         self._ego_state = None
         
         # Global planner 
-        rospack = rospkg.RosPack()
-        lanelet2_town06 = os.path.join(rospack.get_path('iss_manager'), "maps", "Town06_hy.osm")
-        projector = UtmProjector(lanelet2.io.Origin(0., 0.))
-        loadedMap, load_errors = lanelet2.io.loadRobust(lanelet2_town06, projector)
-        traffic_rules = lanelet2.traffic_rules.create(lanelet2.traffic_rules.Locations.Germany,
-                                                  lanelet2.traffic_rules.Participants.Vehicle)
-        solid_checker = get_solid_checker(loadedMap)
-        lanelet2_settings = dict()
-        lanelet2_settings['TURNING_RADIUS'] = 5
-        lanelet2_settings["GOAL_TORELANCE"] = 2
-        self._global_planner = Lanelet2Planner(loadedMap, traffic_rules, solid_checker, lanelet2_settings)
+        self._global_planner = None
         
         # Motion predictor
         predictor_settings = dict()
@@ -53,8 +44,8 @@ class PlanningManagerNode:
         
         # Motion Planner
         lattice_settings = dict()
-        lattice_settings['MAX_SPEED'] = 50.0 / 3.6     # maximum speed [m/s]
-        lattice_settings['MAX_ACCEL'] = 5            # maximum acceleration [m/ss], tesla model3: 6.88
+        lattice_settings['MAX_SPEED'] = 1    # maximum speed [m/s]
+        lattice_settings['MAX_ACCEL'] = 1            # maximum acceleration [m/ss], tesla model3: 6.88
         lattice_settings['MAX_CURVATURE'] = 1.0      # maximum curvature [1/m], tesla model3's turning radius: 5.8    
         lattice_settings['D_S'] = 1                  # sample Frenet d
         lattice_settings['D_ROAD_W'] = 1.0             # road width sampling length [m]
@@ -62,34 +53,33 @@ class PlanningManagerNode:
         lattice_settings['dt'] = 0.25                   # sample time
         lattice_settings['MAX_T'] = 6.0                # max prediction time [s]
         lattice_settings['MIN_T'] = 4.0                # min prediction time [s]
-        lattice_settings['TARGET_SPEED'] = 30.0 / 3.6  # target speed [m/s]
-        lattice_settings['D_T_S'] = 5 / 3.6          # target speed sampling length [m/s]
+        lattice_settings['TARGET_SPEED'] = 0.5  # target speed [m/s]
+        lattice_settings['D_T_S'] = 0.2          # target speed sampling length [m/s]
         lattice_settings['N_S_SAMPLE'] = 4             # sampling number of target speed    
         lattice_settings['K_J'] = 0.1
         lattice_settings['K_T'] = 0.1
         lattice_settings['K_D'] = 2.0
         lattice_settings['K_LAT'] = 1.0
         lattice_settings['K_LON'] = 0.8
-        lattice_settings['d_r'] = 7
-        lattice_settings['d_l'] = 7
+        lattice_settings['d_r'] = 0.5
+        lattice_settings['d_l'] = 0.5
         self._lattice_planner = LatticePlanner(loadedMap, traffic_rules, lattice_settings, solid_checker)
         
-        self._global_planner_pub = rospy.Publisher("planning/lanelet2_planner/trajectory", StateArray, queue_size=1, latch=True)
+        self._global_planner_pub = None
         self._local_planner_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
-        self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
+        self._set_goal_srv = None
         self._lattice_planner_timer = None
+        self._set_goal_srv_callback(None)
     
     def _set_goal_srv_callback(self, req):
         while self._ego_state == None:
             rospy.sleep(0.1)
-        start_point = (self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle)
-        end_point = (req.x, req.y, req.yaw)
-        global_traj = self._global_planner.run_step(start_point, end_point)
-        if global_traj == None:
-            rospy.logerr("Global planning: Failed")
-            return SetGoalResponse(False)
+        waypoints = [(0, -0.2, 0)]
+        for i in range(1, 10, 0.1):
+            waypoints.append((i, -0.2, 0))
+        global_traj = Trajectory()
+        global_traj.update_waypoints(waypoints)
         rospy.loginfo("Global planning: Success")
-        self._global_planner_pub.publish(traj_to_ros_msg(global_traj))
         self._lattice_planner.update(global_traj.get_waypoints())
         local_planning_frequency = rospy.get_param("~local_planning_frequency")
         self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/local_planning_frequency), self._local_planning_timer_callback)

@@ -15,6 +15,8 @@
         <param name="ego_init" value="1"/>
         <param name="ego_destination" value="10"/>
         <param name="agent_control_frequency" value="10"/>
+        <remap from="carla_bridge/gt_state" to="ego_state_estimation"/>
+        <remap from="carla_bridge/gt_object_detection" to="object_detection"/>
     </node>
 
 </launch>

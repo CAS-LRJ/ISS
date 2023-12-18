@@ -6,7 +6,7 @@ This repo provides ROS-noetic support for the ISS project, compatible with CARLA
 ## Installation
 Basically,
 ```
-git clone https://github.com/CAS-LRJ/ISS.git 
+git clone --recursive https://github.com/CAS-LRJ/ISS.git 
 cd ISS
 git checkout ros1-dev-reframe
 python3 setup.py install
