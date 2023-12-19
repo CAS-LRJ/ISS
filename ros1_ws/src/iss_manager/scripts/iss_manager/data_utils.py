@@ -30,12 +30,13 @@ def traj_to_ros_msg(trajectory: Trajectory):
 
 def traj_to_ros_msg_path(trajectory: Trajectory):
     path_msg = Path()
-    path_msg.header.frame_id = "map"
+    namespaces = rospy.get_namespace().replace("/", "") + "/"
+    path_msg.header.frame_id = namespaces + "map"
     path_msg.header.stamp = rospy.Time.now()
     states = trajectory.get_states_array()
     for i in range(states.shape[0]):
         pose_msg = PoseStamped()
-        pose_msg.header.frame_id = "map"
+        pose_msg.header.frame_id = namespaces + "map"
         pose_msg.pose.position.x = states[i][0]
         pose_msg.pose.position.y = states[i][1]
         pose_msg.pose.position.z = 0.0

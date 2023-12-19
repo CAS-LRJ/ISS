@@ -76,7 +76,7 @@ class ConstVelPredictor:
                 ego_circle_center_array = np.array(ego_circle_center)
                 self._map.check_collision(ego_circle_center_array, ego_radius)
                 dist, ind = self._obstacles.query(ego_circle_center_array)
-                if dist < 3 * ego_radius:
+                if dist < 4 * ego_radius:
                     return True
         return False
             

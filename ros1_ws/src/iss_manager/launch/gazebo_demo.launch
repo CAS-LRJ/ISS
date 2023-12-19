@@ -4,6 +4,7 @@
     <arg name="robot_name_0" default="ego_vehicle"/>
     <arg name="robot_type_0" default="pav_s01" doc="pav_s00, pav_s01, pav_s01_scaled"/>
 
+
     <group ns="$(arg robot_name_0)">
         <rosparam command="load" file="$(find iss_manager)/config/$(arg robot_type_0).yaml"/>
 

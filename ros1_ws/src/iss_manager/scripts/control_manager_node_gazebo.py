@@ -15,7 +15,7 @@ class WPTTrackerNode:
     def __init__(self) -> None:
         ctrl_freq = rospy.get_param("~control_frequency", 10)
         self._timer = rospy.Timer(rospy.Duration(1 / ctrl_freq), self._timer_callback)
-        self._ctrl_pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
+        self._ctrl_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
         self._ego_state_sub = rospy.Subscriber("ego_state_estimation", State, self._state_callback)
         self._trajectory_sub = rospy.Subscriber("planning/local_planner/trajectory", StateArray, self._trajectory_callback)
         self._ego_state = None
