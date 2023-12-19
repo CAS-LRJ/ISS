@@ -4,6 +4,10 @@ import numpy as np
 
 from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
 
+import rospy
+import tf
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Path
 from iss_manager.msg import State, StateArray
 
 def traj_to_ros_msg(trajectory: Trajectory):
@@ -23,6 +27,25 @@ def traj_to_ros_msg(trajectory: Trajectory):
             state_msg.time_from_start = states[i][8]
             trajectory_msg.states.append(state_msg)
     return trajectory_msg
+
+def traj_to_ros_msg_path(trajectory: Trajectory):
+    path_msg = Path()
+    path_msg.header.frame_id = "map"
+    path_msg.header.stamp = rospy.Time.now()
+    states = trajectory.get_states_array()
+    for i in range(states.shape[0]):
+        pose_msg = PoseStamped()
+        pose_msg.header.frame_id = "map"
+        pose_msg.pose.position.x = states[i][0]
+        pose_msg.pose.position.y = states[i][1]
+        pose_msg.pose.position.z = 0.0
+        quaternion = tf.transformations.quaternion_from_euler(0, 0, states[i][2])
+        pose_msg.pose.orientation.x = quaternion[0]
+        pose_msg.pose.orientation.y = quaternion[1]
+        pose_msg.pose.orientation.z = quaternion[2]
+        pose_msg.pose.orientation.w = quaternion[3]
+        path_msg.poses.append(pose_msg)
+    return path_msg
 
 def traj_from_ros_msg(trajectory_msg: StateArray):
     trajectory = Trajectory()

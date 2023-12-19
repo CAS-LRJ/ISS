@@ -1,16 +1,28 @@
 <launch>
 
-    <node pkg="iss_manager" type="planning_manager_node.py" name="planning_manager_node" output="screen">
-        <remap from="planning/lanelet2_planner/trajectory" to="planning/global_planner/trajectory"/>
-        <remap from="planning/lattice_planner/trajectory" to="planning/local_planner/trajectory"/>
-        <param name="local_planning_frequency" value="5"/>
-    </node>
+    <arg name="world" default="simple_road" doc="ISCAS_building, ROS-Academy, simple_road"/>
+    <arg name="robot_name_0" default="ego_vehicle"/>
+    <arg name="robot_type_0" default="pav_s01" doc="pav_s00, pav_s01, pav_s01_scaled"/>
 
-    <node pkg="iss_manager" type="control_manager_node.py" name="control_manager_node" output="screen">
-        <param name="control_frequency" value="20"/>
-        <remap from="control/wpt_tracker/control_command" to="control/control_command"/>
-    </node>
+    <group ns="$(arg robot_name_0)">
+        <rosparam command="load" file="$(find iss_manager)/config/$(arg robot_type_0).yaml"/>
 
-    <include file="$(find robot_gazebo)/launch/gazebo_bridge.launch"/>
+        <node pkg="iss_manager" type="planning_manager_node_gazebo.py" name="planning_manager_node" output="screen">
+            <remap from="planning/lanelet2_planner/trajectory" to="planning/global_planner/trajectory"/>
+            <remap from="planning/lattice_planner/trajectory" to="planning/local_planner/trajectory"/>
+            <param name="local_planning_frequency" value="5"/>
+        </node>
 
+        <node pkg="iss_manager" type="control_manager_node_gazebo.py" name="control_manager_node" output="screen">
+            <param name="control_frequency" value="20"/>
+        </node>
+    </group>
+
+    <include file="$(find robot_gazebo)/launch/gazebo_bridge.launch">
+        <arg name="world" value="$(arg world)"/>
+        <arg name="robot_name_0" value="$(arg robot_name_0)"/>
+        <arg name="robot_type_0" value="$(arg robot_type_0)"/>
+    </include>
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find iss_manager)/rviz/gazebo_demo.rviz"/>
 </launch>

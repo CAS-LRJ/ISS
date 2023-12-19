@@ -172,7 +172,9 @@ catkin_install_python(PROGRAMS
   scripts/iss_manager/__init__.py
   scripts/iss_manager/data_utils.py
   scripts/control_manager_node.py
+  scripts/control_manager_node_gazebo.py
   scripts/planning_manager_node.py
+  scripts/planning_manager_node_gazebo.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

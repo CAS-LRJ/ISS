@@ -34,14 +34,6 @@ class VehiclePIDController:
         self.traj = []
         self.goal = None
         self.waypoint_index = 0
-        
-        self.veh_info = { # Tesla Model 3
-            'length': 4.69,
-            'width': 2.0,
-            'wheelbase': 2.8,
-            'overhang_rear': 0.978,
-            'overhang_front': 0.874
-        }
 
     def reset(self):
         self.traj = None

@@ -37,8 +37,12 @@ class ConstVelPredictor:
         self._horizon = predictor_settings['MAX_T']
         self._ego_veh_info = predictor_settings['ego_veh_info']
         self._obstacles = None
+        self._map = None
+    
+    def update_map(self, lane_map):
+        self._map = lane_map
 
-    def update(self, obstacle_detections):
+    def update_obstacle(self, obstacle_detections):
         obstacle_list = []
         for obstacle in obstacle_detections.detections:
             obstacle_centers, r = get_circle_centers(obstacle.state.x, obstacle.state.y, obstacle.state.heading_angle, obstacle.bbox.size.x, obstacle.bbox.size.y)
@@ -70,8 +74,9 @@ class ConstVelPredictor:
             ego_circle_centers, ego_radius = get_circle_centers(ego_center[0], ego_center[1], ego_heading, ego_length, ego_width)
             for ego_circle_center in ego_circle_centers:
                 ego_circle_center_array = np.array(ego_circle_center)
+                self._map.check_collision(ego_circle_center_array, ego_radius)
                 dist, ind = self._obstacles.query(ego_circle_center_array)
-                if dist < 2 * ego_radius:
+                if dist < 3 * ego_radius:
                     return True
         return False
             

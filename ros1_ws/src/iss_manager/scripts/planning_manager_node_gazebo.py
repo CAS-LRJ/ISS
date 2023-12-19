@@ -15,10 +15,22 @@ from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
 from ISS.algorithms.planning.motion_predictor.constant_velocity_predictor import ConstVelPredictor
 from ISS.algorithms.planning.local_planner.lattice_planner import LatticePlanner
 
-from iss_manager.data_utils import traj_to_ros_msg
+from iss_manager.data_utils import *
 
+from nav_msgs.msg import Path
 from iss_manager.msg import State, StateArray, ObjectDetection3DArray
 from iss_manager.srv import SetGoal, SetGoalResponse
+
+class LaneMap:
+    def __init__(self) -> None:
+        pass
+    
+    def check_collision(self, ego_circle_center_array, ego_radius):
+        if ego_circle_center_array[1] < (-0.2 + ego_radius):
+            return True
+        elif ego_circle_center_array[1] > (0.5 - ego_radius):
+            return True
+        return False
 
 class PlanningManagerNode:
     def __init__(self) -> None:
@@ -30,76 +42,42 @@ class PlanningManagerNode:
         self._global_planner = None
         
         # Motion predictor
-        predictor_settings = dict()
-        predictor_settings['dt'] = 0.5
-        predictor_settings['MAX_T'] = 6.0
-        predictor_settings['ego_veh_info'] = { # Tesla Model 3
-            'length': 4.69,
-            'width': 2.0,
-            'wheelbase': 2.8,
-            'overhang_rear': 0.978,
-            'overhang_front': 0.874
-        }
+        predictor_settings = rospy.get_param("prediction")
         self._motion_predictor = ConstVelPredictor(predictor_settings)
         
         # Motion Planner
-        lattice_settings = dict()
-        lattice_settings['MAX_SPEED'] = 1    # maximum speed [m/s]
-        lattice_settings['MAX_ACCEL'] = 1            # maximum acceleration [m/ss], tesla model3: 6.88
-        lattice_settings['MAX_CURVATURE'] = 1.0      # maximum curvature [1/m], tesla model3's turning radius: 5.8    
-        lattice_settings['D_S'] = 1                  # sample Frenet d
-        lattice_settings['D_ROAD_W'] = 1.0             # road width sampling length [m]
-        lattice_settings['DT'] = 1                   # prediction timestep length (s)
-        lattice_settings['dt'] = 0.25                   # sample time
-        lattice_settings['MAX_T'] = 6.0                # max prediction time [s]
-        lattice_settings['MIN_T'] = 4.0                # min prediction time [s]
-        lattice_settings['TARGET_SPEED'] = 0.5  # target speed [m/s]
-        lattice_settings['D_T_S'] = 0.2          # target speed sampling length [m/s]
-        lattice_settings['N_S_SAMPLE'] = 4             # sampling number of target speed    
-        lattice_settings['K_J'] = 0.1
-        lattice_settings['K_T'] = 0.1
-        lattice_settings['K_D'] = 2.0
-        lattice_settings['K_LAT'] = 1.0
-        lattice_settings['K_LON'] = 0.8
-        lattice_settings['d_r'] = 0.5
-        lattice_settings['d_l'] = 0.5
-        self._lattice_planner = LatticePlanner(loadedMap, traffic_rules, lattice_settings, solid_checker)
-        
-        self._global_planner_pub = None
+        self.local_planning_frequency = rospy.get_param("local_planning")["local_planning_frequency"]
+        lattice_settings = rospy.get_param("local_planning")["lattice_settings"]
+        self._lattice_planner = LatticePlanner(lattice_settings)
         self._local_planner_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
-        self._set_goal_srv = None
+        self._local_planner_path_pub = rospy.Publisher("planning/lattice_planner/path", Path, queue_size=1)
         self._lattice_planner_timer = None
-        self._set_goal_srv_callback(None)
-    
-    def _set_goal_srv_callback(self, req):
-        while self._ego_state == None:
-            rospy.sleep(0.1)
-        waypoints = [(0, -0.2, 0)]
-        for i in range(1, 10, 0.1):
-            waypoints.append((i, -0.2, 0))
-        global_traj = Trajectory()
-        global_traj.update_waypoints(waypoints)
-        rospy.loginfo("Global planning: Success")
-        self._lattice_planner.update(global_traj.get_waypoints())
-        local_planning_frequency = rospy.get_param("~local_planning_frequency")
-        self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/local_planning_frequency), self._local_planning_timer_callback)
-        return SetGoalResponse(True)
+        
+        self._setup_planning()
+        
+    def _setup_planning(self):
+        ''' Called when the target is set; Update both map info and global route'''
+        lane_map = LaneMap()
+        self._motion_predictor.update_map(lane_map)
+        global_trajectory = [(round(x * 0.05, 2), -0.2) for x in range(0, int(5 / 0.05) + 1)]
+        self._lattice_planner.update(global_trajectory)
+        self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)        
     
     def _ego_state_callback(self, state_msg):
         self._ego_state = state_msg
     
     def _obstacle_callback(self, obstacle_msg):
-        self._motion_predictor.update(obstacle_msg)    
+        self._motion_predictor.update_obstacle(obstacle_msg)    
 
     def _local_planning_timer_callback(self, event):
+        if self._ego_state is None:
+            return
         local_traj = self._lattice_planner.run_step(self._ego_state, self._motion_predictor)
         if local_traj.is_empty():
             rospy.logwarn("Local planning: Failed")
             return
+        self._local_planner_path_pub.publish(traj_to_ros_msg_path(local_traj))
         self._local_planner_pub.publish(traj_to_ros_msg(local_traj))
-        if self._global_planner.is_goal_reached(self._ego_state):
-            self._lattice_planner_timer.shutdown()
-            rospy.loginfo("Goal reached!")
 
 if __name__ == "__main__":
     rospy.init_node("planning_manager_node", anonymous=True)

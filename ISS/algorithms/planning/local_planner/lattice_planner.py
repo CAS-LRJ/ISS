@@ -63,14 +63,7 @@ class FrenetPath:
 
 class LatticePlanner(object):
 
-    def __init__(self, lanelet_map, traffic_rules, settings, road_detector) -> None:
-        # Map
-        self.lanelet_map = lanelet_map
-        self.traffic_rules = traffic_rules
-        self.route_graph = lanelet2.routing.RoutingGraph(
-            self.lanelet_map, self.traffic_rules)
-        self.road_detector = road_detector
-
+    def __init__(self, settings) -> None:
         # Parameters
         for keys in settings:
             self.__dict__[keys] = settings[keys]
@@ -129,20 +122,20 @@ class LatticePlanner(object):
         s, s_d, s_dd, d, d_d, d_dd = self.state_frenet
         # A crude solution
         # To-DO: Replace here with mapping objects
-        current_lane = lanelet2.geometry.findNearest(self.lanelet_map.laneletLayer, BasicPoint2d(
-            self.state_cartesian[0], -self.state_cartesian[1]), 1)[0][1]
-        left_lane = self.route_graph.left(current_lane)
-        if left_lane == None:
-            s_l, d_l = 0., 0.
-        else:
-            s_l, d_l = 0., math.hypot(
-                left_lane.centerline[0].x - current_lane.centerline[0].x, left_lane.centerline[0].y - current_lane.centerline[0].y)
-        right_lane = self.route_graph.right(current_lane)
-        if right_lane == None:
-            s_r, d_r = 0., 0.
-        else:
-            s_r, d_r = 0., math.hypot(
-                right_lane.centerline[0].x - current_lane.centerline[0].x, right_lane.centerline[0].y - current_lane.centerline[0].y)
+        # current_lane = lanelet2.geometry.findNearest(self.lanelet_map.laneletLayer, BasicPoint2d(
+        #     self.state_cartesian[0], -self.state_cartesian[1]), 1)[0][1]
+        # left_lane = self.route_graph.left(current_lane)
+        # if left_lane == None:
+        #     s_l, d_l = 0., 0.
+        # else:
+        #     s_l, d_l = 0., math.hypot(
+        #         left_lane.centerline[0].x - current_lane.centerline[0].x, left_lane.centerline[0].y - current_lane.centerline[0].y)
+        # right_lane = self.route_graph.right(current_lane)
+        # if right_lane == None:
+        #     s_r, d_r = 0., 0.
+        # else:
+        #     s_r, d_r = 0., math.hypot(
+        #         right_lane.centerline[0].x - current_lane.centerline[0].x, right_lane.centerline[0].y - current_lane.centerline[0].y)
 
         # set d_r>0 and d_l< 0.
         # d_r, d_l = 2 * abs(d_r), -2 * abs(d_l)
@@ -396,6 +389,7 @@ class LatticePlanner(object):
 
         # get curr ego_vehicle's frenet coordinate
         self._get_frenet_state()
+        
         self.best_path = self._path_planning(motion_predictor)
         
         trajectory = Trajectory()
@@ -412,5 +406,9 @@ class LatticePlanner(object):
                                     0,
                                     0,
                                     self.best_path.t[ind]])
+            
+        # print("-------------------")
+        # print(self.state_cartesian)
+        # print(states_list[0][:5])
         trajectory.update_states_from_list(states_list)
         return trajectory
