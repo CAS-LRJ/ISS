@@ -52,14 +52,14 @@ class PlanningManagerNode:
         self._local_planner_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
         self._local_planner_path_pub = rospy.Publisher("planning/lattice_planner/path", Path, queue_size=1)
         self._lattice_planner_timer = None
-        
+        rospy.sleep(5.0)
         self._setup_planning()
         
     def _setup_planning(self):
         ''' Called when the target is set; Update both map info and global route'''
         lane_map = LaneMap()
         self._motion_predictor.update_map(lane_map)
-        global_trajectory = [(round(x * 0.05, 2), -0.2) for x in range(0, int(5 / 0.05) + 1)]
+        global_trajectory = [(round(x * 0.05, 2), -0.2) for x in range(0, int(8 / 0.05) + 1)]
         self._lattice_planner.update(global_trajectory)
         self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)        
     
