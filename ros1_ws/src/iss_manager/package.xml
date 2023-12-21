@@ -66,6 +66,15 @@
   <exec_depend>std_msgs</exec_depend>
   <build_depend>message_generation</build_depend>
   <exec_depend>message_runtime</exec_depend>
+  <build_depend>pcl_ros</build_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <build_depend>tf</build_depend>
+  <exec_depend>tf</exec_depend>
+  <build_depend>image_transport</build_depend>
+  <exec_depend>image_transport</exec_depend>
+  <build_depend>cv_bridge</build_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  
 
 
 
