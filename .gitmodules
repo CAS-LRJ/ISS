@@ -1,3 +1,6 @@
 [submodule "ros1_ws/src/gazebo_bridge"]
 	path = ros1_ws/src/gazebo_bridge
 	url = https://github.com/SailorBrandon/car-like-robot-gazebo.git
+[submodule "ros1_ws/src/darknet_ros"]
+	path = ros1_ws/src/darknet_ros
+	url = https://github.com/SailorBrandon/darknet_ros

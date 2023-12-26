@@ -142,8 +142,10 @@ class Lanelet2Planner(object):
             self.lanelet_map.laneletLayer, BasicPoint2d(start_pos[0], start_pos[1]), 1)[0][1]
         toLanelet = lanelet2.geometry.findNearest(
             self.lanelet_map.laneletLayer, BasicPoint2d(goal_pos[0], goal_pos[1]), 1)[0][1]
+
         self.route = self.route_graph.getRoute(fromLanelet, toLanelet)
         assert fromLanelet != None and toLanelet != None
+        assert self.route != None
 
         # Assume the planner start from the closest lanelet!
         # Warning: Sometime the start lanelet is the second closest one! To-DO: Fix this
@@ -161,6 +163,9 @@ class Lanelet2Planner(object):
             point = fromLanelet_centerline[ind]
             rot = calculate_rot_angle(np.array(
                 [fromLanelet_centerline[ind + 1].x - point.x, (fromLanelet_centerline[ind + 1].y - point.y)]))
+            if np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 0.5 and np.abs(rot - start_pos[2]) < 0.1:
+                cloesetNode = PlanningNode([start_pos.tolist()], fromLanelet.id, ind, 0, 0)
+                break
             dubins_path = dubins.shortest_path(
                 start_pos, (point.x, point.y, rot), self.turning_radius)
             dubins_points, dubins_dis = dubins_path.sample_many(0.1)
@@ -179,12 +184,12 @@ class Lanelet2Planner(object):
         self.reach_map[cloesetNode.current_lanelet_id] = cloesetNode.current_index
         while not pqueue.empty():
             currentNode = pqueue.get()
+            
             # print(currentNode.current_lanelet_id)
             if currentNode.current_lanelet_id == toLanelet.id:
                 toLanelet_centerline = list(toLanelet.centerline)
                 start_ind = currentNode.current_index
                 min_dis = None
-
                 # for ind in range(start_ind, len(toLanelet_centerline)-1):
                 #     point = toLanelet_centerline[ind]
                 #     dis = np.linalg.norm([goal_pos[0] - point.x, goal_pos[1] - point.y])
@@ -196,7 +201,17 @@ class Lanelet2Planner(object):
                     # print(point.x, point.y)
                     rot = calculate_rot_angle(np.array(
                         [toLanelet_centerline[ind+1].x - point.x, (toLanelet_centerline[ind+1].y - point.y)]))
-                    
+                    if np.linalg.norm([goal_pos[0] - point.x, goal_pos[1] - point.y]) < 0.5 and np.abs(rot - goal_pos[2]) < 0.1:
+                        point_list = currentNode.points
+                        for traj_ind in range(currentNode.current_index, ind):
+                            point = toLanelet_centerline[traj_ind]
+                            rot = calculate_rot_angle(np.array(
+                                [toLanelet_centerline[traj_ind+1].x - point.x, (toLanelet_centerline[traj_ind+1].y - point.y)]))
+                            point_list.append([point.x, point.y, rot])
+                        point_list = point_list + goal_pos
+                        traj = Trajectory()
+                        traj.update_waypoints(point_list)
+                        return traj
                     dubins_path = dubins.shortest_path(
                         (point.x, point.y, rot), goal_pos, self.turning_radius)
                     dubins_points, dubins_dis = dubins_path.sample_many(0.1)
