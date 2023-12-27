@@ -21,23 +21,13 @@ from nav_msgs.msg import Path
 from iss_manager.msg import State, StateArray, ObjectDetection3DArray
 from iss_manager.srv import SetGoal, SetGoalResponse
 
-class LaneMap:
-    def __init__(self) -> None:
-        pass
-    
-    def check_collision(self, ego_circle_center_array, ego_radius):
-        return False
-        if ego_circle_center_array[1] < (-0.2 + ego_radius):
-            return True
-        elif ego_circle_center_array[1] > (0.5 - ego_radius):
-            return True
-        return False
-
 class PlanningManagerNode:
     def __init__(self) -> None:
         self._ego_state_sub = rospy.Subscriber("ego_state_estimation", State, self._ego_state_callback)
         self._obstacle_sub = rospy.Subscriber("object_detection", ObjectDetection3DArray, self._obstacle_callback)
         self._ego_state = None
+        
+        self.vehicle_info = rospy.get_param("vehicle_info")
         
         # Global planner 
         rospack = rospkg.RosPack()
@@ -46,15 +36,15 @@ class PlanningManagerNode:
         loadedMap, load_errors = lanelet2.io.loadRobust(hd_map, projector)
         traffic_rules = lanelet2.traffic_rules.create(lanelet2.traffic_rules.Locations.Germany,
                                                   lanelet2.traffic_rules.Participants.Vehicle)
-        solid_checker = get_solid_checker(loadedMap)
+        lanemap_collision_checker = get_solid_checker(loadedMap, self.vehicle_info["length"], self.vehicle_info["width"])
         lanelet2_settings = rospy.get_param("global_planning")["lanelet2_settings"]
-        self._global_planner = Lanelet2Planner(loadedMap, traffic_rules, solid_checker, lanelet2_settings)
+        self._global_planner = Lanelet2Planner(loadedMap, traffic_rules, lanemap_collision_checker, lanelet2_settings)
         self._global_planner_pub = rospy.Publisher("planning/lanelet2_planner/trajectory", StateArray, queue_size=1, latch=True)
         self._global_planner_path_pub = rospy.Publisher("planning/lanelet2_planner/path", Path, queue_size=1, latch=True)
         
         # Motion predictor
         predictor_settings = rospy.get_param("prediction")
-        self._motion_predictor = ConstVelPredictor(predictor_settings)
+        self._motion_predictor = ConstVelPredictor(predictor_settings, lanemap_collision_checker, self.vehicle_info) # put lanemap into the predictor
         
         # Motion Planner
         self.local_planning_frequency = rospy.get_param("local_planning")["local_planning_frequency"]
@@ -78,8 +68,6 @@ class PlanningManagerNode:
         rospy.loginfo("Global planning: Success")
         self._global_planner_pub.publish(traj_to_ros_msg(global_traj))
         self._global_planner_path_pub.publish(traj_to_ros_msg_path(global_traj))
-        lane_map = LaneMap()
-        self._motion_predictor.update_map(lane_map)
         self._lattice_planner.update(global_traj.get_waypoints())
         self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)
         return SetGoalResponse(True)

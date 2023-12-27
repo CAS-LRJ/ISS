@@ -1,9 +1,10 @@
 import numpy as np
 import math
 from scipy.spatial import KDTree
+import matplotlib.pyplot as plt
 
 
-def get_solid_checker(loadedMap):
+def get_solid_checker(loadedMap, vehicle_length, vehicle_width):
     # Get Solid Points...
     inset = set()
     solid_points = []
@@ -17,15 +18,18 @@ def get_solid_checker(loadedMap):
             inset.add(left_lane.id)
             for point in left_lane:
                 solid_id.append(left_lane.id)
-                solid_points.append((point.x, -point.y))
+                print(solid_points)
+                solid_points.append((point.x, point.y))
 
         if "subtype" in right_lane.attributes and right_lane.attributes['subtype'] == 'solid' and right_lane.id not in inset:
             inset.add(right_lane.id)
             for point in right_lane:
                 solid_id.append(right_lane.id)
-                solid_points.append((point.x, -point.y))
-    ##
-    solid_checker = CollisionChecker(solid_points, 4.4, 2.2)
+                solid_points.append((point.x, point.y))
+    
+    # plt.scatter([point[0] for point in solid_points], [point[1] for point in solid_points])
+    # plt.show()
+    solid_checker = CollisionChecker(solid_points, vehicle_length, vehicle_width)
     return solid_checker
 
 

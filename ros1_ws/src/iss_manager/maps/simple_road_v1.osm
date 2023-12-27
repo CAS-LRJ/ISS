@@ -73,7 +73,7 @@
   <node id='-25433' lat='-0.0000031441' lon='0.00000316529' />
   <node id='-25434' lat='-0.00000898315' lon='0.00000316529' />
   <node id='-25435' lat='-0.00001122894' lon='0.00000316529' />
-  <node id='-25436' lat='-0.00000898315' lon='0.0' />
+  <node id='-25436' action='modify' lat='-0.00000896961' lon='-0.0' />
   <node id='-25437' lat='-0.00001122894' lon='0.0' />
   <node id='-25438' lat='-0.00000898315' lon='-0.00000316529' />
   <node id='-25439' lat='-0.00001122894' lon='-0.00000316529' />
@@ -97,12 +97,12 @@
   <node id='-25457' lat='0.00003278851' lon='-0.00000723496' />
   <node id='-25596' action='modify' lat='0.00000313728' lon='0.000005724' />
   <node id='-25599' action='modify' lat='0.00000000006' lon='0.00000566896' />
-  <node id='-25600' action='modify' lat='0.00000341247' lon='0.00000410035' />
-  <node id='-25601' action='modify' lat='0.00000403166' lon='0.00000356372' />
-  <node id='-25602' action='modify' lat='0.000005315' lon='0.00000326322' />
+  <node id='-25600' action='modify' lat='0.00000324717' lon='0.00000367332' />
+  <node id='-25601' action='modify' lat='0.0000037355' lon='0.00000336398' />
+  <node id='-25602' action='modify' lat='0.00000455737' lon='0.00000322878' />
   <node id='-25604' action='modify' lat='0.00000060548' lon='0.00000176119' />
   <node id='-25605' action='modify' lat='0.00000159619' lon='0.00000060537' />
-  <node id='-25607' action='modify' lat='0.00000646714' lon='0.00000309589' />
+  <node id='-25607' action='modify' lat='0.00000646714' lon='0.00000317854' />
   <node id='-25609' action='modify' lat='0.00000315668' lon='0.00000004718' />
   <node id='-25612' action='modify' lat='0.00003373897' lon='0.00000319221' />
   <node id='-25613' action='modify' lat='0.0000373165' lon='0.00000291701' />
@@ -172,8 +172,8 @@
   <node id='-25785' action='modify' lat='0.00000040943' lon='-0.00000155893' />
   <node id='-25938' action='modify' lat='0.00000320444' lon='-0.00001497501' />
   <node id='-25940' action='modify' lat='-0.00000425157' lon='-0.00001494351' />
-  <node id='-25941' action='modify' lat='-0.00000351935' lon='-0.00001493564' />
-  <node id='-25944' action='modify' lat='-0.00000329103' lon='-0.00001493564' />
+  <node id='-25941' action='modify' lat='-0.00000384306' lon='-0.00001494253' />
+  <node id='-25944' action='modify' lat='-0.00000332375' lon='-0.00001492359' />
   <node id='-25945' action='modify' lat='-0.00000266116' lon='-0.00001480179' />
   <node id='-25946' action='modify' lat='-0.00000194469' lon='-0.00001447899' />
   <node id='-25947' action='modify' lat='-0.00000118099' lon='-0.00001386487' />
@@ -201,6 +201,9 @@
   <node id='-25987' action='modify' lat='-0.00000331465' lon='0.0000041256' />
   <node id='-25988' action='modify' lat='-0.00000312496' lon='0.00000478685' />
   <node id='-25989' action='modify' lat='-0.00000455863' lon='0.00000316529' />
+  <node id='-26087' action='modify' lat='-0.00000457332' lon='-0.00000000001' />
+  <node id='-26131' action='modify' lat='-0.00000011708' lon='0.00000271369' />
+  <node id='-26141' action='modify' lat='0.00000490392' lon='0.00000317231' />
   <way id='-709' action='modify'>
     <nd ref='-25367' />
     <nd ref='-25368' />
@@ -208,16 +211,14 @@
     <nd ref='-25370' />
     <nd ref='-25371' />
     <nd ref='-25596' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-815' action='modify'>
     <nd ref='-25359' />
     <nd ref='-25361' />
     <nd ref='-25363' />
     <nd ref='-25599' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-819' action='modify'>
     <nd ref='-25596' />
@@ -225,9 +226,8 @@
     <nd ref='-25600' />
     <nd ref='-25601' />
     <nd ref='-25602' />
-    <nd ref='-25607' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <nd ref='-26141' />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-821' action='modify'>
     <nd ref='-25599' />
@@ -236,18 +236,17 @@
     <nd ref='-25604' />
     <nd ref='-25605' />
     <nd ref='-25609' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-826' action='modify'>
+    <nd ref='-26141' />
     <nd ref='-25607' />
     <nd ref='-25380' />
     <nd ref='-25381' />
     <nd ref='-25382' />
     <nd ref='-25383' />
     <nd ref='-25385' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-831' action='modify'>
     <nd ref='-25609' />
@@ -256,8 +255,7 @@
     <nd ref='-25375' />
     <nd ref='-25376' />
     <nd ref='-25378' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-838' action='modify'>
     <nd ref='-25385' />
@@ -268,8 +266,7 @@
     <nd ref='-25388' />
     <nd ref='-25615' />
     <nd ref='-25393' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-843' action='modify'>
     <nd ref='-25378' />
@@ -279,22 +276,19 @@
     <nd ref='-25619' />
     <nd ref='-25620' />
     <nd ref='-25389' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-847' action='modify'>
     <nd ref='-25393' />
     <nd ref='-25395' />
     <nd ref='-25622' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-848' action='modify'>
     <nd ref='-25389' />
     <nd ref='-25391' />
     <nd ref='-25621' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-851' action='modify'>
     <nd ref='-25622' />
@@ -306,8 +300,7 @@
     <nd ref='-25632' />
     <nd ref='-25633' />
     <nd ref='-25407' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-856' action='modify'>
     <nd ref='-25621' />
@@ -317,8 +310,7 @@
     <nd ref='-25629' />
     <nd ref='-25630' />
     <nd ref='-25399' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-862' action='modify'>
     <nd ref='-25407' />
@@ -329,8 +321,7 @@
     <nd ref='-25412' />
     <nd ref='-25634' />
     <nd ref='-25414' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-869' action='modify'>
     <nd ref='-25399' />
@@ -340,23 +331,21 @@
     <nd ref='-25403' />
     <nd ref='-25404' />
     <nd ref='-25938' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-875' action='modify'>
     <nd ref='-25636' />
     <nd ref='-25419' />
     <nd ref='-25420' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-876' action='modify'>
+    <nd ref='-25944' />
     <nd ref='-25941' />
     <nd ref='-25940' />
     <nd ref='-25416' />
     <nd ref='-25417' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-879' action='modify'>
     <nd ref='-25414' />
@@ -367,8 +356,7 @@
     <nd ref='-25641' />
     <nd ref='-25424' />
     <nd ref='-25659' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-894' action='modify'>
     <nd ref='-25938' />
@@ -377,29 +365,20 @@
     <nd ref='-25648' />
     <nd ref='-25421' />
     <nd ref='-25649' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-900' action='modify'>
     <nd ref='-25649' />
     <nd ref='-25422' />
     <nd ref='-25423' />
-    <nd ref='-25365' />
-    <nd ref='-25656' />
-    <nd ref='-25599' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-916' action='modify'>
     <nd ref='-25659' />
     <nd ref='-25954' />
     <nd ref='-25660' />
     <nd ref='-25978' />
-    <nd ref='-25433' />
-    <nd ref='-25988' />
-    <nd ref='-25661' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-919' action='modify'>
     <nd ref='-25661' />
@@ -409,8 +388,7 @@
     <nd ref='-25430' />
     <nd ref='-25429' />
     <nd ref='-25428' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-965' action='modify'>
     <nd ref='-25729' />
@@ -419,15 +397,13 @@
     <nd ref='-25718' />
     <nd ref='-25719' />
     <nd ref='-25721' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-968' action='modify'>
     <nd ref='-25721' />
     <nd ref='-25457' />
     <nd ref='-25722' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-971' action='modify'>
     <nd ref='-25722' />
@@ -436,8 +412,7 @@
     <nd ref='-25727' />
     <nd ref='-25751' />
     <nd ref='-25746' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-974' action='modify'>
     <nd ref='-25729' />
@@ -448,8 +423,7 @@
     <nd ref='-25450' />
     <nd ref='-25730' />
     <nd ref='-25737' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-980' action='modify'>
     <nd ref='-25737' />
@@ -458,16 +432,14 @@
     <nd ref='-25733' />
     <nd ref='-25734' />
     <nd ref='-25735' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-986' action='modify'>
     <nd ref='-25735' />
     <nd ref='-25738' />
     <nd ref='-25456' />
     <nd ref='-25739' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-989' action='modify'>
     <nd ref='-25739' />
@@ -476,8 +448,6 @@
     <nd ref='-25743' />
     <nd ref='-25749' />
     <nd ref='-25745' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
   </way>
   <way id='-993' action='modify'>
     <nd ref='-25745' />
@@ -487,18 +457,12 @@
     <nd ref='-25446' />
     <nd ref='-25447' />
     <nd ref='-25746' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-1022' action='modify'>
-    <nd ref='-25745' />
-    <nd ref='-25423' />
-    <nd ref='-25426' />
     <nd ref='-25977' />
     <nd ref='-25438' />
     <nd ref='-25439' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
   </way>
   <way id='-1052' action='modify'>
     <nd ref='-25609' />
@@ -506,31 +470,27 @@
     <nd ref='-25784' />
     <nd ref='-25785' />
     <nd ref='-25423' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-1057' action='modify'>
-    <nd ref='-25609' />
-    <nd ref='-25365' />
     <nd ref='-25427' />
+    <nd ref='-26087' />
     <nd ref='-25436' />
     <nd ref='-25437' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-1105' action='modify'>
     <nd ref='-25441' />
     <nd ref='-25440' />
     <nd ref='-25950' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-1229' action='modify'>
     <nd ref='-25938' />
     <nd ref='-25406' />
     <nd ref='-25415' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <nd ref='-25944' />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-1234' action='modify'>
     <nd ref='-25944' />
@@ -540,8 +500,7 @@
     <nd ref='-25948' />
     <nd ref='-25949' />
     <nd ref='-25649' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-1241' action='modify'>
     <nd ref='-25950' />
@@ -549,16 +508,13 @@
     <nd ref='-25952' />
     <nd ref='-25953' />
     <nd ref='-25954' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-1263' action='modify'>
     <nd ref='-25730' />
     <nd ref='-25449' />
     <nd ref='-25421' />
     <nd ref='-25950' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
   </way>
   <way id='-1267' action='modify'>
     <nd ref='-25978' />
@@ -567,8 +523,7 @@
     <nd ref='-25975' />
     <nd ref='-25976' />
     <nd ref='-25977' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
   </way>
   <way id='-1274' action='modify'>
     <nd ref='-25423' />
@@ -576,27 +531,21 @@
     <nd ref='-25980' />
     <nd ref='-25981' />
     <nd ref='-25427' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-1278' action='modify'>
     <nd ref='-25427' />
     <nd ref='-25982' />
     <nd ref='-25983' />
     <nd ref='-25984' />
-    <nd ref='-25656' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <nd ref='-26131' />
+    <nd ref='-25599' />
+    <tag k='subtype' v='dashed' />
   </way>
   <way id='-1282' action='modify'>
     <nd ref='-25435' />
     <nd ref='-25434' />
     <nd ref='-25989' />
-    <nd ref='-25433' />
-    <nd ref='-25372' />
-    <nd ref='-25607' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
   </way>
   <way id='-1284' action='modify'>
     <nd ref='-25989' />
@@ -604,8 +553,7 @@
     <nd ref='-25986' />
     <nd ref='-25987' />
     <nd ref='-25988' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <nd ref='-25661' />
   </way>
   <way id='-1295' action='modify'>
     <nd ref='-25596' />
@@ -613,14 +561,28 @@
     <nd ref='-25609' />
     <nd ref='-25442' />
     <nd ref='-25739' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
   </way>
   <way id='-1434' action='modify'>
     <nd ref='-25414' />
     <nd ref='-25636' />
-    <tag k="subtype" v="solid" />
-    <tag k="type" v="line_thin" />
+    <tag k='subtype' v='solid' />
+  </way>
+  <way id='-1791' action='modify'>
+    <nd ref='-25599' />
+    <nd ref='-25423' />
+  </way>
+  <way id='-1792' action='modify'>
+    <nd ref='-25989' />
+    <nd ref='-25372' />
+  </way>
+  <way id='-1803' action='modify'>
+    <nd ref='-25609' />
+    <nd ref='-25427' />
+  </way>
+  <way id='-1848' action='modify'>
+    <nd ref='-25978' />
+    <nd ref='-25661' />
+    <tag k='subtype' v='dashed' />
   </way>
   <relation id='-136' action='modify'>
     <member type='way' ref='-815' role='left' />
@@ -694,93 +656,9 @@
     <tag k='subtype' v='road' />
     <tag k='type' v='lanelet' />
   </relation>
-  <relation id='-593' action='modify'>
-    <member type='way' ref='-876' role='left' />
-    <member type='way' ref='-1105' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-633' action='modify'>
-    <member type='way' ref='-1229' role='left' />
-    <member type='way' ref='-1263' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-667' action='modify'>
-    <member type='way' ref='-869' role='left' />
-    <member type='way' ref='-974' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-704' action='modify'>
-    <member type='way' ref='-856' role='left' />
-    <member type='way' ref='-965' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-741' action='modify'>
-    <member type='way' ref='-848' role='left' />
-    <member type='way' ref='-968' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-778' action='modify'>
-    <member type='way' ref='-843' role='left' />
-    <member type='way' ref='-971' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-815' action='modify'>
-    <member type='way' ref='-993' role='right' />
-    <member type='way' ref='-831' role='left' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-857' action='modify'>
-    <member type='way' ref='-989' role='right' />
-    <member type='way' ref='-1052' role='left' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-900' action='modify'>
-    <member type='way' ref='-1022' role='right' />
-    <member type='way' ref='-1057' role='left' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-940' action='modify'>
-    <member type='way' ref='-1274' role='left' />
-    <member type='way' ref='-1267' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-977' action='modify'>
-    <member type='way' ref='-1234' role='left' />
-    <member type='way' ref='-1241' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-1014' action='modify'>
-    <member type='way' ref='-986' role='left' />
-    <member type='way' ref='-900' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-1090' action='modify'>
-    <member type='way' ref='-815' role='left' />
-    <member type='way' ref='-919' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-1127' action='modify'>
-    <member type='way' ref='-1057' role='left' />
-    <member type='way' ref='-1282' role='right' />
-    <tag k='subtype' v='road' />
-    <tag k='type' v='lanelet' />
-  </relation>
-  <relation id='-1164' action='modify'>
-    <member type='way' ref='-1278' role='left' />
-    <member type='way' ref='-1284' role='right' />
+  <relation id='-1261' action='modify'>
+    <member type='way' ref='-1791' role='left' />
+    <member type='way' ref='-1848' role='right' />
     <tag k='subtype' v='road' />
     <tag k='type' v='lanelet' />
   </relation>

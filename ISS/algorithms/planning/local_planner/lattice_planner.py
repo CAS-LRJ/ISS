@@ -370,9 +370,6 @@ class LatticePlanner(object):
             else:
                 frenet_path = [(x, y, yaw) for x, y, yaw in zip(
                     fplist[i].x, fplist[i].y, fplist[i].yaw)]
-                # if not self.road_detector.check_path(frenet_path):
-                #     road += 1
-                #     continue 
                 if motion_predictor.collision_check(frenet_path):
                     obstacle += 1
                     continue

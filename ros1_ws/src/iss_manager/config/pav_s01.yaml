@@ -29,7 +29,8 @@ local_planning:
 prediction:
   dt: 0.5
   MAX_T: 6.0
-  ego_veh_info:
-    length: 0.35
-    width: 0.2
+
+vehicle_info:
+  length: 0.35
+  width: 0.2
 

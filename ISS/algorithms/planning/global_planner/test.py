@@ -8,13 +8,13 @@ import dubins
 import matplotlib.pyplot as plt
 
 def main():
-    test_map = '/home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/planning/global_planner/test.osm'
+    test_map = '/home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/planning/global_planner/simple_road_v1.osm'
     projector = UtmProjector(lanelet2.io.Origin(0., 0.))
     loadedMap, load_errors = lanelet2.io.loadRobust(test_map, projector) 
 
     traffic_rules = lanelet2.traffic_rules.create(lanelet2.traffic_rules.Locations.Germany,
                                                   lanelet2.traffic_rules.Participants.Vehicle)
-    solid_checker = get_solid_checker(loadedMap)
+    solid_checker = get_solid_checker(loadedMap, 0.35, 0.2)
     lanelet2_settings = dict()
     lanelet2_settings['TURNING_RADIUS'] = 0.3
     lanelet2_settings["GOAL_TORELANCE"] = 0.1

@@ -32,15 +32,12 @@ def get_circle_centers(x, y, heading_angle, length, width, num_circles=3):
     return centers, r
     
 class ConstVelPredictor:
-    def __init__(self, predictor_settings) -> None:
+    def __init__(self, predictor_settings, lanemap_collision_checker, vehicle_info) -> None:
         self._dt = predictor_settings['dt']
         self._horizon = predictor_settings['MAX_T']
-        self._ego_veh_info = predictor_settings['ego_veh_info']
+        self._ego_veh_info = vehicle_info
         self._obstacles = None
-        self._map = None
-    
-    def update_map(self, lane_map):
-        self._map = lane_map
+        self._lanemap_collision_checker = lanemap_collision_checker
 
     def update_obstacle(self, obstacle_detections):
         obstacle_list = []
@@ -51,6 +48,9 @@ class ConstVelPredictor:
             self._obstacles = KDTree(np.array(obstacle_list))
             
     def collision_check(self, path):
+        if self._lanemap_collision_checker.check_path(path): #TODO: not accurate
+            return True
+        
         if self._obstacles == None:
             return False
         
@@ -74,8 +74,6 @@ class ConstVelPredictor:
             ego_circle_centers, ego_radius = get_circle_centers(ego_center[0], ego_center[1], ego_heading, ego_length, ego_width)
             for ego_circle_center in ego_circle_centers:
                 ego_circle_center_array = np.array(ego_circle_center)
-                if self._map.check_collision(ego_circle_center_array, ego_radius):
-                    return True
                 dist, ind = self._obstacles.query(ego_circle_center_array)
                 if dist < 4 * ego_radius:
                     return True
