@@ -97,6 +97,7 @@ class ObjectDetector {
     vg.setLeafSize(0.01f, 0.01f, 0.01f);
     vg.filter(*transformed_cloud);
 
+    if (transformed_cloud->points.size() < 5) return;
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(
         new pcl::search::KdTree<pcl::PointXYZ>());
     tree->setInputCloud(transformed_cloud);
@@ -121,7 +122,7 @@ class ObjectDetector {
       pcl::PointXYZ min_pt, max_pt;
       pcl::getMinMax3D(*cluster, min_pt, max_pt);
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "ego_vehicle/base_link";
+      marker.header.frame_id = _name_space + "/base_link";
       marker.header.stamp = ros::Time::now();
       marker.ns = "object_clusters";
       marker.id = id++;

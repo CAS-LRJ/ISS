@@ -31,3 +31,4 @@ ros1_ws/.catkin_tools/
 
 ISS.egg-info/
 dist/ISS-0.0-py3.9.egg
+*.bag

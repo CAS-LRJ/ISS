@@ -162,11 +162,11 @@ include_directories(
 
 ## Specify libraries to link a library or executable target against
 
-add_executable(object_detector_node src/object_detector.cpp)
-target_link_libraries(object_detector_node
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-)
+# add_executable(object_detector_node src/object_detector.cpp)
+# target_link_libraries(object_detector_node
+#   ${catkin_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+# )
 
 #############
 ## Install ##

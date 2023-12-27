@@ -90,7 +90,7 @@ class GlobalRoutePlanner(object):
         - entry (carla.Waypoint): waypoint of entry point of road segment
         - entryxyz (tuple): (x,y,z) of entry point of road segment
         - exit (carla.Waypoint): waypoint of exit point of road segment
-        - exitxyz (tuple): (x,y,z) of exit point of road segment
+        - exitxyz (tuple): (x,y,z) of exit point of road segment    
         - path (list of carla.Waypoint):  list of waypoints between entry to exit, separated by the resolution
         """
         self._topology = []

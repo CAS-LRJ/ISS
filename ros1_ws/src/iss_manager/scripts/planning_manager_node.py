@@ -74,7 +74,6 @@ class PlanningManagerNode:
         lattice_settings['d_l'] = 7
         self._lattice_planner = LatticePlanner(loadedMap, traffic_rules, lattice_settings, solid_checker)
         
-        self._global_planner_pub = rospy.Publisher("planning/lanelet2_planner/trajectory", StateArray, queue_size=1, latch=True)
         self._local_planner_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
         self._lattice_planner_timer = None

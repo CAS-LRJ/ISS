@@ -1,18 +1,10 @@
 <launch>
 
-    <arg name="world" default="simple_road" doc="ISCAS_building, ROS-Academy, simple_road"/>
     <arg name="robot_name_0" default="ego_vehicle"/>
-    <arg name="robot_type_0" default="pav_s00" doc="pav_s00, pav_s01, pav_s01_scaled"/>
 
 
-    <group ns="$(arg robot_name_0)">
-        <node pkg="iss_manager" type="object_detector_node" name="object_detector_node" output="screen" />
-    </group>
+    <node pkg="iss_manager" type="object_detector_node" name="object_detector_node" output="screen" />
 
-    <include file="$(find robot_gazebo)/launch/gazebo_bridge.launch">
-        <arg name="world" value="$(arg world)"/>
-        <arg name="robot_name_0" value="$(arg robot_name_0)"/>
-        <arg name="robot_type_0" value="$(arg robot_type_0)"/>
-    </include>
+
 
 </launch>
