@@ -8,7 +8,7 @@ import dubins
 import matplotlib.pyplot as plt
 
 def main():
-    test_map = '/home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/planning/global_planner/simple_road_v1.osm'
+    test_map = '/home/shaohang/work_space/autonomous_vehicle/ISS/ros1_ws/src/iss_manager/maps/simple_road_v1.osm'
     projector = UtmProjector(lanelet2.io.Origin(0., 0.))
     loadedMap, load_errors = lanelet2.io.loadRobust(test_map, projector) 
 
@@ -21,8 +21,8 @@ def main():
     global_planner = Lanelet2Planner(loadedMap, traffic_rules, solid_checker, lanelet2_settings)
 
 
-    start = np.array([1, 0.2, np.pi])
-    goal = np.array([1, -0.2, 0])
+    start = np.array([2, 0.17, np.pi])
+    goal = np.array([2, -0.2, 0])
 
     traj = global_planner.run_step(start, goal)
     points = np.array(traj.get_waypoints())

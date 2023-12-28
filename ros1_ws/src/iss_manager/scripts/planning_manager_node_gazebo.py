@@ -97,7 +97,7 @@ class PlanningManagerNode:
             marker_msg.type = Marker.LINE_STRIP
             marker_msg.action = Marker.ADD
             marker_msg.scale.x = 0.01
-            marker_msg.lifetime = rospy.Duration(0.2)
+            marker_msg.lifetime = rospy.Duration(0.5)
             if unsafe:
                 marker_msg.color.a = 1.0
                 marker_msg.color.r = 1

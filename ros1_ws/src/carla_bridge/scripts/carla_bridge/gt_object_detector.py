@@ -4,7 +4,7 @@ import numpy as np
 import tf.transformations
 from iss_manager.msg import ObjectDetection3DArray, ObjectDetection3D
 
-from ISS.algorithms.planning.planning_utils.angle import zero_2_2pi
+from ISS.algorithms.planning.planning_utils.angle import pi_2_pi
 
 
 class GTObjectDetector:
@@ -31,7 +31,7 @@ class GTObjectDetector:
             detection.score = 1.0
             detection.state.x = actor.get_location().x
             detection.state.y = -actor.get_location().y
-            detection.state.heading_angle = zero_2_2pi(-np.deg2rad(actor.get_transform().rotation.yaw))
+            detection.state.heading_angle = pi_2_pi(-np.deg2rad(actor.get_transform().rotation.yaw))
             detection.state.velocity = np.hypot(actor.get_velocity().x, actor.get_velocity().y)
             detection.state.acceleration = np.hypot(actor.get_acceleration().x, actor.get_acceleration().y)
             detection.bbox.size.x = actor.bounding_box.extent.x * 2

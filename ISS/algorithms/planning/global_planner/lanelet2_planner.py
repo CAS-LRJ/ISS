@@ -163,7 +163,9 @@ class Lanelet2Planner(object):
             point = fromLanelet_centerline[ind]
             rot = calculate_rot_angle(np.array(
                 [fromLanelet_centerline[ind + 1].x - point.x, (fromLanelet_centerline[ind + 1].y - point.y)]))
-            if np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 0.5 and np.abs(rot - start_pos[2]) < 0.1:
+            print(point.x, point.y, rot)
+            if (np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 0.5 and np.abs(rot - start_pos[2]) < 0.1) \
+                or (np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 0.1):
                 cloesetNode = PlanningNode([start_pos], fromLanelet.id, ind, 0, 0)
                 break
             dubins_path = dubins.shortest_path(

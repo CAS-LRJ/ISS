@@ -27,7 +27,7 @@ from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
 from ISS.algorithms.planning.planning_utils.cubic_spline import Spline2D
 from ISS.algorithms.planning.planning_utils.quartic_polynomial import QuarticPolynomial
 from ISS.algorithms.planning.planning_utils.quintic_polynomial import QuinticPolynomial
-from ISS.algorithms.planning.planning_utils.angle import zero_2_2pi
+from ISS.algorithms.planning.planning_utils.angle import pi_2_pi
 import lanelet2
 import numpy as np
 import math
@@ -371,10 +371,10 @@ class LatticePlanner(object):
                 accel += 1
                 all_path_vis[-1][-1] = True
                 continue
-            elif any([self.MAX_CURVATURE < abs(c) for c in fplist[i].c]):
-                print(max([abs(c) for c in fplist[i].c]))
-                all_path_vis[-1][-1] = True
-                continue
+            # elif any([self.MAX_CURVATURE < abs(c) for c in fplist[i].c]):
+            #     print(max([abs(c) for c in fplist[i].c]))
+            #     all_path_vis[-1][-1] = True
+            #     continue
             else:
                 frenet_path = [(x, y, yaw) for x, y, yaw in zip(
                     fplist[i].x, fplist[i].y, fplist[i].yaw)]
@@ -389,6 +389,7 @@ class LatticePlanner(object):
         return [fplist[i] for i in ok_ind], all_path_vis
 
     def run_step(self, ego_state, motion_predictor):
+        time_start = time.time()
         # update cartesian coordinate (x, y, yaw, v, a)
         self.state_cartesian_prev = self.state_cartesian
         self.state_cartesian = (
@@ -405,7 +406,7 @@ class LatticePlanner(object):
             for ind in range(len(self.best_path.x)):
                 states_list.append([self.best_path.x[ind],
                                     self.best_path.y[ind],
-                                    zero_2_2pi(self.best_path.yaw[ind]),
+                                    pi_2_pi(self.best_path.yaw[ind]),
                                     math.hypot(
                                         self.best_path.s_d[ind], self.best_path.d_d[ind]),
                                     0,
@@ -418,4 +419,5 @@ class LatticePlanner(object):
         # print(self.state_cartesian)
         # print(states_list[0][:5])
         trajectory.update_states_from_list(states_list)
+        print("Lattice Planning Time: ", time.time() - time_start)
         return trajectory, all_path_vis

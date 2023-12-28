@@ -2,7 +2,7 @@ import rospy
 from iss_manager.msg import State
 import numpy as np
 
-from ISS.algorithms.planning.planning_utils.angle import zero_2_2pi
+from ISS.algorithms.planning.planning_utils.angle import pi_2_pi
 
 
 class GTStateEstimator:
@@ -24,7 +24,7 @@ class GTStateEstimator:
         vehicle_acceleration = self._vehicle.get_acceleration()
         state.x = vehicle_location.x
         state.y = -vehicle_location.y
-        state.heading_angle = zero_2_2pi(-np.deg2rad(vehicle_rotation.yaw))
+        state.heading_angle = pi_2_pi(-np.deg2rad(vehicle_rotation.yaw))
         state.velocity = np.hypot(vehicle_velocity.x, vehicle_velocity.y)
         state.acceleration = np.hypot(vehicle_acceleration.x, vehicle_acceleration.y)
         self._state_estimation_pub.publish(state)

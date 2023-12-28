@@ -17,3 +17,7 @@ source devel/setup.bash
 ## Usage
 1. Launch CARLA server
 2. `roslaunch iss_manager demo.launch`
+
+## Conventions
+1. ROS's right-handed coordinate system is used.
+2. Angles are in -pi to pi.
