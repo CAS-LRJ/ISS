@@ -10,11 +10,15 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from iss_manager.msg import State, StateArray
 
-def traj_to_ros_msg(trajectory: Trajectory):
+def traj_to_ros_msg(trajectory: Trajectory, frame_id="map"):
     trajectory_msg = StateArray()
+    namespaces = rospy.get_namespace().replace("/", "") + "/"
+    trajectory_msg.header.frame_id = namespaces + frame_id
+    trajectory_msg.header.stamp = rospy.Time.now()
     states = trajectory.get_states_array()
     for i in range(states.shape[0]):
         state_msg = State()
+        state_msg.header.frame_id = namespaces + frame_id
         state_msg.x = states[i][0]
         state_msg.y = states[i][1]
         state_msg.heading_angle = states[i][2]
@@ -28,15 +32,15 @@ def traj_to_ros_msg(trajectory: Trajectory):
             trajectory_msg.states.append(state_msg)
     return trajectory_msg
 
-def traj_to_ros_msg_path(trajectory: Trajectory):
+def traj_to_ros_msg_path(trajectory: Trajectory, frame_id="map"):
     path_msg = Path()
     namespaces = rospy.get_namespace().replace("/", "") + "/"
-    path_msg.header.frame_id = namespaces + "map"
+    path_msg.header.frame_id = namespaces + frame_id
     path_msg.header.stamp = rospy.Time.now()
     states = trajectory.get_states_array()
     for i in range(states.shape[0]):
         pose_msg = PoseStamped()
-        pose_msg.header.frame_id = namespaces + "map"
+        pose_msg.header.frame_id = namespaces + frame_id
         pose_msg.pose.position.x = states[i][0]
         pose_msg.pose.position.y = states[i][1]
         pose_msg.pose.position.z = 0.0

@@ -140,7 +140,7 @@ class LatticePlanner(object):
         # set d_r>0 and d_l< 0.
         # d_r, d_l = 2 * abs(d_r), -2 * abs(d_l)
         d_r, d_l = self.d_r, -self.d_l
-        width_range = np.arange(d_l, d_r+0.01, self.D_S)
+        width_range = np.arange(d_l, d_r, self.D_S)
 
         for Ti in np.arange(self.MIN_T, self.MAX_T + self.DT, self.DT):
             lat_qp_list = []
@@ -151,8 +151,8 @@ class LatticePlanner(object):
 
             lon_qp_list = []
             # Longitudinal motion planning ( just for Velocity keeping)
-            for tv in np.arange(self.TARGET_SPEED - self.D_T_S * (self.N_S_SAMPLE + 2),
-                                self.TARGET_SPEED + self.D_T_S * (self.N_S_SAMPLE - 1), self.D_T_S):
+            for tv in np.arange(self.TARGET_SPEED - self.D_T_S * (self.N_S_SAMPLE),
+                                self.TARGET_SPEED + self.D_T_S * (self.N_S_SAMPLE-1), self.D_T_S):
                 # lon_qp = QuarticPolynomial(s, s_d, s_dd, tv, 0.0, Ti)
                 lon_qp = QuarticPolynomial(s, s_d, 0, tv, 0.0, Ti)
                 lon_qp_list.append(lon_qp)
@@ -341,7 +341,7 @@ class LatticePlanner(object):
     def _path_planning(self, motion_predictor):
         fplist = self._calc_frenet_paths()
         fplist = self._calc_global_paths(fplist)
-        fplist = self._check_paths(fplist, motion_predictor)
+        fplist, all_path_vis = self._check_paths(fplist, motion_predictor)
         # find minimum cost path
         min_cost = float("inf")
         best_path = None
@@ -349,7 +349,7 @@ class LatticePlanner(object):
             if min_cost >= fp.cf:
                 min_cost = fp.cf
                 best_path = fp
-        return best_path
+        return best_path, all_path_vis
 
     def _check_paths(self, fplist, motion_predictor):
         ok_ind = []
@@ -357,26 +357,36 @@ class LatticePlanner(object):
         accel = 0
         obstacle = 0
         road = 0
+        all_path_vis = []
         for i, _ in enumerate(fplist):
+            path_vis = [[x, y, yaw] for x, y, yaw in zip(
+                    fplist[i].x, fplist[i].y, fplist[i].yaw)]
+            all_path_vis.append([path_vis, False])
             if any([self.MAX_SPEED < v for v in fplist[i].s_d]):
                 speed += 1
+                all_path_vis[-1][-1] = True
                 continue
             elif any([self.MAX_ACCEL < a for a in fplist[i].s_dd]) and \
                 (fplist[i].s_dd[0] < self.MAX_ACCEL):
                 accel += 1
+                all_path_vis[-1][-1] = True
                 continue
-            # elif any([self.MAX_CURVATURE < abs(c) for c in fplist[i].c]):
-            #     continue
+            elif any([self.MAX_CURVATURE < abs(c) for c in fplist[i].c]):
+                print(max([abs(c) for c in fplist[i].c]))
+                all_path_vis[-1][-1] = True
+                continue
             else:
                 frenet_path = [(x, y, yaw) for x, y, yaw in zip(
                     fplist[i].x, fplist[i].y, fplist[i].yaw)]
                 if motion_predictor.collision_check(frenet_path):
                     obstacle += 1
+                    all_path_vis[-1][-1] = True
                     continue
             ok_ind.append(i)
-        # print("before path num: ", len(fplist))
-        # print("speed: ", speed, "accel: ", accel, "obstacle: ", obstacle, "road: ", road)
-        return [fplist[i] for i in ok_ind]
+        print("-------------------")
+        print("before path num: ", len(fplist))
+        print("speed: ", speed, "accel: ", accel, "obstacle: ", obstacle, "road: ", road)
+        return [fplist[i] for i in ok_ind], all_path_vis
 
     def run_step(self, ego_state, motion_predictor):
         # update cartesian coordinate (x, y, yaw, v, a)
@@ -387,7 +397,7 @@ class LatticePlanner(object):
         # get curr ego_vehicle's frenet coordinate
         self._get_frenet_state()
         
-        self.best_path = self._path_planning(motion_predictor)
+        self.best_path, all_path_vis = self._path_planning(motion_predictor)
         
         trajectory = Trajectory()
         states_list = []
@@ -408,4 +418,4 @@ class LatticePlanner(object):
         # print(self.state_cartesian)
         # print(states_list[0][:5])
         trajectory.update_states_from_list(states_list)
-        return trajectory
+        return trajectory, all_path_vis

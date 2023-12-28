@@ -18,6 +18,10 @@ from ISS.algorithms.planning.local_planner.lattice_planner import LatticePlanner
 from iss_manager.data_utils import *
 
 from nav_msgs.msg import Path
+
+from geometry_msgs.msg import Point
+from visualization_msgs.msg import Marker, MarkerArray
+
 from iss_manager.msg import State, StateArray, ObjectDetection3DArray
 from iss_manager.srv import SetGoal, SetGoalResponse
 
@@ -56,6 +60,8 @@ class PlanningManagerNode:
         
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
 
+        self._lattice_planner_debug_pub = rospy.Publisher("planning/lattice_planner/debug", MarkerArray, queue_size=1)
+
     def _set_goal_srv_callback(self, req):
         while self._ego_state == None:
             rospy.sleep(0.1)
@@ -66,8 +72,8 @@ class PlanningManagerNode:
             rospy.logerr("Global planning: Failed")
             return SetGoalResponse(False)
         rospy.loginfo("Global planning: Success")
-        self._global_planner_pub.publish(traj_to_ros_msg(global_traj))
-        self._global_planner_path_pub.publish(traj_to_ros_msg_path(global_traj))
+        self._global_planner_pub.publish(traj_to_ros_msg(global_traj, frame_id="odom"))
+        self._global_planner_path_pub.publish(traj_to_ros_msg_path(global_traj, frame_id="odom"))
         self._lattice_planner.update(global_traj.get_waypoints())
         self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)
         return SetGoalResponse(True)
@@ -81,12 +87,42 @@ class PlanningManagerNode:
     def _local_planning_timer_callback(self, event):
         if self._ego_state is None:
             return
-        local_traj = self._lattice_planner.run_step(self._ego_state, self._motion_predictor)
+        local_traj, all_path_vis = self._lattice_planner.run_step(self._ego_state, self._motion_predictor)
+        
+        all_path_vis_msg = MarkerArray()
+        for i, [path_list, unsafe] in enumerate(all_path_vis):
+            marker_msg = Marker()
+            marker_msg.header.frame_id = rospy.get_namespace().replace("/", "") + "/odom"
+            marker_msg.id = i
+            marker_msg.type = Marker.LINE_STRIP
+            marker_msg.action = Marker.ADD
+            marker_msg.scale.x = 0.01
+            marker_msg.lifetime = rospy.Duration(0.2)
+            if unsafe:
+                marker_msg.color.a = 1.0
+                marker_msg.color.r = 1
+                marker_msg.color.g = 0.0
+                marker_msg.color.b = 0.0
+            else:
+                marker_msg.color.a = 1.0
+                marker_msg.color.r = 0.0
+                marker_msg.color.g = 1.0
+                marker_msg.color.b = 0.0
+            for x, y, yaw in path_list:
+                point_msg = Point()
+                point_msg.x = x
+                point_msg.y = y
+                point_msg.z = 0.0
+                marker_msg.points.append(point_msg)
+            all_path_vis_msg.markers.append(marker_msg)
+        self._lattice_planner_debug_pub.publish(all_path_vis_msg)
+        
         if local_traj.is_empty():
             rospy.logwarn("Local planning: Failed")
+            print(self._ego_state)
             return
-        self._local_planner_path_pub.publish(traj_to_ros_msg_path(local_traj))
-        self._local_planner_pub.publish(traj_to_ros_msg(local_traj))
+        self._local_planner_path_pub.publish(traj_to_ros_msg_path(local_traj, frame_id="odom"))
+        self._local_planner_pub.publish(traj_to_ros_msg(local_traj, frame_id="odom"))
 
 if __name__ == "__main__":
     rospy.init_node("planning_manager_node", anonymous=True)

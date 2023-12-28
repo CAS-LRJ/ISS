@@ -75,7 +75,7 @@ class ConstVelPredictor:
             for ego_circle_center in ego_circle_centers:
                 ego_circle_center_array = np.array(ego_circle_center)
                 dist, ind = self._obstacles.query(ego_circle_center_array)
-                if dist < 4 * ego_radius:
+                if dist < 2 * (ego_radius * 1.5):
                     return True
         return False
             

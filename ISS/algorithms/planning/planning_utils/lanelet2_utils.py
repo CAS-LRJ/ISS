@@ -110,8 +110,8 @@ class CollisionChecker(object):
             potential_points = self.points[index]
             if half:
                 if collision_check_fronthalf(path[i][:2], potential_points, path[i][2], self.vehicle_length, self.vehicle_width) > 0:
-                    return False
+                    return True
             else:
                 if collision_check(path[i][:2], potential_points, path[i][2], self.vehicle_length, self.vehicle_width) > 0:
-                    return False
-        return True
+                    return True
+        return False
