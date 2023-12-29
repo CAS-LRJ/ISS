@@ -11,6 +11,8 @@ from geometry_msgs.msg import Twist
 from iss_manager.data_utils import traj_from_ros_msg
 from iss_manager.msg import StateArray, State
 
+from queue import Queue
+
 class WPTTrackerNode:
     def __init__(self) -> None:
         ctrl_freq = rospy.get_param("~control_frequency", 10)
@@ -42,12 +44,14 @@ class WPTTrackerNode:
         self._pid_tracker = VehiclePIDController()
         self._mpc_tracker = VehicleLinearMPCController(linear_mpc_settings)
         self._trajectory = Trajectory()
+        self._ctrl_buffer = Queue(maxsize=30)
         
     def _timer_callback(self, event):
         if self._ego_state is None:
             return
-        throttle, steering = self._pid_tracker.run_step(self._ego_state)
+        # throttle, steering = self._pid_tracker.run_step(self._ego_state)
         # throttle, steering = self._mpc_tracker.run_step(self._ego_state)
+        throttle, steering = self._ctrl_buffer.get(timeout=0.1)
         twist_msg = Twist()
         twist_msg.linear.x = throttle
         twist_msg.angular.z = steering
@@ -60,6 +64,9 @@ class WPTTrackerNode:
         self._trajectory = traj_from_ros_msg(msg)
         # self._mpc_tracker.set_traj(self._trajectory)
         self._pid_tracker.set_traj(self._trajectory.get_states_list())
+        ctrl_array = self._trajectory.get_states_array()[:, 3:5]
+        for ctrl in ctrl_array:
+            self._ctrl_buffer.put(ctrl)
         
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@ from ISS.algorithms.planning.global_planner.lanelet2_planner import Lanelet2Plan
 from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
 from ISS.algorithms.planning.motion_predictor.constant_velocity_predictor import ConstVelPredictor
 from ISS.algorithms.planning.local_planner.lattice_planner import LatticePlanner
+from ISS.algorithms.planning.local_planner.pyilqr.ilqr_wrapper import iLQRPlanner
 
 from iss_manager.data_utils import *
 
@@ -40,24 +41,26 @@ class PlanningManagerNode:
         loadedMap, load_errors = lanelet2.io.loadRobust(hd_map, projector)
         traffic_rules = lanelet2.traffic_rules.create(lanelet2.traffic_rules.Locations.Germany,
                                                   lanelet2.traffic_rules.Participants.Vehicle)
-        lanemap_collision_checker = get_solid_checker(loadedMap, self.vehicle_info["length"], self.vehicle_info["width"])
+        self.lanemap_collision_checker = get_solid_checker(loadedMap, self.vehicle_info["length"], self.vehicle_info["width"])
         lanelet2_settings = rospy.get_param("global_planning")["lanelet2_settings"]
-        self._global_planner = Lanelet2Planner(loadedMap, traffic_rules, lanemap_collision_checker, lanelet2_settings)
+        self._global_planner = Lanelet2Planner(loadedMap, traffic_rules, self.lanemap_collision_checker, lanelet2_settings)
         self._global_planner_pub = rospy.Publisher("planning/lanelet2_planner/trajectory", StateArray, queue_size=1, latch=True)
         self._global_planner_path_pub = rospy.Publisher("planning/lanelet2_planner/path", Path, queue_size=1, latch=True)
         
         # Motion predictor
         predictor_settings = rospy.get_param("prediction")
-        self._motion_predictor = ConstVelPredictor(predictor_settings, lanemap_collision_checker, self.vehicle_info) # put lanemap into the predictor
+        self._motion_predictor = ConstVelPredictor(predictor_settings, self.lanemap_collision_checker, self.vehicle_info) # put lanemap into the predictor
         
         # Motion Planner
         self.local_planning_frequency = rospy.get_param("local_planning")["local_planning_frequency"]
         lattice_settings = rospy.get_param("local_planning")["lattice_settings"]
         self._lattice_planner = LatticePlanner(lattice_settings)
+        self._ilqr_planner = iLQRPlanner()
         self._lattice_planner_timer = None
         self._local_planner_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
         self._local_planner_path_pub = rospy.Publisher("planning/lattice_planner/path", Path, queue_size=1)
-        
+
+
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
 
         self._lattice_planner_debug_pub = rospy.Publisher("planning/lattice_planner/debug", MarkerArray, queue_size=1)
@@ -87,8 +90,7 @@ class PlanningManagerNode:
     def _local_planning_timer_callback(self, event):
         if self._ego_state is None:
             return
-        local_traj, all_path_vis = self._lattice_planner.run_step(self._ego_state, self._motion_predictor)
-        
+        local_traj, all_path_vis = self._lattice_planner.run_step(self._ego_state, self._motion_predictor)        
         all_path_vis_msg = MarkerArray()
         for i, [path_list, unsafe] in enumerate(all_path_vis):
             marker_msg = Marker()
@@ -116,11 +118,11 @@ class PlanningManagerNode:
                 marker_msg.points.append(point_msg)
             all_path_vis_msg.markers.append(marker_msg)
         self._lattice_planner_debug_pub.publish(all_path_vis_msg)
-        
         if local_traj.is_empty():
             rospy.logwarn("Local planning: Failed")
             print(self._ego_state)
             return
+        self._ilqr_planner.run_step(self._ego_state, local_traj)
         self._local_planner_path_pub.publish(traj_to_ros_msg_path(local_traj, frame_id="odom"))
         self._local_planner_pub.publish(traj_to_ros_msg(local_traj, frame_id="odom"))
 

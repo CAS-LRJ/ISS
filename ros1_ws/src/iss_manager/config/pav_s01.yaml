@@ -4,7 +4,7 @@ global_planning:
     GOAL_TORELANCE: 0.2
 
 local_planning:
-  local_planning_frequency: 5
+  local_planning_frequency: 1
   lattice_settings:
     MAX_SPEED: 2          # maximum speed [m/s]
     MAX_ACCEL: 1          # maximum acceleration [m/ss]
@@ -12,10 +12,10 @@ local_planning:
     d_r: 0.5
     d_l: 0.5
     D_S: 0.1              # sample Frenet d
-    DT: 2                 # prediction timestep length (s)
+    DT: 0.5                 # prediction timestep length (s)
     dt: 0.25              # sample time
     MAX_T: 6.0            # max prediction time [s]
-    MIN_T: 2.0            # min prediction time [s]
+    MIN_T: 4.0            # min prediction time [s]
     TARGET_SPEED: 0.4     # target speed [m/s]
     D_T_S: 0.2            # target speed sampling length [m/s]
     N_S_SAMPLE: 2         # sampling number of target speed
@@ -31,6 +31,6 @@ prediction:
   MAX_T: 6.0
 
 vehicle_info:
-  length: 0.35
-  width: 0.2
+  length: 0.45   # 0.35 -> 0.45
+  width: 0.3    # 0.2 -> 0.3
 

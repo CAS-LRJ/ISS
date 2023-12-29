@@ -5,8 +5,8 @@ from scipy.interpolate import interp1d
 
 class Trajectory:
     def __init__(self, bbox_size=None) -> None:
-        # np.array([[x, y, heading_angle, velocity, acceleration,\
-        #            jerk, steering_angle, steering_angle_velocity, time_from_start]])
+        # np.array([[x, y, heading_angle, velocity, steering_angle, acceleration,
+        #            jerk, steering_angle_velocity, time_from_start]])
         self._states = None
 
     def update_waypoints(self, waypoints: List[Tuple[float, float, float]], downsample_precision: float = 0.1) -> None:
@@ -22,6 +22,12 @@ class Trajectory:
     def get_waypoints(self):
         return self._states[:, :3].tolist()
 
+    def update_states_from_array(self, states_array):
+        if states_array is None:
+            return
+        self._states = np.zeros((states_array.shape[0], 9))
+        self._states[:, :states_array.shape[1]] = states_array
+
     def update_states_from_list(self, states_list):
         if len(states_list) != 0:
             self._states = np.array(states_list)
@@ -36,8 +42,8 @@ class Trajectory:
     def get_ref_trajectory(self, ego_state, N, dt, dim=4):
         if self._states is None:
             return None
-        cur_state = np.array([ego_state.x, ego_state.y, ego_state.heading_angle, ego_state.velocity,
-                             ego_state.acceleration, ego_state.jerk, ego_state.steering_angle, ego_state.steering_angle_velocity])
+        cur_state = np.array([ego_state.x, ego_state.y, ego_state.heading_angle, ego_state.velocity, ego_state.steering_angle, 
+                             ego_state.acceleration, ego_state.jerk, ego_state.steering_angle_velocity])
 
         distances = np.linalg.norm(self._states[:, :2] - cur_state[:2], axis=1)
         closest_index = np.argmin(distances)

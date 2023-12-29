@@ -24,9 +24,9 @@ def traj_to_ros_msg(trajectory: Trajectory, frame_id="map"):
         state_msg.heading_angle = states[i][2]
         if states.shape[1] > 3: # consider only the waypoints
             state_msg.velocity = states[i][3]
-            state_msg.acceleration = states[i][4]
-            state_msg.jerk = states[i][5]
-            state_msg.steering_angle = states[i][6]
+            state_msg.steering_angle = states[i][4]
+            state_msg.acceleration = states[i][5]
+            state_msg.jerk = states[i][6]
             state_msg.steering_angle_velocity = states[i][7]
             state_msg.time_from_start = states[i][8]
             trajectory_msg.states.append(state_msg)

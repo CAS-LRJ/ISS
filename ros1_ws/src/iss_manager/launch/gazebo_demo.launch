@@ -15,12 +15,12 @@
         </node>
 
         <node pkg="iss_manager" type="control_manager_node_gazebo.py" name="control_manager_node" output="screen">
-            <param name="control_frequency" value="20"/>
+            <param name="control_frequency" value="10"/>
         </node>
     </group>
 
     <include file="$(find robot_gazebo)/launch/gazebo_bridge.launch">
-        <arg name="gui" value="false"/>
+        <arg name="gui" value="true"/>
         <arg name="world" value="$(arg world)"/>
         <arg name="robot_name_0" value="$(arg robot_name_0)"/>
         <arg name="robot_type_0" value="$(arg robot_type_0)"/>
