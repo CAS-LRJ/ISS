@@ -4,7 +4,7 @@ global_planning:
     GOAL_TORELANCE: 0.2
 
 local_planning:
-  local_planning_frequency: 1
+  local_planning_frequency: 5
   lattice_settings:
     MAX_SPEED: 2          # maximum speed [m/s]
     MAX_ACCEL: 1          # maximum acceleration [m/ss]

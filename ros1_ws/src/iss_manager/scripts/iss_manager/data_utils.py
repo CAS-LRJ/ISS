@@ -19,6 +19,7 @@ def traj_to_ros_msg(trajectory: Trajectory, frame_id="map"):
     for i in range(states.shape[0]):
         state_msg = State()
         state_msg.header.frame_id = namespaces + frame_id
+        state_msg.header.stamp = rospy.Time.now()
         state_msg.x = states[i][0]
         state_msg.y = states[i][1]
         state_msg.heading_angle = states[i][2]
@@ -61,9 +62,9 @@ def traj_from_ros_msg(trajectory_msg: StateArray):
         state.append(trajectory_msg.states[i].y)
         state.append(trajectory_msg.states[i].heading_angle)
         state.append(trajectory_msg.states[i].velocity)
+        state.append(trajectory_msg.states[i].steering_angle)
         state.append(trajectory_msg.states[i].acceleration)
         state.append(trajectory_msg.states[i].jerk)
-        state.append(trajectory_msg.states[i].steering_angle)
         state.append(trajectory_msg.states[i].steering_angle_velocity)
         state.append(trajectory_msg.states[i].time_from_start)        
         states.append(state)

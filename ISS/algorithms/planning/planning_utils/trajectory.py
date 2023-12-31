@@ -9,6 +9,10 @@ class Trajectory:
         #            jerk, steering_angle_velocity, time_from_start]])
         self._states = None
 
+    def update_positions(self, positions):
+        self._states = np.zeros((len(positions), 9))
+        self._states[:, :2] = np.array(positions)
+
     def update_waypoints(self, waypoints: List[Tuple[float, float, float]], downsample_precision: float = 0.1) -> None:
         # waypoints: list of (x, y, yaw)
         new_waypoints = []

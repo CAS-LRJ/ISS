@@ -44,14 +44,19 @@ class WPTTrackerNode:
         self._pid_tracker = VehiclePIDController()
         self._mpc_tracker = VehicleLinearMPCController(linear_mpc_settings)
         self._trajectory = Trajectory()
-        self._ctrl_buffer = Queue(maxsize=30)
+        self._ctrl_array = None
+        self._ctrl_idx = 0
         
     def _timer_callback(self, event):
         if self._ego_state is None:
             return
-        # throttle, steering = self._pid_tracker.run_step(self._ego_state)
+        throttle, steering = self._pid_tracker.run_step(self._ego_state)
         # throttle, steering = self._mpc_tracker.run_step(self._ego_state)
-        throttle, steering = self._ctrl_buffer.get(timeout=0.1)
+        # throttle = 0
+        # steering = 0
+        # if self._ctrl_array is not None:
+        #     throttle, steering = self._ctrl_array[self._ctrl_idx]
+        #     self._ctrl_idx += 1
         twist_msg = Twist()
         twist_msg.linear.x = throttle
         twist_msg.angular.z = steering
@@ -61,12 +66,13 @@ class WPTTrackerNode:
         self._ego_state = msg
     
     def _trajectory_callback(self, msg):
+        # print("Received Control Array:")
         self._trajectory = traj_from_ros_msg(msg)
         # self._mpc_tracker.set_traj(self._trajectory)
         self._pid_tracker.set_traj(self._trajectory.get_states_list())
-        ctrl_array = self._trajectory.get_states_array()[:, 3:5]
-        for ctrl in ctrl_array:
-            self._ctrl_buffer.put(ctrl)
+        # self._ctrl_array = self._trajectory.get_states_array()[:, 3:5]
+        # self._ctrl_idx = 0
+        # print("Finished Receiving Control Array")
         
 
 if __name__ == "__main__":

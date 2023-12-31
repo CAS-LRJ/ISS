@@ -2,6 +2,7 @@ import numpy as np
 from queue import PriorityQueue
 import lanelet2
 import dubins
+import cvxpy as cp
 
 from lanelet2.core import (AllWayStop, AttributeMap, BasicPoint2d,
                            BoundingBox2d, Lanelet, LaneletMap,
@@ -15,6 +16,26 @@ from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
 
 # To-DO: Use mapping objects instead of fixed lanelet2
 
+def smooth(trajectory: Trajectory):
+    points = trajectory.get_states_array()[:, :2]
+    points_opt = cp.Variable(points.shape)
+    cost = 0
+    for i in range(1, points.shape[0] - 1):
+        cost += cp.norm(points_opt[i + 1] + points_opt[i - 1] - 2 * points_opt[i]) ** 2
+    for i in range(0, points.shape[0]):
+        cost += cp.norm(points_opt[i] - points[i]) ** 2
+    constraints = []
+    for i in range(points.shape[0]):
+        constraints += [points_opt[i, 0] <= points[i, 0] + 0.1]
+        constraints += [points_opt[i, 0] >= points[i, 0] - 0.1]
+        constraints += [points_opt[i, 1] <= points[i, 1] + 0.1]
+        constraints += [points_opt[i, 1] >= points[i, 1] - 0.1]
+    prob = cp.Problem(cp.Minimize(cost), constraints)
+    prob.solve(verbose=False)
+    if prob.status == cp.OPTIMAL:
+        trajectory.update_positions(points_opt.value)
+    else:
+        print("Error: Cannot smooth the trajectory")
 
 class PlanningNode:
     def __init__(self, points=[], current_lanelet_id=-1, current_index=0, lane_change_num=0, distance=0., solid_conflicts=0, conflicts=set()):
@@ -213,7 +234,7 @@ class Lanelet2Planner(object):
                         point_list.append(goal_pos)
                         traj = Trajectory()
                         traj.update_waypoints(point_list)
-                        return traj
+                        return smooth(traj)
                     dubins_path = dubins.shortest_path(
                         (point.x, point.y, rot), goal_pos, self.turning_radius)
                     dubins_points, dubins_dis = dubins_path.sample_many(0.1)
@@ -233,7 +254,8 @@ class Lanelet2Planner(object):
                             # Global path does not need any speed information
                             traj = Trajectory()
                             traj.update_waypoints(point_list)
-                            return traj
+                            
+                            return smooth(traj)
 
             results = self.explore(currentNode)
             for result_node in results:

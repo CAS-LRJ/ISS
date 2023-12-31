@@ -117,12 +117,12 @@ class PlanningManagerNode:
                 point_msg.z = 0.0
                 marker_msg.points.append(point_msg)
             all_path_vis_msg.markers.append(marker_msg)
-        self._lattice_planner_debug_pub.publish(all_path_vis_msg)
+        # self._lattice_planner_debug_pub.publish(all_path_vis_msg)
         if local_traj.is_empty():
             rospy.logwarn("Local planning: Failed")
             print(self._ego_state)
             return
-        self._ilqr_planner.run_step(self._ego_state, local_traj)
+        # self._ilqr_planner.run_step(self._ego_state, local_traj)
         self._local_planner_path_pub.publish(traj_to_ros_msg_path(local_traj, frame_id="odom"))
         self._local_planner_pub.publish(traj_to_ros_msg(local_traj, frame_id="odom"))
 
