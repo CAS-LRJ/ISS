@@ -9,7 +9,7 @@ local_planning:
     MAX_SPEED: 2          # maximum speed [m/s]
     MAX_ACCEL: 1          # maximum acceleration [m/ss]
     MAX_CURVATURE: 100.0    # maximum curvature [1/m]
-    d_r: 0.5
+    d_r: 0.2
     d_l: 0.5
     D_S: 0.1              # sample Frenet d
     DT: 0.5                 # prediction timestep length (s)
@@ -31,6 +31,6 @@ prediction:
   MAX_T: 6.0
 
 vehicle_info:
-  length: 0.45   # 0.35 -> 0.45
-  width: 0.3    # 0.2 -> 0.3
+  length: 0.35   # 0.35 -> 0.45
+  width: 0.2    # 0.2 -> 0.3
 

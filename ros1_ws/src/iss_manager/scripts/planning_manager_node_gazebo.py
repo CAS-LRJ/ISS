@@ -41,7 +41,7 @@ class PlanningManagerNode:
         loadedMap, load_errors = lanelet2.io.loadRobust(hd_map, projector)
         traffic_rules = lanelet2.traffic_rules.create(lanelet2.traffic_rules.Locations.Germany,
                                                   lanelet2.traffic_rules.Participants.Vehicle)
-        self.lanemap_collision_checker = get_solid_checker(loadedMap, self.vehicle_info["length"], self.vehicle_info["width"])
+        self.lanemap_collision_checker, self._solid_points = get_solid_checker(loadedMap, self.vehicle_info["length"], self.vehicle_info["width"])
         lanelet2_settings = rospy.get_param("global_planning")["lanelet2_settings"]
         self._global_planner = Lanelet2Planner(loadedMap, traffic_rules, self.lanemap_collision_checker, lanelet2_settings)
         self._global_planner_pub = rospy.Publisher("planning/lanelet2_planner/trajectory", StateArray, queue_size=1, latch=True)
@@ -63,6 +63,7 @@ class PlanningManagerNode:
 
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
 
+        self._lanelet2_planner_debug_pub = rospy.Publisher("planning/lanelet2_planner/debug", Marker, queue_size=1)
         self._lattice_planner_debug_pub = rospy.Publisher("planning/lattice_planner/debug", MarkerArray, queue_size=1)
 
     def _set_goal_srv_callback(self, req):
@@ -77,6 +78,24 @@ class PlanningManagerNode:
         rospy.loginfo("Global planning: Success")
         self._global_planner_pub.publish(traj_to_ros_msg(global_traj, frame_id="odom"))
         self._global_planner_path_pub.publish(traj_to_ros_msg_path(global_traj, frame_id="odom"))
+        solid_lane = Marker()
+        solid_lane.header.frame_id = rospy.get_namespace().replace("/", "") + "/odom"
+        solid_lane.type = Marker.POINTS
+        solid_lane.action = Marker.ADD
+        solid_lane.scale.x = 0.02
+        solid_lane.lifetime = rospy.Duration(60)
+        solid_lane.pose.orientation.w = 1.0
+        solid_lane.color.a = 1.0
+        solid_lane.color.r = 1.0
+        solid_lane.color.g = 1.0
+        solid_lane.color.b = 0.0
+        for solid_point in self._solid_points:
+            point_msg = Point()
+            point_msg.x = solid_point[0]
+            point_msg.y = solid_point[1]
+            point_msg.z = 0.0
+            solid_lane.points.append(point_msg)
+        self._lanelet2_planner_debug_pub.publish(solid_lane)
         self._lattice_planner.update(global_traj.get_waypoints())
         self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)
         return SetGoalResponse(True)
@@ -92,24 +111,35 @@ class PlanningManagerNode:
             return
         local_traj, all_path_vis = self._lattice_planner.run_step(self._ego_state, self._motion_predictor)        
         all_path_vis_msg = MarkerArray()
-        for i, [path_list, unsafe] in enumerate(all_path_vis):
+        for i, [path_list, info] in enumerate(all_path_vis):
             marker_msg = Marker()
             marker_msg.header.frame_id = rospy.get_namespace().replace("/", "") + "/odom"
             marker_msg.id = i
             marker_msg.type = Marker.LINE_STRIP
             marker_msg.action = Marker.ADD
+            marker_msg.pose.orientation.w = 1.0
             marker_msg.scale.x = 0.01
-            marker_msg.lifetime = rospy.Duration(0.5)
-            if unsafe:
+            marker_msg.lifetime = rospy.Duration(10)
+            if info == "solid_boundary":
                 marker_msg.color.a = 1.0
                 marker_msg.color.r = 1
+                marker_msg.color.g = 1.0
+                marker_msg.color.b = 0.0
+            elif info == "obstacle":
+                marker_msg.color.a = 1.0
+                marker_msg.color.r = 1.0
                 marker_msg.color.g = 0.0
                 marker_msg.color.b = 0.0
-            else:
+            elif info == "safe":
                 marker_msg.color.a = 1.0
                 marker_msg.color.r = 0.0
                 marker_msg.color.g = 1.0
                 marker_msg.color.b = 0.0
+            else:
+                marker_msg.color.a = 0.5
+                marker_msg.color.r = 0.0
+                marker_msg.color.g = 0.0
+                marker_msg.color.b = 1.0
             for x, y, yaw in path_list:
                 point_msg = Point()
                 point_msg.x = x
@@ -117,7 +147,7 @@ class PlanningManagerNode:
                 point_msg.z = 0.0
                 marker_msg.points.append(point_msg)
             all_path_vis_msg.markers.append(marker_msg)
-        # self._lattice_planner_debug_pub.publish(all_path_vis_msg)
+        self._lattice_planner_debug_pub.publish(all_path_vis_msg)
         if local_traj.is_empty():
             rospy.logwarn("Local planning: Failed")
             print(self._ego_state)

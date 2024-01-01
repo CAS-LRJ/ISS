@@ -23,12 +23,12 @@ def bicycle_model_step(bicycle_model_state, acc, steer, L, dt):
 def get_circle_centers(x, y, heading_angle, length, width, num_circles=3):
     # represent the vehicle circles, the state is the center of the bicycle model
     centers = []
-    for j in range(num_circles):
+    for j in range(1, num_circles + 1):
         center = [0, 0]
         center[0] = x + length / (2 * num_circles) * (2 * j - num_circles - 1) * math.cos(heading_angle)
         center[1] = y + length / (2 * num_circles) * (2 * j - num_circles - 1) * math.sin(heading_angle)
         centers.append(center)
-    r = 0.5 * math.sqrt((length / num_circles) ** 2 + (width / 2) ** 2)
+    r = 0.5 * math.sqrt((length / num_circles) ** 2 + width ** 2)
     return centers, r
     
 class ConstVelPredictor:
@@ -49,10 +49,10 @@ class ConstVelPredictor:
             
     def collision_check(self, path):
         if self._lanemap_collision_checker.check_path(path): #TODO: not accurate
-            return True
+            return True, 0
         
         if self._obstacles == None:
-            return False
+            return False, 0
         
         # all_pred_trajs = []
         # for obstacle in self._obstacle_detections:
@@ -75,12 +75,11 @@ class ConstVelPredictor:
             for ego_circle_center in ego_circle_centers:
                 ego_circle_center_array = np.array(ego_circle_center)
                 dist, ind = self._obstacles.query(ego_circle_center_array)
-                if dist < 2 * (ego_radius * 1.5):
-                    return True
-        return False
+                if dist < 2 * (ego_radius):
+                    return True, 1
+        return False, 0
             
         
-
     def _predict(self, bicycle_model_state, acc, steer, L):
         pred_traj = []
         for t in np.arange(0, self._horizon, self._dt):
@@ -88,3 +87,28 @@ class ConstVelPredictor:
             pred_traj.append(bicycle_model_state)
         return pred_traj
     
+
+if __name__=="__main__":
+    x = 0
+    y = 0
+    heading_angle = 0
+    length = 0.35
+    width = 0.2
+    centers, r = get_circle_centers(x, y, heading_angle, length, width)
+    print(2*r)
+    import matplotlib.pyplot as plt
+    import matplotlib.patches as patches
+
+    fig, ax = plt.subplots()
+    for center in centers:
+        ax.plot(center[0], center[1], 'ro')
+        cir = patches.Circle(center, r, edgecolor='r', facecolor='none')
+        ax.add_patch(cir)
+
+    rect = patches.Rectangle((x - length / 2, y - width / 2), length, width, angle=heading_angle * 180 / math.pi, linewidth=1, edgecolor='r', facecolor='none')
+    ax.add_patch(rect)
+    
+    
+    ax.set_xlim(-1, 1)
+    ax.set_ylim(-1, 1)
+    plt.show()

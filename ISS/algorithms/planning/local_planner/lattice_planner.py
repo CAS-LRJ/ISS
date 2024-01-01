@@ -356,20 +356,20 @@ class LatticePlanner(object):
         speed = 0
         accel = 0
         obstacle = 0
-        road = 0
+        solid_boundary = 0
         all_path_vis = []
         for i, _ in enumerate(fplist):
             path_vis = [[x, y, yaw] for x, y, yaw in zip(
                     fplist[i].x, fplist[i].y, fplist[i].yaw)]
-            all_path_vis.append([path_vis, False])
+            all_path_vis.append([path_vis, "safe"])
             if any([self.MAX_SPEED < v for v in fplist[i].s_d]):
                 speed += 1
-                all_path_vis[-1][-1] = True
+                all_path_vis[-1][-1] = "velocity"
                 continue
             elif any([self.MAX_ACCEL < a for a in fplist[i].s_dd]) and \
                 (fplist[i].s_dd[0] < self.MAX_ACCEL):
                 accel += 1
-                all_path_vis[-1][-1] = True
+                all_path_vis[-1][-1] = "acceleration"
                 continue
             # elif any([self.MAX_CURVATURE < abs(c) for c in fplist[i].c]):
             #     print(max([abs(c) for c in fplist[i].c]))
@@ -378,14 +378,19 @@ class LatticePlanner(object):
             else:
                 frenet_path = [(x, y, yaw) for x, y, yaw in zip(
                     fplist[i].x, fplist[i].y, fplist[i].yaw)]
-                if motion_predictor.collision_check(frenet_path):
-                    obstacle += 1
-                    all_path_vis[-1][-1] = True
+                res, coll_type = motion_predictor.collision_check(frenet_path)
+                if res:
+                    if coll_type == 0:
+                        solid_boundary += 1
+                        all_path_vis[-1][-1] = "solid_boundary"
+                    elif coll_type == 1:
+                        obstacle += 1
+                        all_path_vis[-1][-1] = "obstacle"
                     continue
             ok_ind.append(i)
         print("-------------------")
         print("before path num: ", len(fplist))
-        print("speed: ", speed, "accel: ", accel, "obstacle: ", obstacle, "road: ", road)
+        print("speed: ", speed, "accel: ", accel, "obstacle: ", obstacle, "solid_boundary: ", solid_boundary)
         return [fplist[i] for i in ok_ind], all_path_vis
 
     def run_step(self, ego_state, motion_predictor):

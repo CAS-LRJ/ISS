@@ -184,7 +184,6 @@ class Lanelet2Planner(object):
             point = fromLanelet_centerline[ind]
             rot = calculate_rot_angle(np.array(
                 [fromLanelet_centerline[ind + 1].x - point.x, (fromLanelet_centerline[ind + 1].y - point.y)]))
-            print(point.x, point.y, rot)
             if (np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 0.5 and np.abs(rot - start_pos[2]) < 0.1) \
                 or (np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 0.1):
                 cloesetNode = PlanningNode([start_pos], fromLanelet.id, ind, 0, 0)
@@ -234,7 +233,8 @@ class Lanelet2Planner(object):
                         point_list.append(goal_pos)
                         traj = Trajectory()
                         traj.update_waypoints(point_list)
-                        return smooth(traj)
+                        smooth(traj)
+                        return traj
                     dubins_path = dubins.shortest_path(
                         (point.x, point.y, rot), goal_pos, self.turning_radius)
                     dubins_points, dubins_dis = dubins_path.sample_many(0.1)
@@ -253,9 +253,9 @@ class Lanelet2Planner(object):
                                 list(dubins_points) + [goal_pos_list]
                             # Global path does not need any speed information
                             traj = Trajectory()
-                            traj.update_waypoints(point_list)
-                            
-                            return smooth(traj)
+                            traj.update_waypoints(point_list)   
+                            smooth(traj)
+                            return traj
 
             results = self.explore(currentNode)
             for result_node in results:
