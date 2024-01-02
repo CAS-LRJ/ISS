@@ -29,14 +29,6 @@ catkin_install_python(PROGRAMS
   scripts/carla_bridge/gt_state_estimator.py
   scripts/carla_bridge/gt_object_detector.py
   scripts/carla_bridge/controller_bridge.py
-  scripts/carla_agent/__init__.py 
-  scripts/carla_agent/basic_agent.py 
-  scripts/carla_agent/behavior_agent.py 
-  scripts/carla_agent/behavior_types.py 
-  scripts/carla_agent/carla_utils.py 
-  scripts/carla_agent/controller.py 
-  scripts/carla_agent/global_route_planner.py 
-  scripts/carla_agent/local_planner.py 
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

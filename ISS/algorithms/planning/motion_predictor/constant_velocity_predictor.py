@@ -92,8 +92,8 @@ if __name__=="__main__":
     x = 0
     y = 0
     heading_angle = 0
-    length = 0.35
-    width = 0.2
+    length = 0.32
+    width = 0.18
     centers, r = get_circle_centers(x, y, heading_angle, length, width)
     print(2*r)
     import matplotlib.pyplot as plt

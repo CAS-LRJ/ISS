@@ -15,8 +15,15 @@ source devel/setup.bash
 ```
 
 ## Usage
-1. Launch CARLA server
-2. `roslaunch iss_manager demo.launch`
+If using CARLA simulator, first please launch CARLA simulator. Then do
+```
+roslaunch carla_bridge carla_demo.launch
+```
+
+If using Gazebo simulator, simply do
+```
+roslaunch robot_gazebo gazebo_demo.launch
+```
 
 ## Conventions
 1. ROS's right-handed coordinate system is used.

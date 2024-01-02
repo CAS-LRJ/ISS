@@ -7,26 +7,24 @@ import random
 from scipy.spatial.transform import Rotation as R
 
 import rospy
-from tqdm import tqdm
 
 from carla_bridge.gt_object_detector import GTObjectDetector
 from carla_bridge.gt_state_estimator import GTStateEstimator
 from carla_bridge.carla_visualizer import CARLAVisualizer
 from carla_bridge.controller_bridge import ControllerBridge
 
-from iss_manager.msg import ControlCommand
 
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
+        self._ego_vehicle_name = rospy.get_param('robot_name', 'ego_vehicle')
         self.params =  {
-            "fixed_delta_seconds": rospy.get_param('~fixed_delta_seconds'),
-            "num_non_ego_vehicles": rospy.get_param('~num_non_ego_vehicles'),
-            "graphic_rendering": rospy.get_param('~graphic_rendering'),
-            "simulation_duration": rospy.get_param('~simulation_duration'),
-            "simple_agent_demo": rospy.get_param('~simple_agent_demo'),
-            "ego_init": rospy.get_param('~ego_init'),
-            "ego_destination": rospy.get_param('~ego_destination'),
-            "agent_control_frequency": rospy.get_param('~agent_control_frequency'),
+            "fixed_delta_seconds": rospy.get_param('fixed_delta_seconds'),
+            "num_non_ego_vehicles": rospy.get_param('num_non_ego_vehicles'),
+            "graphic_rendering": rospy.get_param('graphic_rendering'),
+            "simulation_duration": rospy.get_param('simulation_duration'),
+            "ego_init": rospy.get_param('ego_init'),
+            "ego_destination": rospy.get_param('ego_destination'),
+            "agent_control_frequency": rospy.get_param('agent_control_frequency'),
         }
         self._world = world
         self._original_settings = self._world.get_settings()
@@ -46,35 +44,26 @@ class CARLABridgeNode:
         self._add_vehicles()
         self._world.tick()
         
-
-    def run(self):
-        self._gt_object_detector = GTObjectDetector(self._vehicles["ego_vehicle"].id, self._world)
-        self._gt_state_estimator = GTStateEstimator(self._vehicles["ego_vehicle"])
-        self._controller_bridge = ControllerBridge(self._vehicles["ego_vehicle"])
+        self._gt_object_detector = GTObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
+        self._gt_state_estimator = GTStateEstimator(self._vehicles[self._ego_vehicle_name])
+        self._controller_bridge = ControllerBridge(self._vehicles[self._ego_vehicle_name])
         self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
         self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
         # self._progress_bar = tqdm(total=self.params["simulation_duration"] + 0.1, unit="sec")
         self._step_cnt = 0
-
-        if self.params["simple_agent_demo"]:
-            self._controller_bridge.start_simple_agent(self._spawn_points[self.params["ego_destination"]], self.params["agent_control_frequency"])
-        else:
-            self._controller_bridge.start_iss_agent(self._spawn_points[self.params["ego_destination"]])
-            self._carla_visualizer = CARLAVisualizer(self._world)
-        rospy.spin()
-    
+        self._controller_bridge.start_iss_agent(self._spawn_points[self.params["ego_destination"]])
+        self._carla_visualizer = CARLAVisualizer(self._world)
         
     def _carla_tick(self, event):
         # self._progress_bar.update(self.params["fixed_delta_seconds"])
         self._step_cnt += 1
-        self._set_spectator(self._vehicles["ego_vehicle"].get_transform())
+        self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
         self._controller_bridge.apply_control()
         self._world.tick()
         if self._step_cnt >= self._total_steps:
             self._gt_object_detector.shutdown()
             self._gt_state_estimator.shutdown()
             self._carla_timer.shutdown()
-            self._agent_timer.shutdown() if self.params["simple_agent_demo"] else None
             # self._progress_bar.close()
             self.destory()
             self._world.tick()
@@ -85,7 +74,7 @@ class CARLABridgeNode:
         vehicle_bp = random.choice(blueprint_library.filter('vehicle.tesla.model3'))
         vehicle = self._world.try_spawn_actor(vehicle_bp, spawn_point)
         if vehicle != None:
-            self._vehicles["ego_vehicle"] = vehicle
+            self._vehicles[self._ego_vehicle_name] = vehicle
         else:
             print("Ego vehicle spawn failed")
     
@@ -109,7 +98,7 @@ class CARLABridgeNode:
         for i in range(self.params["num_non_ego_vehicles"]):
             random.shuffle(nonego_spawn_points)
             if i < len(nonego_spawn_points):
-                self._add_non_ego_vehicle(nonego_spawn_points[i], "non_ego_vehicle_" + str(i))
+                self._add_non_ego_vehicle(nonego_spawn_points[i], "npc_" + str(i))
             else:
                 break
             
@@ -133,11 +122,11 @@ class CARLABridgeNode:
 
 if __name__ == "__main__":
     rospy.init_node("carla_bridge_node")
-    carla_host = rospy.get_param('~carla_host', 'localhost')
-    carla_port = rospy.get_param('~carla_port', 2000)
+    carla_host = rospy.get_param('carla_host', 'localhost')
+    carla_port = rospy.get_param('carla_port', 2000)
     client = carla.Client(carla_host, carla_port)
     client.set_timeout(5.0)
-    map_name = rospy.get_param('~map_name', 'Town06')
+    map_name = rospy.get_param('map_name', 'Town06')
     client.load_world(map_name)
     simulator = CARLABridgeNode(client.get_world(), client.get_trafficmanager())
-    simulator.run()
+    rospy.spin()

@@ -388,9 +388,9 @@ class LatticePlanner(object):
                         all_path_vis[-1][-1] = "obstacle"
                     continue
             ok_ind.append(i)
-        print("-------------------")
-        print("before path num: ", len(fplist))
-        print("speed: ", speed, "accel: ", accel, "obstacle: ", obstacle, "solid_boundary: ", solid_boundary)
+        # print("-------------------")
+        # print("before path num: ", len(fplist))
+        # print("speed: ", speed, "accel: ", accel, "obstacle: ", obstacle, "solid_boundary: ", solid_boundary)
         return [fplist[i] for i in ok_ind], all_path_vis
 
     def run_step(self, ego_state, motion_predictor):
@@ -423,6 +423,6 @@ class LatticePlanner(object):
         # print("-------------------")
         # print(self.state_cartesian)
         # print(states_list[0][:5])
+        # print("Lattice Planning Time: ", time.time() - time_start)
         trajectory.update_states_from_list(states_list)
-        print("Lattice Planning Time: ", time.time() - time_start)
         return trajectory, all_path_vis

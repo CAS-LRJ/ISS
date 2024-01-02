@@ -17,7 +17,7 @@ class CARLAVisualizer:
         self._local_planner_sub = rospy.Subscriber("planning/local_planner/trajectory", StateArray, self._local_planner_callback)
     
     def _global_planner_callback(self, msg):
-        life_time = rospy.get_param('~simulation_duration')
+        life_time = rospy.get_param('simulation_duration')
         self._draw_trajectory_carla(msg, life_time=life_time, z=0.5, color=color_map['green'])
     
     def _local_planner_callback(self, msg):

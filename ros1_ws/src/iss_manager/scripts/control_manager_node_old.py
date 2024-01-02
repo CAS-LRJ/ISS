@@ -7,18 +7,15 @@ from ISS.algorithms.control.pid_wpt_tracker import VehiclePIDController
 from ISS.algorithms.control.linear_mpc_tracker import VehicleLinearMPCController
 from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
 
-from geometry_msgs.msg import Twist
 from iss_manager.data_utils import traj_from_ros_msg
-from iss_manager.msg import StateArray, State
-
-from queue import Queue
+from iss_manager.msg import ControlCommand, StateArray, State
 
 class WPTTrackerNode:
     def __init__(self) -> None:
         ctrl_freq = rospy.get_param("~control_frequency", 10)
         self._timer = rospy.Timer(rospy.Duration(1 / ctrl_freq), self._timer_callback)
-        self._ctrl_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
-        self._ego_state_sub = rospy.Subscriber("ego_state_estimation", State, self._state_callback)
+        self._ctrl_pub = rospy.Publisher("control/wpt_tracker/control_command", ControlCommand, queue_size=1)
+        self._ego_state_sub = rospy.Subscriber("carla_bridge/gt_state", State, self._state_callback)
         self._trajectory_sub = rospy.Subscriber("planning/local_planner/trajectory", StateArray, self._trajectory_callback)
         self._ego_state = None
         
@@ -44,35 +41,21 @@ class WPTTrackerNode:
         self._pid_tracker = VehiclePIDController()
         self._mpc_tracker = VehicleLinearMPCController(linear_mpc_settings)
         self._trajectory = Trajectory()
-        self._ctrl_array = None
-        self._ctrl_idx = 0
         
     def _timer_callback(self, event):
         if self._ego_state is None:
             return
         throttle, steering = self._pid_tracker.run_step(self._ego_state)
         # throttle, steering = self._mpc_tracker.run_step(self._ego_state)
-        # throttle = 0
-        # steering = 0
-        # if self._ctrl_array is not None:
-        #     throttle, steering = self._ctrl_array[self._ctrl_idx]
-        #     self._ctrl_idx += 1
-        twist_msg = Twist()
-        twist_msg.linear.x = throttle
-        twist_msg.angular.z = steering
-        self._ctrl_pub.publish(twist_msg)
+        self._ctrl_pub.publish(ControlCommand(steering=steering, throttle=throttle))
     
     def _state_callback(self, msg):
         self._ego_state = msg
     
     def _trajectory_callback(self, msg):
-        # print("Received Control Array:")
         self._trajectory = traj_from_ros_msg(msg)
         # self._mpc_tracker.set_traj(self._trajectory)
         self._pid_tracker.set_traj(self._trajectory.get_states_list())
-        # self._ctrl_array = self._trajectory.get_states_array()[:, 3:5]
-        # self._ctrl_idx = 0
-        # print("Finished Receiving Control Array")
         
 
 if __name__ == "__main__":

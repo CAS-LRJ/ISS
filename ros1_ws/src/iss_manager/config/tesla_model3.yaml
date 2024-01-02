@@ -1,0 +1,43 @@
+hd_map: "Town06_hy.osm"
+
+global_planning:
+  lanelet2_settings:
+    TURNING_RADIUS: 5.6
+    GOAL_TORELANCE: 2
+
+prediction:
+  dt: 0.5
+  MAX_T: 6.0
+
+local_planning:
+  local_planning_frequency: 5
+  lattice_settings:
+    MAX_SPEED: 13.88          # maximum speed [m/s]
+    MAX_ACCEL: 5          # maximum acceleration [m/ss]
+    MAX_CURVATURE: 100.0    # maximum curvature [1/m]
+    d_r: 7
+    d_l: 7
+    D_S: 1              # sample Frenet d
+    DT: 1                 # prediction timestep length (s)
+    dt: 0.25              # sample time
+    MAX_T: 6.0            # max prediction time [s]
+    MIN_T: 4.0            # min prediction time [s]
+    TARGET_SPEED: 8.33     # target speed [m/s]
+    D_T_S: 1.38            # target speed sampling length [m/s]
+    N_S_SAMPLE: 4         # sampling number of target speed
+    K_J: 0.1
+    K_T: 0.5
+    K_D: 5
+    K_LAT: 0.1
+    K_LON: 0.8
+
+control:
+  control_frequency: 10
+
+vehicle_info:
+  length: 4.69
+  width: 2.0  
+  wheelbase: 2.87
+  overhang_rear: 0.978
+  overhang_front: 0.874
+

@@ -1,36 +1,39 @@
+hd_map: "simple_road_v1.osm"
+
 global_planning:
   lanelet2_settings:
     TURNING_RADIUS: 0.3
     GOAL_TORELANCE: 0.2
 
+prediction:
+  dt: 0.5
+  MAX_T: 6.0
+
 local_planning:
   local_planning_frequency: 5
   lattice_settings:
-    MAX_SPEED: 2          # maximum speed [m/s]
-    MAX_ACCEL: 1          # maximum acceleration [m/ss]
-    MAX_CURVATURE: 100.0    # maximum curvature [1/m]
-    d_r: 0.2
+    MAX_SPEED: 2 # maximum speed [m/s]
+    MAX_ACCEL: 1 # maximum acceleration [m/ss]
+    MAX_CURVATURE: 100.0 # maximum curvature [1/m]
+    d_r: 0.5
     d_l: 0.5
-    D_S: 0.1              # sample Frenet d
-    DT: 0.5                 # prediction timestep length (s)
-    dt: 0.25              # sample time
-    MAX_T: 6.0            # max prediction time [s]
-    MIN_T: 4.0            # min prediction time [s]
-    TARGET_SPEED: 0.4     # target speed [m/s]
-    D_T_S: 0.2            # target speed sampling length [m/s]
-    N_S_SAMPLE: 2         # sampling number of target speed
+    D_S: 0.1 # sample Frenet d
+    DT: 0.5 # prediction timestep length (s)
+    dt: 0.25 # sample time
+    MAX_T: 6.0 # max prediction time [s]
+    MIN_T: 4.0 # min prediction time [s]
+    TARGET_SPEED: 0.4 # target speed [m/s]
+    D_T_S: 0.2 # target speed sampling length [m/s]
+    N_S_SAMPLE: 2 # sampling number of target speed
     K_J: 0.1
     K_T: 0.5
     K_D: 5
     K_LAT: 0.1
     K_LON: 0.8
 
-
-prediction:
-  dt: 0.5
-  MAX_T: 6.0
+control:
+  control_frequency: 10
 
 vehicle_info:
-  length: 0.35   # 0.35 -> 0.45
-  width: 0.2    # 0.2 -> 0.3
-
+  length: 0.35
+  width: 0.22

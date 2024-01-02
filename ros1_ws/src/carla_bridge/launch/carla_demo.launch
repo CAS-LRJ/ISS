@@ -1,0 +1,15 @@
+<launch>
+    <arg name="robot_name_0" default="ego_vehicle"/>
+    <arg name="robot_type_0" default="tesla_model3"/>
+
+    <group ns="$(arg robot_name_0)">
+        <param name="robot_name" value="$(arg robot_name_0)"/>
+        
+        <rosparam command="load" file="$(find carla_bridge)/config/carla_bridge.yaml"/>
+        <node pkg="carla_bridge" type="carla_bridge_node.py" name="carla_bridge_node" output="screen"/>
+
+        <rosparam command="load" file="$(find iss_manager)/config/$(arg robot_type_0).yaml"/>
+        <include file="$(find iss_manager)/launch/iss_manager.launch"/>
+    </group>
+
+</launch>

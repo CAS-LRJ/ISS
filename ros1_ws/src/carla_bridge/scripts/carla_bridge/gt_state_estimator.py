@@ -8,8 +8,8 @@ from ISS.algorithms.planning.planning_utils.angle import pi_2_pi
 class GTStateEstimator:
     def __init__(self, vehicle) -> None:
         self._vehicle = vehicle
-        self._state_estimation_pub = rospy.Publisher("carla_bridge/gt_state", State, queue_size=1)
-        gt_state_estimation_frequency = rospy.get_param('~gt_state_estimation_frequency', 10)
+        self._state_estimation_pub = rospy.Publisher(rospy.get_param("ego_state_topic"), State, queue_size=1)
+        gt_state_estimation_frequency = rospy.get_param('gt_state_estimation_frequency', 10)
         self._timer = rospy.Timer(rospy.Duration(1 / gt_state_estimation_frequency), self._timer_callback)
     
     def _timer_callback(self, event):
