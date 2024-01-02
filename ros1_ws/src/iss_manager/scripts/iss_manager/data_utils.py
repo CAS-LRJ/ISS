@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
+from ISS.algorithms.utils.trajectory import Trajectory
 
 import rospy
 import tf

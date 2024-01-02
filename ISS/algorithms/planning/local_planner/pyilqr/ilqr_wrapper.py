@@ -14,7 +14,7 @@ from ISS.algorithms.planning.local_planner.pyilqr.ocp import OptimalControlProbl
 from ISS.algorithms.planning.local_planner.pyilqr.strategies import OpenLoopStrategy
 from ISS.algorithms.planning.local_planner.pyilqr.receding_horizon import RecedingHorizonStrategy, ILQRSolver
 
-from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
+from ISS.algorithms.utils.trajectory import Trajectory
 import time
 import matplotlib.pyplot as plt
 

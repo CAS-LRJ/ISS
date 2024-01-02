@@ -1,4 +1,4 @@
-from ISS.algorithms.planning.planning_utils.lanelet2_utils import get_solid_checker
+from ISS.algorithms.utils.lanelet2_utils import get_solid_checker
 from ISS.algorithms.planning.global_planner.lanelet2_planner import Lanelet2Planner
 import lanelet2
 from lanelet2.projection import UtmProjector

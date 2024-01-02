@@ -23,11 +23,11 @@ Ref:
 # To-DO Critical: Use Mapping objects to replace fixed lanelet setting
 import json
 import time
-from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
-from ISS.algorithms.planning.planning_utils.cubic_spline import Spline2D
-from ISS.algorithms.planning.planning_utils.quartic_polynomial import QuarticPolynomial
-from ISS.algorithms.planning.planning_utils.quintic_polynomial import QuinticPolynomial
-from ISS.algorithms.planning.planning_utils.angle import pi_2_pi
+from ISS.algorithms.utils.trajectory import Trajectory
+from ISS.algorithms.utils.cubic_spline import Spline2D
+from ISS.algorithms.utils.quartic_polynomial import QuarticPolynomial
+from ISS.algorithms.utils.quintic_polynomial import QuinticPolynomial
+from ISS.algorithms.utils.angle import pi_2_pi
 import lanelet2
 import numpy as np
 import math

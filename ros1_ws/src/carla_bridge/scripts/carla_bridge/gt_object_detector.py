@@ -4,7 +4,7 @@ import numpy as np
 import tf.transformations
 from iss_manager.msg import ObjectDetection3DArray, ObjectDetection3D
 
-from ISS.algorithms.planning.planning_utils.angle import pi_2_pi
+from ISS.algorithms.utils.angle import pi_2_pi
 
 
 class GTObjectDetector:

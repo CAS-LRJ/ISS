@@ -9,9 +9,9 @@ import time
 import lanelet2
 from lanelet2.projection import UtmProjector
 
-from ISS.algorithms.planning.planning_utils.lanelet2_utils import get_solid_checker
+from ISS.algorithms.utils.lanelet2_utils import get_solid_checker
 from ISS.algorithms.planning.global_planner.lanelet2_planner import Lanelet2Planner
-from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
+from ISS.algorithms.utils.trajectory import Trajectory
 from ISS.algorithms.planning.motion_predictor.constant_velocity_predictor import ConstVelPredictor
 from ISS.algorithms.planning.local_planner.lattice_planner import LatticePlanner
 from ISS.algorithms.planning.local_planner.pyilqr.ilqr_wrapper import iLQRPlanner

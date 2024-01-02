@@ -5,7 +5,7 @@ import numpy as np
 
 from ISS.algorithms.control.pid_wpt_tracker import VehiclePIDController
 from ISS.algorithms.control.linear_mpc_tracker import VehicleLinearMPCController
-from ISS.algorithms.planning.planning_utils.trajectory import Trajectory
+from ISS.algorithms.utils.trajectory import Trajectory
 
 from geometry_msgs.msg import Twist
 from iss_manager.data_utils import traj_from_ros_msg

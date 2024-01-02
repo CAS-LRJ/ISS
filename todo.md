@@ -1,1 +1,0 @@
-1. better collision check `get_solid_checker` using circles

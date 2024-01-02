@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from ISS.algorithms.planning.motion_predictor.collision_check import find_vertices, check_collision_polygons
 from scipy.spatial import KDTree
 
 def kinematic_bicycle_model(bicycle_model_state, acc, steer, L):
@@ -33,20 +32,35 @@ def get_circle_centers(x, y, heading_angle, length, width, num_circles=3):
     
 class ConstVelPredictor:
     def __init__(self, predictor_settings, lanemap_collision_checker, vehicle_info) -> None:
-        self._dt = predictor_settings['dt']
-        self._horizon = predictor_settings['MAX_T']
+        self._predictor_settings = predictor_settings
         self._ego_veh_info = vehicle_info
         self._obstacles = None
         self._lanemap_collision_checker = lanemap_collision_checker
+        self._obstacle_detections = None
+        self._kd_tree_list = []
 
     def update_obstacle(self, obstacle_detections):
-        obstacle_list = []
-        for obstacle in obstacle_detections.detections:
-            obstacle_centers, r = get_circle_centers(obstacle.state.x, obstacle.state.y, obstacle.state.heading_angle, obstacle.bbox.size.x, obstacle.bbox.size.y)
-            obstacle_list.extend(obstacle_centers)
-        if len(obstacle_list) > 0:
-            self._obstacles = KDTree(np.array(obstacle_list))
-            
+        self._obstacle_detections = obstacle_detections
+        # obstacle_list = []
+        # for obstacle in obstacle_detections.detections:
+        #     obstacle_centers, r = get_circle_centers(obstacle.state.x, obstacle.state.y, obstacle.state.heading_angle, obstacle.bbox.size.x, obstacle.bbox.size.y)
+        #     obstacle_list.extend(obstacle_centers)
+        # if len(obstacle_list) > 0:
+        #     self._obstacles = KDTree(np.array(obstacle_list))
+    
+    def update_prediction(self, dt, horizon):
+        self._kd_tree_list = []
+        obstacle_positions = [[obstacle.state.x, obstacle.state.y, obstacle.state.heading_angle, obstacle.bbox.size.x, obstacle.bbox.size.y] for obstacle in self._obstacle_detections.detections]
+        for _ in range(horizon):
+            obstacle_centers_per_step = []
+            for i, obstacle in enumerate(obstacle_positions):
+                obstacle_centers, r = get_circle_centers(obstacle[0], obstacle[1], obstacle[2], obstacle[3], obstacle[4])
+                obstacle_centers_per_step.extend(obstacle_centers)
+                obstacle[0] += obstacle[3] * math.cos(obstacle[2]) * dt
+                obstacle[1] += obstacle[3] * math.sin(obstacle[2]) * dt
+            if len(obstacle_centers_per_step) > 0:
+                self._kd_tree_list.append(KDTree(np.array(obstacle_centers_per_step)))
+    
     def collision_check(self, path):
         if self._lanemap_collision_checker.check_path(path): #TODO: not accurate
             return True, 0
@@ -54,38 +68,19 @@ class ConstVelPredictor:
         if self._obstacles == None:
             return False, 0
         
-        # all_pred_trajs = []
-        # for obstacle in self._obstacle_detections:
-        #     L = obstacle.bbox.size.x
-        #     bicycle_model_state = np.zeros(4)
-        #     bicycle_model_state[0] = obstacle.state.x
-        #     bicycle_model_state[1] = obstacle.state.y
-        #     bicycle_model_state[2] = obstacle.state.heading_angle
-        #     bicycle_model_state[3] = obstacle.state.velocity
-        #     acc = 0.0
-        #     steer = 0.0
-        #     all_pred_trajs.append(self._predict(bicycle_model_state, acc, steer, L))
-        
         ego_length = self._ego_veh_info['length']
         ego_width = self._ego_veh_info['width']
-        for wpt in path:
+        for i, wpt in enumerate(path):
             ego_heading = wpt[2]
             ego_center = [wpt[0], wpt[1]]
             ego_circle_centers, ego_radius = get_circle_centers(ego_center[0], ego_center[1], ego_heading, ego_length, ego_width)
             for ego_circle_center in ego_circle_centers:
                 ego_circle_center_array = np.array(ego_circle_center)
-                dist, ind = self._obstacles.query(ego_circle_center_array)
+                dist, ind = self._kd_tree_list[i].query(ego_circle_center_array)
                 if dist < 2 * (ego_radius):
                     return True, 1
         return False, 0
             
-        
-    def _predict(self, bicycle_model_state, acc, steer, L):
-        pred_traj = []
-        for t in np.arange(0, self._horizon, self._dt):
-            bicycle_model_state = bicycle_model_step(bicycle_model_state, acc, steer, L, self._dt)
-            pred_traj.append(bicycle_model_state)
-        return pred_traj
     
 
 if __name__=="__main__":
