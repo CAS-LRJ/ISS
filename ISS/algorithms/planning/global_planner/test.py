@@ -8,21 +8,27 @@ import dubins
 import matplotlib.pyplot as plt
 
 def main():
-    test_map = '/home/shaohang/work_space/autonomous_vehicle/ISS/ros1_ws/src/iss_manager/maps/simple_road_v1.osm'
+    # test_map = '/home/shaohang/work_space/autonomous_vehicle/ISS/ros1_ws/src/iss_manager/maps/simple_road_v1.osm'
+    test_map = "/home/shaohang/work_space/autonomous_vehicle/ISS/ros1_ws/src/iss_manager/maps/Town06_hy.osm"
     projector = UtmProjector(lanelet2.io.Origin(0., 0.))
     loadedMap, load_errors = lanelet2.io.loadRobust(test_map, projector) 
 
     traffic_rules = lanelet2.traffic_rules.create(lanelet2.traffic_rules.Locations.Germany,
                                                   lanelet2.traffic_rules.Participants.Vehicle)
-    solid_checker = get_solid_checker(loadedMap, 0.35, 0.2)
+    solid_checker, _ = get_solid_checker(loadedMap, 4.6, 2)
     lanelet2_settings = dict()
-    lanelet2_settings['TURNING_RADIUS'] = 0.3
-    lanelet2_settings["GOAL_TORELANCE"] = 0.1
+    lanelet2_settings['TURNING_RADIUS'] = 5
+    lanelet2_settings["GOAL_TORELANCE"] = 5
     global_planner = Lanelet2Planner(loadedMap, traffic_rules, solid_checker, lanelet2_settings)
 
 
-    start = np.array([2, 0.17, np.pi])
-    goal = np.array([2, -0.2, 0])
+    start = (584.8312377929688, 13.57775592803955, 3.134272156385384)
+    goal = (399.70245361328125, 20.892736434936523, -3.1379505144830007)
+
+
+    # start = (584.8312377929688, 13.57775592803955, 3.134272156385384)
+    # goal = (399.70245361328125, 20.892736434936523, -3.1379505144830007)
+
 
     traj = global_planner.run_step(start, goal)
     points = np.array(traj.get_waypoints())

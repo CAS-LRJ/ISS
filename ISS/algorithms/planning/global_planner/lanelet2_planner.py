@@ -3,6 +3,7 @@ from queue import PriorityQueue
 import lanelet2
 import dubins
 import cvxpy as cp
+import time
 
 from lanelet2.core import (AllWayStop, AttributeMap, BasicPoint2d,
                            BoundingBox2d, Lanelet, LaneletMap,
@@ -131,7 +132,6 @@ class Lanelet2Planner(object):
                     target_ind += 1
             if found_path:
                 results.append(minNode)
-        ###
 
         # Forwards Connection
         cur_remain_points = []
@@ -201,6 +201,7 @@ class Lanelet2Planner(object):
                     if cloesetNode == None or cloesetNode > newNode:
                         cloesetNode = newNode
         assert cloesetNode != None
+
         pqueue = PriorityQueue()
         pqueue.put(cloesetNode)
         self.reach_map[cloesetNode.current_lanelet_id] = cloesetNode.current_index
@@ -220,7 +221,6 @@ class Lanelet2Planner(object):
                 #         min_dis = dis
                 for ind in range(start_ind, len(toLanelet_centerline)-1):
                     point = toLanelet_centerline[ind]
-                    # print(point.x, point.y)
                     rot = calculate_rot_angle(np.array(
                         [toLanelet_centerline[ind+1].x - point.x, (toLanelet_centerline[ind+1].y - point.y)]))
                     if np.linalg.norm([goal_pos[0] - point.x, goal_pos[1] - point.y]) < 0.5 and np.abs(rot - goal_pos[2]) < 0.1:
@@ -233,7 +233,8 @@ class Lanelet2Planner(object):
                         point_list.append(goal_pos)
                         traj = Trajectory()
                         traj.update_waypoints(point_list)
-                        smooth(traj)
+                        if self.turning_radius < 2: # small robot
+                            smooth(traj)
                         return traj
                     dubins_path = dubins.shortest_path(
                         (point.x, point.y, rot), goal_pos, self.turning_radius)
@@ -254,7 +255,8 @@ class Lanelet2Planner(object):
                             # Global path does not need any speed information
                             traj = Trajectory()
                             traj.update_waypoints(point_list)   
-                            smooth(traj)
+                            if self.turning_radius < 2: # small robot
+                                smooth(traj)
                             return traj
 
             results = self.explore(currentNode)
