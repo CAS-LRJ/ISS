@@ -3,7 +3,7 @@ hd_map: "Town06_hy.osm"
 global_planning:
   lanelet2_settings:
     TURNING_RADIUS: 5.6
-    GOAL_TORELANCE: 2
+    GOAL_TORELANCE: 5
 
 prediction:
   dt: 0.5
@@ -19,7 +19,7 @@ local_planning:
     d_l: 7
     D_S: 1              # sample Frenet d
     DT: 1                 # prediction timestep length (s)
-    dt: 0.25              # sample time
+    dt: 0.1              # sample time
     MAX_T: 6.0            # max prediction time [s]
     MIN_T: 4.0            # min prediction time [s]
     TARGET_SPEED: 8.33     # target speed [m/s]
