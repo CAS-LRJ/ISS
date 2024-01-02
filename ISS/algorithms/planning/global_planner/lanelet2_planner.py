@@ -32,7 +32,7 @@ def smooth(trajectory: Trajectory):
         constraints += [points_opt[i, 1] <= points[i, 1] + 0.1]
         constraints += [points_opt[i, 1] >= points[i, 1] - 0.1]
     prob = cp.Problem(cp.Minimize(cost), constraints)
-    prob.solve(verbose=False)
+    prob.solve(verbose=False, solver=cp.ECOS)
     if prob.status == cp.OPTIMAL:
         trajectory.update_positions(points_opt.value)
     else:

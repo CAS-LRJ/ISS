@@ -30,6 +30,8 @@ def get_circle_centers(x, y, heading_angle, length, width, num_circles=3):
     r = 0.5 * math.sqrt((length / num_circles) ** 2 + width ** 2)
     return centers, r
     
+
+
 class ConstVelPredictor:
     def __init__(self, predictor_settings, lanemap_collision_checker, vehicle_info) -> None:
         self._predictor_settings = predictor_settings
@@ -49,15 +51,15 @@ class ConstVelPredictor:
         #     self._obstacles = KDTree(np.array(obstacle_list))
     
     def update_prediction(self, dt, horizon):
-        self._kd_tree_list = []
-        obstacle_positions = [[obstacle.state.x, obstacle.state.y, obstacle.state.heading_angle, obstacle.bbox.size.x, obstacle.bbox.size.y] for obstacle in self._obstacle_detections.detections]
+        self._kd_tree_list.clear()
+        obstacle_infos = [[obstacle.state.x, obstacle.state.y, obstacle.state.heading_angle, obstacle.bbox.size.x, obstacle.bbox.size.y, obstacle.state.velocity] for obstacle in self._obstacle_detections.detections]
         for _ in range(horizon):
             obstacle_centers_per_step = []
-            for i, obstacle in enumerate(obstacle_positions):
+            for i, obstacle in enumerate(obstacle_infos):
                 obstacle_centers, r = get_circle_centers(obstacle[0], obstacle[1], obstacle[2], obstacle[3], obstacle[4])
                 obstacle_centers_per_step.extend(obstacle_centers)
-                obstacle[0] += obstacle[3] * math.cos(obstacle[2]) * dt
-                obstacle[1] += obstacle[3] * math.sin(obstacle[2]) * dt
+                obstacle[0] += obstacle[5] * math.cos(obstacle[2]) * dt
+                obstacle[1] += obstacle[5] * math.sin(obstacle[2]) * dt
             if len(obstacle_centers_per_step) > 0:
                 self._kd_tree_list.append(KDTree(np.array(obstacle_centers_per_step)))
     
@@ -65,7 +67,7 @@ class ConstVelPredictor:
         if self._lanemap_collision_checker.check_path(path): #TODO: not accurate
             return True, 0
         
-        if self._obstacles == None:
+        if len(self._kd_tree_list) == 0:
             return False, 0
         
         ego_length = self._ego_veh_info['length']

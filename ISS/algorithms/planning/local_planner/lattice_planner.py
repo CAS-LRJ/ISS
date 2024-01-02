@@ -358,27 +358,33 @@ class LatticePlanner(object):
         obstacle = 0
         solid_boundary = 0
         all_path_vis = []
-        for i, _ in enumerate(fplist):
+        frenet_path_duration = -1
+        for i, frenet_path in enumerate(fplist):
             path_vis = [[x, y, yaw] for x, y, yaw in zip(
-                    fplist[i].x, fplist[i].y, fplist[i].yaw)]
+                    frenet_path.x, frenet_path.y, frenet_path.yaw)]
             all_path_vis.append([path_vis, "safe"])
-            if any([self.MAX_SPEED < v for v in fplist[i].s_d]):
+            if any([self.MAX_SPEED < v for v in frenet_path.s_d]):
                 speed += 1
                 all_path_vis[-1][-1] = "velocity"
                 continue
-            elif any([self.MAX_ACCEL < a for a in fplist[i].s_dd]) and \
-                (fplist[i].s_dd[0] < self.MAX_ACCEL):
+            elif any([self.MAX_ACCEL < a for a in frenet_path.s_dd]) and \
+                (frenet_path.s_dd[0] < self.MAX_ACCEL):
                 accel += 1
                 all_path_vis[-1][-1] = "acceleration"
                 continue
-            # elif any([self.MAX_CURVATURE < abs(c) for c in fplist[i].c]):
-            #     print(max([abs(c) for c in fplist[i].c]))
+            # elif any([self.MAX_CURVATURE < abs(c) for c in frenet_path.c]):
+            #     print(max([abs(c) for c in frenet_path.c]))
             #     all_path_vis[-1][-1] = True
             #     continue
             else:
-                frenet_path = [(x, y, yaw) for x, y, yaw in zip(
-                    fplist[i].x, fplist[i].y, fplist[i].yaw)]
-                res, coll_type = motion_predictor.collision_check(frenet_path)
+                frenet_path_tuple = [(x, y, yaw) for x, y, yaw in zip(
+                    frenet_path.x, frenet_path.y, frenet_path.yaw)]
+                
+                if frenet_path.T != frenet_path_duration:
+                    motion_predictor.update_prediction(frenet_path.t[1], len(frenet_path.t))
+                    frenet_path_duration = frenet_path.T
+                
+                res, coll_type = motion_predictor.collision_check(frenet_path_tuple)
                 if res:
                     if coll_type == 0:
                         solid_boundary += 1
