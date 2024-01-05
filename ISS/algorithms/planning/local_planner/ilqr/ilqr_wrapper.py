@@ -2,17 +2,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib.animation import FuncAnimation, writers
-from ISS.algorithms.planning.local_planner.pyilqr.costs import CompositeCost, QuadraticCost
-from ISS.algorithms.planning.local_planner.pyilqr.example_costs import (
+from ISS.algorithms.planning.local_planner.ilqr.costs import CompositeCost, QuadraticCost
+from ISS.algorithms.planning.local_planner.ilqr.example_costs import (
     PolylineTrackingCost,
     SetpointTrackingCost,
     Polyline,
     SoftConstraintCost,
 )
-from ISS.algorithms.planning.local_planner.pyilqr.example_dynamics import UnicycleDynamics, BicycleDynamics
-from ISS.algorithms.planning.local_planner.pyilqr.ocp import OptimalControlProblem
-from ISS.algorithms.planning.local_planner.pyilqr.strategies import OpenLoopStrategy
-from ISS.algorithms.planning.local_planner.pyilqr.receding_horizon import RecedingHorizonStrategy, ILQRSolver
+from ISS.algorithms.planning.local_planner.ilqr.example_dynamics import UnicycleDynamics, BicycleDynamics
+from ISS.algorithms.planning.local_planner.ilqr.ocp import OptimalControlProblem
+from ISS.algorithms.planning.local_planner.ilqr.strategies import OpenLoopStrategy
+from ISS.algorithms.planning.local_planner.ilqr.receding_horizon import RecedingHorizonStrategy, ILQRSolver
 
 from ISS.algorithms.utils.trajectory import Trajectory
 import time

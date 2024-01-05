@@ -2,8 +2,8 @@ import numpy as np
 
 from dataclasses import dataclass
 from typing import Union
-from ISS.algorithms.planning.local_planner.pyilqr.strategies import AbstractStrategy, OpenLoopStrategy, FunctionStrategy
-from ISS.algorithms.planning.local_planner.pyilqr.ilqr import ILQRSolver
+from ISS.algorithms.planning.local_planner.ilqr.strategies import AbstractStrategy, OpenLoopStrategy, FunctionStrategy
+from ISS.algorithms.planning.local_planner.ilqr.ilqr import ILQRSolver
 
 
 @dataclass(frozen=True)

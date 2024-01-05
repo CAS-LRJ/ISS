@@ -1,0 +1,1 @@
+This MPCC planner is implemented by [Luyao Zhang](https://sites.google.com/site/grammaticosergio/team) from TU Delft.

@@ -2,8 +2,8 @@ import numpy as np
 from dataclasses import dataclass
 
 from numpy.linalg import eigvals
-from ISS.algorithms.planning.local_planner.pyilqr.strategies import AffineStrategy, AffineStageStrategy
-from ISS.algorithms.planning.local_planner.pyilqr.ocp import LQRProblem
+from ISS.algorithms.planning.local_planner.ilqr.strategies import AffineStrategy, AffineStageStrategy
+from ISS.algorithms.planning.local_planner.ilqr.ocp import LQRProblem
 
 class IllconditionedProblemError(Exception):
     pass

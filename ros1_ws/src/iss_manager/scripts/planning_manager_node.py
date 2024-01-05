@@ -13,8 +13,9 @@ from ISS.algorithms.utils.lanelet2_utils import get_solid_checker
 from ISS.algorithms.planning.global_planner.lanelet2_planner import Lanelet2Planner
 from ISS.algorithms.utils.trajectory import Trajectory
 from ISS.algorithms.planning.motion_predictor.constant_velocity_predictor import ConstVelPredictor
-from ISS.algorithms.planning.local_planner.lattice_planner import LatticePlanner
-from ISS.algorithms.planning.local_planner.pyilqr.ilqr_wrapper import iLQRPlanner
+from ISS.algorithms.planning.local_planner.motion_primitive.lattice_planner import LatticePlanner
+from ISS.algorithms.planning.local_planner.ilqr.ilqr_wrapper import iLQRPlanner
+from ISS.algorithms.planning.local_planner.mpcc.mpcc_wrapper import MPCCPlanner
 
 from iss_manager.data_utils import *
 

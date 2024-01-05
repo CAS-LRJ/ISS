@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.axes
 
 from dataclasses import dataclass
-from ISS.algorithms.planning.local_planner.pyilqr.dynamics import AbstractDynamics
+from ISS.algorithms.planning.local_planner.ilqr.dynamics import AbstractDynamics
 
 
 @dataclass(frozen=True)

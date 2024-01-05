@@ -1,0 +1,1 @@
+This iLQR planner is implemented by Lasse Peters and Benedikt Mersch. The original code is from [this repository](https://github.com/lassepe/pyILQR).

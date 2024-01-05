@@ -4,7 +4,7 @@ import matplotlib.axes
 
 from dataclasses import dataclass
 from typing import Sequence
-from ISS.algorithms.planning.local_planner.pyilqr.costs import AbstractCost
+from ISS.algorithms.planning.local_planner.ilqr.costs import AbstractCost
 
 
 @dataclass

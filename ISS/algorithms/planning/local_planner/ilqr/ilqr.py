@@ -1,9 +1,9 @@
 import numpy as np
 
 from dataclasses import dataclass, field
-from ISS.algorithms.planning.local_planner.pyilqr.ocp import OptimalControlProblem, LQRProblem, AbstractDynamics
-from ISS.algorithms.planning.local_planner.pyilqr.strategies import AbstractStrategy, AffineStrategy
-from ISS.algorithms.planning.local_planner.pyilqr.lqr import IllconditionedProblemError, LQRSolver
+from ISS.algorithms.planning.local_planner.ilqr.ocp import OptimalControlProblem, LQRProblem, AbstractDynamics
+from ISS.algorithms.planning.local_planner.ilqr.strategies import AbstractStrategy, AffineStrategy
+from ISS.algorithms.planning.local_planner.ilqr.lqr import IllconditionedProblemError, LQRSolver
 from typing import Tuple
 from copy import copy
 

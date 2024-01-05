@@ -7,7 +7,7 @@ from math import factorial
 from typing import Sequence, Tuple
 import time
 
-from ISS.algorithms.planning.local_planner.pyilqr.strategies import AbstractStrategy
+from ISS.algorithms.planning.local_planner.ilqr.strategies import AbstractStrategy
 
 
 @dataclass(frozen=True)
