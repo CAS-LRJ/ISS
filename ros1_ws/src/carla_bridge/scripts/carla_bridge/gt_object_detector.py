@@ -26,7 +26,7 @@ class GTObjectDetector:
                 continue
             detection = ObjectDetection3D()
             detection.header.stamp = rospy.Time.now()
-            detection.header.frame_id = "map"
+            detection.header.frame_id = rospy.get_param("world_frame")
             detection.id = actor.id
             detection.score = 1.0
             detection.state.x = actor.get_location().x

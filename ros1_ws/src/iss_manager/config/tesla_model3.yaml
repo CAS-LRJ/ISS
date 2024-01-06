@@ -10,18 +10,18 @@ prediction:
   MAX_T: 6.0
 
 local_planning:
-  local_planning_frequency: 5
+  local_planning_frequency: 10
   lattice_settings:
     MAX_SPEED: 13.88          # maximum speed [m/s]
     MAX_ACCEL: 5          # maximum acceleration [m/ss]
     MAX_CURVATURE: 100.0    # maximum curvature [1/m]
-    d_r: 7
-    d_l: 7
-    D_S: 1              # sample Frenet d
+    d_r: 3.5
+    d_l: 3.5
+    D_S: 1.7              # sample Frenet d
     DT: 1                 # prediction timestep length (s)
     dt: 0.1              # sample time
-    MAX_T: 6.0            # max prediction time [s]
-    MIN_T: 4.0            # min prediction time [s]
+    MAX_T: 5.0            # max prediction time [s]
+    MIN_T: 5.0            # min prediction time [s]
     TARGET_SPEED: 8.33     # target speed [m/s]
     D_T_S: 1.38            # target speed sampling length [m/s]
     N_S_SAMPLE: 4         # sampling number of target speed
@@ -32,7 +32,7 @@ local_planning:
     K_LON: 0.8
 
 control:
-  control_frequency: 10
+  control_frequency: 50
 
 vehicle_info:
   length: 4.69

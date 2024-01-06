@@ -51,13 +51,19 @@ class CARLABridgeNode:
         self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
         # self._progress_bar = tqdm(total=self.params["simulation_duration"] + 0.1, unit="sec")
         self._step_cnt = 0
-        self._controller_bridge.start_iss_agent(self._spawn_points[self.params["ego_destination"]])
         self._carla_visualizer = CARLAVisualizer(self._world)
+        if self._controller_bridge.start_iss_agent(self._spawn_points[self.params["ego_destination"]]):
+            for key, vehicle in self._vehicles.items():
+                if key == self._ego_vehicle_name:
+                    continue
+                vehicle.set_autopilot(True, self._traffic_manager_port)
+        
         
     def _carla_tick(self, event):
         # self._progress_bar.update(self.params["fixed_delta_seconds"])
         self._step_cnt += 1
         self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
+        self._gt_state_estimator.publish_ego_state(None)
         self._controller_bridge.apply_control()
         self._world.tick()
         if self._step_cnt >= self._total_steps:
@@ -84,7 +90,7 @@ class CARLABridgeNode:
         vehicle = self._world.try_spawn_actor(vehicle_bp, spawn_point)
         if vehicle != None:
             self._vehicles[role_name] = vehicle
-            vehicle.set_autopilot(True, self._traffic_manager_port)
+            vehicle.set_autopilot(False, self._traffic_manager_port)
     
     def _add_vehicles(self):
         ego_spawn_point = self._spawn_points[self.params["ego_init"]]

@@ -14,7 +14,7 @@ class ControllerBridge:
     
     def start_iss_agent(self, destination):
         self._agent_sub = rospy.Subscriber(rospy.get_param("control_command_topic"), ControlCommand, self._agent_sub_callback)
-        self._call_set_goal_srv(destination)
+        return self._call_set_goal_srv(destination)
     
     def _call_set_goal_srv(self, goal):
         rospy.wait_for_service('planning/set_goal')
