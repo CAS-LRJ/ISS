@@ -1,14 +1,14 @@
 carla_host: "localhost"
 carla_port: 2000
-map_name: "Town06"
+map_name: "Town03"
 fixed_delta_seconds: 0.05
 graphic_rendering: true
 num_non_ego_vehicles: 50
 simulation_duration: 300
 gt_state_estimation_frequency: 10
 gt_object_detection_frequency: 10
-ego_init: 1
-ego_destination: 10
+ego_init: 2
+ego_destination: 21
 agent_control_frequency: 10
 
 ego_odom_topic: "ego_odom"

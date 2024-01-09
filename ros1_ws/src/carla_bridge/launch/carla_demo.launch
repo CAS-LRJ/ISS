@@ -6,10 +6,10 @@
         <param name="robot_name" value="$(arg robot_name_0)"/>
         
         <rosparam command="load" file="$(find carla_bridge)/config/carla_bridge.yaml"/>
-        <node pkg="carla_bridge" type="carla_bridge_node.py" name="carla_bridge_node" output="screen"/>
+        <node pkg="carla_bridge" type="carla_bridge_sensors_node.py" name="carla_bridge_node" output="screen"/>
 
-        <rosparam command="load" file="$(find iss_manager)/config/$(arg robot_type_0).yaml"/>
-        <include file="$(find iss_manager)/launch/iss_manager.launch"/>
+        <!-- <rosparam command="load" file="$(find iss_manager)/config/$(arg robot_type_0).yaml"/>
+        <include file="$(find iss_manager)/launch/iss_manager.launch"/> -->
     </group>
 
 </launch>
