@@ -17,7 +17,7 @@ class ControllerBridge:
         return self._call_set_goal_srv(destination)
     
     def _call_set_goal_srv(self, goal):
-        rospy.wait_for_service('planning/set_goal')
+        rospy.wait_for_service('planning/set_goal', timeout=2)
         try:
             set_goal = rospy.ServiceProxy('planning/set_goal', SetGoal)
             resp = set_goal(goal.location.x, -goal.location.y, -np.deg2rad(goal.rotation.yaw))
@@ -27,7 +27,7 @@ class ControllerBridge:
             return False
     
     def _agent_sub_callback(self, msg):
-        self._set_control(msg.throttle, msg.steering)
+        self.set_control(msg.throttle, msg.steering)
         # rospy.loginfo("[simulator] throttle: %.2f,  steering: %.2f" % (msg.throttle, msg.steering))
     
     def _simple_agent_tick(self, event):
@@ -38,12 +38,14 @@ class ControllerBridge:
         steering = msg.angular.z
         scale_linear = rospy.get_param("scale_linear", 0.5)
         scale_angular = rospy.get_param("scale_angular", 0.5)
-        self._set_control(throttle * scale_linear, steering * scale_angular)
+        self.set_control(throttle * scale_linear, steering * scale_angular)
     
-    def apply_control(self):
+    def apply_control(self, ctrl=None):
+        if ctrl is not None:
+            self._control = ctrl
         self._vehicle.apply_control(self._control)   
         
-    def _set_control(self, throttle, steering):
+    def set_control(self, throttle, steering):
         self._control.steer = min(max(-steering, -1.0), 1.0)
         if throttle < 0:
             self._control.throttle = 0
@@ -51,4 +53,3 @@ class ControllerBridge:
         else:
             self._control.throttle = min(throttle, 1.0)
             self._control.brake = 0
-

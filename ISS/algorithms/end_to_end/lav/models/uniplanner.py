@@ -65,6 +65,7 @@ class UniPlanner(nn.Module):
 
         N = locs.size(1)
 
+        # Only pick the good ones.
         typs = filter_cars(ego_locs, locs, typs)
 
         # Other vehicles
@@ -100,6 +101,20 @@ class UniPlanner(nn.Module):
                 other_bev_embd = self.bev_planner.bev_conv_emb(cropped_other_bev)
                 other_cast_locs_expert = self.bev_planner.cast(other_bev_embd)
                 other_cast_cmds_expert = self.bev_planner.cast_cmd_pred(other_bev_embd)
+
+            # import matplotlib.pyplot as plt
+            # from matplotlib.pyplot import Circle
+            # f, [ax1, ax2] = plt.subplots(1,2,figsize=(12,6))
+            # ax1.imshow(cropped_other_features[0].mean(0).detach().cpu().numpy())
+            # ax2.imshow(cropped_other_bev[0].mean(0).detach().cpu().numpy())
+
+            # for loc in other_locs[0]:
+            #     ax2.add_patch(Circle(loc.detach().cpu().numpy()*4+[96,168],radius=2))
+            # for locs in other_cast_locs_expert[0]:
+            #     for loc in locs:
+            #         ax2.add_patch(Circle(loc.detach().cpu().numpy()*4+[96,168],radius=1,color='orange'))
+
+            # plt.show()
 
         else:
             dtype = features.dtype
@@ -142,11 +157,23 @@ class UniPlanner(nn.Module):
             pixels_per_meter=self.pixels_per_meter, 
             crop_size=self.crop_size*2
         )
-        ego_cast_cmds = self.cast_cmd_pred(ego_embd)
+
+        # import matplotlib.pyplot as plt
+        # from matplotlib.pyplot import Circle
+        # f, [ax1, ax2] = plt.subplots(1,2,figsize=(12,6))
+        # ax1.imshow(cropped_ego_features[0].mean(0).detach().cpu().numpy())
+        # ax2.imshow(cropped_ego_bev[0].mean(0).detach().cpu().numpy())
+
+        # for loc in ego_locs[0]:
+        #     ax2.add_patch(Circle(loc.detach().cpu().numpy()*4+[96,168],radius=2))
+        # for loc in ego_plan_locs_expert[0,-1,3]:
+        #     ax2.add_patch(Circle(loc.detach().cpu().numpy()*4+[96,168],radius=1,color='orange'))
+
+        # plt.show()
 
         return (
             other_locs, other_cast_locs, other_cast_cmds, other_cast_locs_expert, other_cast_cmds_expert,
-            ego_locs, ego_plan_locs, ego_cast_locs, ego_cast_cmds, ego_cast_locs_expert, ego_plan_locs_expert
+            ego_locs, ego_plan_locs, ego_cast_locs, ego_cast_locs_expert, ego_plan_locs_expert
         )
 
     @torch.no_grad()
@@ -177,6 +204,7 @@ class UniPlanner(nn.Module):
             if np.linalg.norm([X-center_x,Y-center_y]) <= 4:
                 continue
 
+            # TODO: convert to ego's meters scale
             x = (X - center_x) / self.pixels_per_meter
             y = (Y - center_y) / self.pixels_per_meter
             o = float(np.arctan2(sin, cos))
@@ -238,7 +266,6 @@ class UniPlanner(nn.Module):
                 u0.expand(self.num_plan, B, -1).permute(1,0,2),
                 cast_locs[:,i]
             ], dim=2)
-            
             out, _ = self.plan_gru(u, h0[None])
             locs.append(torch.cumsum(self.plan_mlp(out), dim=1))
 
@@ -267,6 +294,8 @@ class UniPlanner(nn.Module):
             cast_grus = self.cast_grus_ego
             cast_mlps = self.cast_mlps_ego
         elif mode == 'other':
+            # cast_grus = self.cast_grus_other
+            # cast_mlps = self.cast_mlps_other
             cast_grus = self.cast_grus_ego
             cast_mlps = self.cast_mlps_ego
 
@@ -295,8 +324,19 @@ class UniPlanner(nn.Module):
 
         k = crop_size / H
 
+        # DEBUG
+        # cos = torch.ones_like(cos)
+        # sin = torch.zeros_like(sin)
+        # END DEBUG
+        
+        # offset_x = self.offset_x + 
+
         rot_x_offset = -k*self.offset_x*cos+k*self.offset_y*sin+self.offset_x
         rot_y_offset = -k*self.offset_x*sin-k*self.offset_y*cos+self.offset_y
+
+        # rel_x_offset = -k*self.offset_x*cos+k*self.offset_y*sin+self.offset_x
+        # rel_y_offset = -k*self.offset_x*sin-k*self.offset_y*cos+self.offset_y
+        # print (rel_x, rel_y)
 
         theta = torch.stack([
           torch.stack([k*cos, k*-sin, rot_x_offset+rel_x], dim=-1),
@@ -306,6 +346,7 @@ class UniPlanner(nn.Module):
 
         grids = F.affine_grid(theta, torch.Size((B,C,crop_size,crop_size)), align_corners=True)
 
+        # TODO: scale the grids??
         cropped_features = F.grid_sample(features, grids, align_corners=True)
 
         return cropped_features
@@ -327,7 +368,7 @@ def transform_points(locs, oris):
 
 
 def filter_cars(ego_locs, locs, typs):
-
+    # We don't care about cars behind us ;)
     rel_locs = locs[:,:,0] - ego_locs[:,0:1]
 
     return typs & (rel_locs[...,1] < 0)

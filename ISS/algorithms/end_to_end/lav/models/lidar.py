@@ -2,7 +2,8 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from .point_pillar import PointPillarNet
-from .resnet import BasicBlock
+
+
 
 class LiDARModel(nn.Module):
     def __init__(self, num_input=9, num_features=[32,32],
@@ -44,12 +45,11 @@ class LiDARModel(nn.Module):
         )
 
 
-
 class ConvBackbone(nn.Module):
     def __init__(self, num_feature=64, norm_cfg={'eps': 1e-3, 'momentum': 0.01}):
         """
         Original PointPillar Backbone
-        TODO: Write this better using for loops...
+        TODO: Write this better...
         """
 
         super().__init__()
@@ -145,7 +145,7 @@ class ConvBackbone(nn.Module):
 
 
 class Head(nn.Module):
-    def __init__(self, num_input, num_output, num_hidden=64, norm_cfg={'eps': 1e-3, 'momentum': 0.01}, output_activation=None):
+    def __init__(self, num_input, num_output, num_hidden=64, norm_cfg={'eps': 1e-3, 'momentum': 0.01}, output_activation=nn.Identity()):
         super().__init__()
 
         self.net = nn.Sequential(
@@ -158,7 +158,9 @@ class Head(nn.Module):
 
     def forward(self, x):
         out = self.net(x)
-        if self.output_activation:
-            return self.output_activation(out)
-        else:
-            return out
+        return self.output_activation(out)
+
+if __name__ == '__main__':
+    
+    swin = ConvBackbone()
+    print (swin(torch.zeros((2,64,320,320))).shape)

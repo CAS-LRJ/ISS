@@ -10,7 +10,7 @@ class BEVPlanner(nn.Module):
         pixels_per_meter=2, crop_size=64, x_offset=0, y_offset=0.75,
         feature_x_jitter=1, feature_angle_jitter=10, 
         num_plan=10, k=16, num_out_feature=64, num_cmds=6, max_num_cars=5,
-        num_plan_iter=1,
+        num_plan_iter=1, num_frame_stack=0,
         ):
 
         super().__init__()
@@ -32,7 +32,7 @@ class BEVPlanner(nn.Module):
         self.offset_y = nn.Parameter(torch.tensor(y_offset).float(), requires_grad=False)
 
         self.bev_conv_emb = nn.Sequential(
-            resnet18(num_channels=5),
+            resnet18(num_channels=3+2*(num_frame_stack+1)),
             nn.AdaptiveAvgPool2d((1,1)),
             nn.Flatten(),
         )

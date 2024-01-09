@@ -3,6 +3,7 @@ from torch import nn
 from torch.nn import functional as F
 from .resnet import resnet18, resnet34
 from .segmentation import SegmentationHead
+from .unet import UNet
 from .attention import Attention
 from .erfnet import ERFNet
 
@@ -44,14 +45,18 @@ class RGBSegmentationModel(nn.Module):
 
         return self.erfnet(self.normalize(rgb))
 
+
 class RGBBrakePredictionModel(nn.Module):
-    def __init__(self, seg_channels, pretrained=True):
+    def __init__(self, seg_channels, pretrained=False):
         super().__init__()
 
         self.conv_backbone = resnet18(pretrained=pretrained)
         self.normalize = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
         self.seg_head = SegmentationHead(512, len(seg_channels)+1)
+
+        self.attn1 = Attention(512, num_heads=8)
+        self.attn2 = Attention(512, num_heads=8)
 
         self.classifier = nn.Sequential(
             nn.Linear(1024,1),
@@ -63,8 +68,8 @@ class RGBBrakePredictionModel(nn.Module):
         x1 = self.conv_backbone(self.normalize(rgb1/255.))
         x2 = self.conv_backbone(self.normalize(rgb2/255.))
 
-        h1 = x1.mean(dim=[2,3])
-        h2 = x2.mean(dim=[2,3])
+        h1 = self.attn1(x1)
+        h2 = self.attn2(x2)
         
         pred_bra = self.classifier(torch.cat([h1,h2], dim=1))
 
