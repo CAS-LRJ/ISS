@@ -1,6 +1,6 @@
 import casadi as ca
 import numpy as np
-from utils import Vehicle, ReferencePath
+from ISS.algorithms.planning.local_planner.mpcc.utils import Vehicle, ReferencePath
 import math
 import matplotlib.pyplot as plt
 from dataclasses import dataclass

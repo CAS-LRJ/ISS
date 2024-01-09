@@ -25,9 +25,9 @@ class VehiclePIDController:
                              K_I -- Integral term
         """
         if not args_lateral:            
-            args_lateral = {'K_P': 2, 'K_I': 0., 'K_D': 0.2}
+            args_lateral = {'K_P': 2, 'K_I': 0., 'K_D': 0.2, "output_max": 1, "output_min": -1, "dt": 0.1}
         if not args_longitudinal:            
-            args_longitudinal = {'K_P': 2, 'K_I': 0., 'K_D': 0.1}
+            args_longitudinal = {'K_P': 2, 'K_I': 0., 'K_D': 0.1, "output_max": 1, "output_min": 0, "dt": 0.1}
 
         self._lon_controller = PIDLongitudinalController(**args_longitudinal)
         self._lat_controller = PIDLateralController(**args_lateral)        
@@ -105,7 +105,7 @@ class PIDLongitudinalController:
     PIDLongitudinalController implements longitudinal control using a PID.
     """
 
-    def __init__(self, K_P=1.0, K_D=0.0, K_I=0.0):
+    def __init__(self, K_P=1.0, K_D=0.0, K_I=0.0, output_max=1, output_min=0, dt=0.1):
         """
         :param vehicle: actor to apply to local planner logic onto
         :param K_P: Proportional term
@@ -116,9 +116,11 @@ class PIDLongitudinalController:
         self._K_P = K_P
         self._K_D = K_D
         self._K_I = K_I
+        self._output_max = output_max
+        self._output_min = output_min
 
         ## To-DO _dt is not determined in asynchronomous mode
-        self._dt = float(0.1)        
+        self._dt = dt        
         self._error_buffer = deque(maxlen=10)        
 
     def reset(self):
@@ -151,7 +153,7 @@ class PIDLongitudinalController:
             _de = 0.0
             _ie = 0.0
 
-        return np.clip((self._K_P * error) + (self._K_D * _de) + (self._K_I * _ie), 0.0, 1.0)
+        return np.clip((self._K_P * error) + (self._K_D * _de) + (self._K_I * _ie), self._output_min, self._output_max)
 
     def change_parameters(self, K_P, K_I, K_D, dt):
         """Changes the PID parameters"""
@@ -165,7 +167,7 @@ class PIDLateralController:
     PIDLateralController implements lateral control using a PID.
     """
 
-    def __init__(self, K_P=0.2, K_D=0.0, K_I=0.0):
+    def __init__(self, K_P=0.2, K_D=0.0, K_I=0.0, output_max=1, output_min=-1, dt=0.1):
         """        
         :param K_P: Proportional term
         :param K_D: Differential term
@@ -175,8 +177,10 @@ class PIDLateralController:
         self._K_P = K_P
         self._K_D = K_D
         self._K_I = K_I
+        self._output_max = output_max
+        self._output_min = output_min
         ## To-DO _dt is not determined in asynchronomous mode
-        self._dt = float(0.1)        
+        self._dt = dt    
         self._e_buffer = deque(maxlen=10)        
         self.lat_error = []
 
@@ -220,7 +224,7 @@ class PIDLateralController:
             _de = 0.0
             _ie = 0.0
 
-        return np.clip((self._K_P * _dot) + (self._K_D * _de) + (self._K_I * _ie), -1.0, 1.0)
+        return np.clip((self._K_P * _dot) + (self._K_D * _de) + (self._K_I * _ie), self._output_min, self._output_max)
 
     def change_parameters(self, K_P, K_I, K_D, dt):
         """Changes the PID parameters"""

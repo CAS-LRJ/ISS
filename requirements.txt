@@ -17,3 +17,5 @@ empy==3.3.4
 catkin_pkg
 rospkg
 dubins
+scipy
+casadi
