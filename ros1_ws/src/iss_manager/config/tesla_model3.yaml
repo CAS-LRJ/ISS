@@ -32,7 +32,22 @@ local_planning:
     K_LON: 0.8
 
 control:
-  control_frequency: 50
+  control_frequency: 20
+  pid_settings:
+    lateral:
+      Kp: 2.0
+      Ki: 0.0
+      Kd: 0.2
+      output_max: 1
+      output_min: -1 
+      dt: 0.05
+    longitudinal:
+      Kp: 2.0
+      Ki: 0.0
+      Kd: 0.1
+      output_max: 1
+      output_min: 0
+      dt: 0.05
 
 vehicle_info:
   length: 4.69

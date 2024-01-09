@@ -41,7 +41,8 @@ class ControlManagerNode:
         # }
         # self._mpc_tracker = VehicleLinearMPCController(linear_mpc_settings)
 
-        self._pid_tracker = VehiclePIDController()
+        pid_settings = rospy.get_param("control")["pid_settings"]
+        self._pid_tracker = VehiclePIDController(pid_settings["lateral"], pid_settings["longitudinal"])
         self._trajectory = Trajectory()
         self._ctrl_array = None
         self._ctrl_idx = 0

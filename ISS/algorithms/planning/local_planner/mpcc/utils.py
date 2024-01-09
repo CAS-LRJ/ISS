@@ -127,7 +127,7 @@ class CostModel:
         cost = cost_target
         return cost
   
-from dynamics_models import BicycleModel
+from ISS.algorithms.planning.local_planner.mpcc.dynamics_models import BicycleModel
 class Vehicle:
     def __init__(self, weights, targets, dt, reference_path):
         self.cost_model = CostModel(weights, targets, reference_path)
