@@ -31,7 +31,7 @@ class CARLAVisualizer:
             
     def draw_perception(self, ego_trans, det, other_cast_locs, other_cast_cmds):
         
-        duration = 0.1
+        duration = 0.05
         meter_per_pixel = 1 / 4
         
         ego_trans_matrix = ego_trans.get_matrix()
