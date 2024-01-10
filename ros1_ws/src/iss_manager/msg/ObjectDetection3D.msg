@@ -6,4 +6,4 @@ float64 score
 State state
 
 # bounding box
-BBox3D bbox
+BoundingBox3D bbox
