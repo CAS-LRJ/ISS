@@ -5,7 +5,7 @@ import random
 import numpy as np
 import random
 from scipy.spatial.transform import Rotation as R
-
+import time
 import rospy
 import yaml
 import torch
@@ -17,7 +17,8 @@ from carla_bridge.controller_bridge import ControllerBridge
 from carla_bridge.sensor_utils import add_sensors, SensorInterface
 from carla_bridge.route_manipulation import interpolate_trajectory, downsample_route
 
-from ISS.algorithms.end_to_end.lav.lav_agent import LAVAgent
+# from ISS.algorithms.end_to_end.lav.lav_agent import LAVAgent
+from ISS.algorithms.end_to_end.lav.lav_agent_fast import LAVAgent
 
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
@@ -78,14 +79,23 @@ class CARLABridgeNode:
         global_plan_gps, global_plan_world_coord = interpolate_trajectory(self._world, waypoints_trajectory)
         self._agent.set_global_plan(global_plan_gps, global_plan_world_coord, downsample_route)
         self._call_global_plan = True
+        for key, vehicle in self._vehicles.items():
+            if key == self._ego_vehicle_name:
+                continue
+            vehicle.set_autopilot(True, self._traffic_manager_port)
         
     def _carla_tick(self, event):
         self._step_cnt += 1
         self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
-        self._gt_state_estimator.publish_ego_state(None)
+        # self._gt_state_estimator.publish_ego_state(None)
+        start_time = time.time()
         if self._call_global_plan:
             data = self._sensor_interface.get_data()
-            self._controller_bridge.apply_control(self._agent.run_step(data, None))
+            control_command, det, other_cast_locs, other_cast_cmds = self._agent.run_step(data, None)
+            self._controller_bridge.apply_control(control_command)
+            if det is not None:
+                self._carla_visualizer.draw_perception(self._vehicles[self._ego_vehicle_name].get_transform(), det, other_cast_locs, other_cast_cmds)
+        print("Time elapsed: ", time.time() - start_time)
         self._world.tick()
         if self._step_cnt >= self._total_steps:
             self._gt_object_detector.shutdown()
@@ -100,6 +110,7 @@ class CARLABridgeNode:
         vehicle = self._world.try_spawn_actor(vehicle_bp, spawn_point)
         if vehicle != None:
             self._vehicles[self._ego_vehicle_name] = vehicle
+            print("Spawned ego vehicle at %s" % spawn_point.location)
         else:
             print("Ego vehicle spawn failed")
     
@@ -110,6 +121,7 @@ class CARLABridgeNode:
         if vehicle != None:
             self._vehicles[role_name] = vehicle
             vehicle.set_autopilot(False, self._traffic_manager_port)
+            print("Spawned %s at %s" % (role_name, spawn_point.location))
 
     def _add_vehicles(self):
         ego_spawn_point = self._spawn_points[self.params["ego_init"]]
@@ -117,9 +129,9 @@ class CARLABridgeNode:
         for p in self._spawn_points:
             if p != ego_spawn_point and \
                 np.hypot(p.location.x - ego_spawn_point.location.x,
-                         p.location.y - ego_spawn_point.location.y) < 50:
+                         p.location.y - ego_spawn_point.location.y) < 20:
                 nonego_spawn_points.append(p)
-        self._add_ego_vehicle(ego_spawn_point)
+        self._add_ego_vehicle(ego_spawn_point)        
         for i in range(self.params["num_non_ego_vehicles"]):
             random.shuffle(nonego_spawn_points)
             if i < len(nonego_spawn_points):

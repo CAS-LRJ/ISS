@@ -13,18 +13,18 @@ import time
 from collections import deque
 from torch.nn import functional as F
 
-from leaderboard.autoagents.autonomous_agent import AutonomousAgent, Track
+from ISS.algorithms.end_to_end.lav.autonomous_agent import AutonomousAgent, Track
 
-from models.lidar import LiDARModel
-from models.uniplanner import UniPlanner
-from models.bev_planner import BEVPlanner
-from models.rgb import RGBSegmentationModel, RGBBrakePredictionModel
-from pid import PIDController
-from ekf import EKF
-from point_painting import CoordConverter, point_painting
-from planner import RoutePlanner
-from waypointer import Waypointer
-from model_inference import InferModel
+from ISS.algorithms.end_to_end.lav.models.lidar import LiDARModel
+from ISS.algorithms.end_to_end.lav.models.uniplanner import UniPlanner
+from ISS.algorithms.end_to_end.lav.models.bev_planner import BEVPlanner
+from ISS.algorithms.end_to_end.lav.models.rgb import RGBSegmentationModel, RGBBrakePredictionModel
+from ISS.algorithms.end_to_end.lav.pid import PIDController
+from ISS.algorithms.end_to_end.lav.ekf import EKF
+from ISS.algorithms.end_to_end.lav.point_painting import CoordConverter, point_painting
+from ISS.algorithms.end_to_end.lav.planner import RoutePlanner
+from ISS.algorithms.end_to_end.lav.waypointer import Waypointer
+from ISS.algorithms.end_to_end.lav.model_inference import InferModel
 
 
 def get_entry_point():
@@ -204,7 +204,6 @@ class LAVAgent(AutonomousAgent):
 
     @torch.no_grad()
     def run_step(self, input_data, timestamp):
-
         self.num_frames += 1
 
         _, lidar = input_data.get('LIDAR')
@@ -235,7 +234,7 @@ class LAVAgent(AutonomousAgent):
 
         if self.num_frames <= 1:
             self.prev_lidar = lidar
-            return carla.VehicleControl()
+            return carla.VehicleControl(), None, None, None
 
 
         if self.prev_lidar is not None:
@@ -264,9 +263,7 @@ class LAVAgent(AutonomousAgent):
         all_rgbs = torch.tensor(all_rgb).permute(0,3,1,2).float().to(self.device)
         pred_sem = torch.softmax(self.seg_model(all_rgbs), dim=1)
 
-        start_time = time.time()
         fused_lidar = self.infer_model.forward_paint(cur_lidar, pred_sem)
-        print("Inference time: ", time.time() - start_time)
         
         # EKF updates and bookeepings
         self.lidars.append(fused_lidar)
@@ -360,7 +357,7 @@ class LAVAgent(AutonomousAgent):
         if len(self.vizs) >= 12000:
             self.flush_data()
 
-        return carla.VehicleControl(steer=steer, throttle=throt, brake=brake)
+        return carla.VehicleControl(steer=steer, throttle=throt, brake=brake), det, other_cast_locs, other_cast_cmds
 
 
     def get_stacked_lidar(self):
@@ -472,8 +469,8 @@ class LAVAgent(AutonomousAgent):
         h, w, _ = lidar_viz.shape
         ego = [160,280] # TODO: compute this analytically
 
-        for loc in pred_loc:
-            cv2.circle(lidar_viz, tuple((ego+loc*self.pixels_per_meter).astype(int)), 1, (255,0,0), -1)
+        # for loc in pred_loc:
+        #     cv2.circle(lidar_viz, tuple((ego+loc*self.pixels_per_meter).astype(int)), 1, (255,0,0), -1)
 
         cmap = matplotlib.cm.get_cmap('jet')
         for trajs, cmds in zip(cast_locs, cast_cmds):
@@ -497,8 +494,8 @@ class LAVAgent(AutonomousAgent):
         cv2.circle(lidar_viz, tuple(np.clip(ego+np.array(tgt)*self.pixels_per_meter, 0, 255).astype(int)), 2, (0,255,0), -1)
 
         canvas = np.concatenate([
-            cv2.resize(rgb, dsize=(int(rgb.shape[1]/rgb.shape[0]*h), h)),
-            cv2.resize(tel_rgb, dsize=(int(tel_rgb.shape[1]/tel_rgb.shape[0]*h), h)),
+            # cv2.resize(rgb, dsize=(int(rgb.shape[1]/rgb.shape[0]*h), h)),
+            # cv2.resize(tel_rgb, dsize=(int(tel_rgb.shape[1]/tel_rgb.shape[0]*h), h)),
             lidar_viz,
             cv2.cvtColor((255*pred_bev.mean(axis=0)).astype(np.uint8), cv2.COLOR_GRAY2RGB),
         ], axis=1)
@@ -517,7 +514,7 @@ class LAVAgent(AutonomousAgent):
             f'predicted brake: {pred_bra:.3f}',
             (4,40), *text_args
         )
-
+        # cv2.imwrite(f'/home/shaohang/work_space/autonomous_vehicle/ISS/images/{self.num_frames}.png', canvas)
         return canvas
 
 def _rotate(x, y, theta):
