@@ -2,7 +2,10 @@
 This repo provides ROS-noetic support for the ISS project, compatible with both CARLA 0.9.13 and Gazebo Classic. The development of this repository is ongoing.
 
 ## Installation
-- Install [ROS Noetic](http://wiki.ros.org/noetic/Installation)
+- Install [ROS Noetic](http://wiki.ros.org/noetic/Installation), together with the dependencies for building ROS packages:
+```
+sudo apt-get install ros-noetic-navigation ros-noetic-gmapping ros-noetic-teb-local-planner ros-noetic-ackermann-msgs ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control ros-noetic-joint-state-publisher-gui
+```
 - Install [CARLA 0.9.13](https://carla-releases.s3.eu-west-3.amazonaws.com/Linux/CARLA_0.9.13.tar.gz)
 - Create a virtual environment for this repository:
 ```
