@@ -20,6 +20,12 @@ from carla_bridge.route_manipulation import interpolate_trajectory, downsample_r
 # from ISS.algorithms.end_to_end.lav.lav_agent import LAVAgent
 from ISS.algorithms.end_to_end.lav.lav_agent_fast import LAVAgent
 
+import ISS
+import os
+
+ISS_PATH = os.path.dirname(ISS.__file__)
+
+
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
         self._ego_vehicle_name = rospy.get_param('robot_name', 'ego_vehicle')
@@ -47,7 +53,7 @@ class CARLABridgeNode:
         self._spawn_points = self._map.get_spawn_points()
         self._spectator = self._world.get_spectator()
         
-        path_to_config = "/home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/end_to_end/lav/config.yaml"
+        path_to_config = ISS_PATH + "/algorithms/end_to_end/lav/config.yaml"
         self._agent = LAVAgent(path_to_config)
         
         self._vehicles = {}

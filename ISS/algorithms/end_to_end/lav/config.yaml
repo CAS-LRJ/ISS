@@ -81,10 +81,10 @@ no_forecast: False
 no_refine: False
 #### MODEL DIR ####
 pixels_per_meter: 4
-lidar_model_dir: /home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/end_to_end/lav/weights/lidar_v2_7.th
-uniplanner_dir: /home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/end_to_end/lav/weights/uniplanner_v2_7.th
-bra_model_dir: /home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/end_to_end/lav/weights/bra_v2_9.th
-seg_model_dir: /home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/end_to_end/lav/weights/seg_1.th
-bev_model_dir: /home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/end_to_end/lav/weights/bev_v2_64.th
-bra_model_trace_dir: /home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/end_to_end/lav/weights/bra_v2_9.pt
-seg_model_trace_dir: /home/shaohang/work_space/autonomous_vehicle/ISS/ISS/algorithms/end_to_end/lav/weights/seg_1.pt
+lidar_model_dir: /algorithms/end_to_end/lav/weights/lidar_v2_7.th
+uniplanner_dir: /algorithms/end_to_end/lav/weights/uniplanner_v2_7.th
+bra_model_dir: /algorithms/end_to_end/lav/weights/bra_v2_9.th
+seg_model_dir: /algorithms/end_to_end/lav/weights/seg_1.th
+bev_model_dir: /algorithms/end_to_end/lav/weights/bev_v2_64.th
+bra_model_trace_dir: /algorithms/end_to_end/lav/weights/bra_v2_9.pt
+seg_model_trace_dir: /algorithms/end_to_end/lav/weights/seg_1.pt

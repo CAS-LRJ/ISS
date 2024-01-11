@@ -584,6 +584,7 @@ def extract_peak(heatmap, max_pool_ks=7, min_score=0.1, max_det=15, break_tie=Fa
     
     
 if __name__ == "__main__":
+    
     config_path = "/home/shaohang/work_space/autonomous_vehicle/LAV/team_code_v2/config.yaml"
     client = carla.Client('localhost', 2000)
     client.set_timeout(2.0)

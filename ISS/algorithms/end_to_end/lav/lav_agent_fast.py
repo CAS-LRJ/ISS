@@ -26,6 +26,10 @@ from ISS.algorithms.end_to_end.lav.planner import RoutePlanner
 from ISS.algorithms.end_to_end.lav.waypointer import Waypointer
 from ISS.algorithms.end_to_end.lav.model_inference import InferModel
 
+import ISS
+import os
+
+ISS_PATH = os.path.dirname(ISS.__file__)
 
 def get_entry_point():
     return 'LAVAgent'
@@ -114,12 +118,12 @@ class LAVAgent(AutonomousAgent):
             num_plan_iter=self.num_plan_iter,
         ).to(self.device)
 
-        self.bra_model = torch.jit.load(self.bra_model_trace_dir)
-        self.seg_model = torch.jit.load(self.seg_model_trace_dir)
+        self.bra_model = torch.jit.load(ISS_PATH + self.bra_model_trace_dir)
+        self.seg_model = torch.jit.load(ISS_PATH + self.seg_model_trace_dir)
 
         # Load the models
-        self.lidar_model.load_state_dict(torch.load(self.lidar_model_dir))
-        self.uniplanner.load_state_dict(torch.load(self.uniplanner_dir))
+        self.lidar_model.load_state_dict(torch.load(ISS_PATH + self.lidar_model_dir))
+        self.uniplanner.load_state_dict(torch.load(ISS_PATH + self.uniplanner_dir))
 
         self.lidar_model.eval()
         self.uniplanner.eval()
@@ -514,7 +518,6 @@ class LAVAgent(AutonomousAgent):
             f'predicted brake: {pred_bra:.3f}',
             (4,40), *text_args
         )
-        # cv2.imwrite(f'/home/shaohang/work_space/autonomous_vehicle/ISS/images/{self.num_frames}.png', canvas)
         return canvas
 
 def _rotate(x, y, theta):
