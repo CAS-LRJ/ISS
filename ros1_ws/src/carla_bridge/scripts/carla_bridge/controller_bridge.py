@@ -42,8 +42,9 @@ class ControllerBridge:
     
     def apply_control(self, ctrl=None):
         if ctrl is not None:
-            self._control = ctrl
-        self._vehicle.apply_control(self._control)   
+            self._vehicle.apply_control(ctrl)
+        else:
+            self._vehicle.apply_control(self._control)   
         
     def set_control(self, throttle, steering):
         self._control.steer = min(max(-steering, -1.0), 1.0)

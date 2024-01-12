@@ -79,23 +79,23 @@ class LAVObjectDetector:
                     loc_rotated = rotate(loc, -np.pi/2)
                     loc_vec = np.array([-loc_rotated[0], -loc_rotated[1], 0.5, 1])
                     loc_transformed = self._ego_transform_matrix @ loc_vec
-                    state_array.states.append(State(x=loc_transformed[0], y=loc_transformed[1]))
+                    state_array.states.append(State(x=loc_transformed[0], y=-loc_transformed[1]))
                 all_trajs.trajectories.append(state_array)
         self._prediction_pub.publish(all_trajs)
         
     def publish_object_detection(self, det):
         all_detections = ObjectDetection3DArray()
-        for x, y, ww, hh, cos, sin in det[1]:
-            x = (x - 160) * self._METER_PER_PIXEL
-            y = (y - 280) * self._METER_PER_PIXEL
+        for det_x, det_y, det_ww, det_hh, cos, sin in det[1]:
+            x = (det_x - 160) * self._METER_PER_PIXEL
+            y = (det_y - 280) * self._METER_PER_PIXEL
             loc_rotated = rotate((x, y), -np.pi/2)
             rot_cos = sin
             rot_sin = -cos
             rot_ang = np.arctan2(rot_sin, rot_cos)
             loc_vec = np.array([-loc_rotated[0], -loc_rotated[1], 0, 1])
             loc_transformed = self._ego_transform_matrix @ loc_vec
-            ww = ww * self._METER_PER_PIXEL
-            hh = hh * self._METER_PER_PIXEL
+            ww = det_ww * self._METER_PER_PIXEL
+            hh = det_hh * self._METER_PER_PIXEL
             detection = ObjectDetection3D()
             detection.header.stamp = rospy.Time.now()
             detection.header.frame_id = rospy.get_param("world_frame")

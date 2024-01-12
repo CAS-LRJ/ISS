@@ -69,16 +69,18 @@ class CARLABridgeNode:
         self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
         self._step_cnt = 0
         self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
-        self._call_global_plan = False
+        self._set_global_plan_perception = False
+        self._set_global_plan_planning = False
     
     def run(self):
+        start_location = self._spawn_points[self.params["ego_init"]].location
+        end_location = self._spawn_points[self.params["ego_destination"]].location
+        waypoints_trajectory = [start_location, end_location]
+        global_plan_gps, global_plan_world_coord = interpolate_trajectory(self._world, waypoints_trajectory)
+        self._agent.set_global_plan(global_plan_gps, global_plan_world_coord, downsample_route)
+        self._set_global_plan_perception = True
         if self._controller_bridge.start_iss_agent(self._spawn_points[self.params["ego_destination"]]):
-            start_location = self._spawn_points[self.params["ego_init"]].location
-            end_location = self._spawn_points[self.params["ego_destination"]].location
-            waypoints_trajectory = [start_location, end_location]
-            global_plan_gps, global_plan_world_coord = interpolate_trajectory(self._world, waypoints_trajectory)
-            self._agent.set_global_plan(global_plan_gps, global_plan_world_coord, downsample_route)
-            self._call_global_plan = True
+            self._set_global_plan_planning = True
             for key, vehicle in self._vehicles.items():
                 if key == self._ego_vehicle_name:
                     continue
@@ -89,16 +91,20 @@ class CARLABridgeNode:
         self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
         self._gt_state_estimator.publish_ego_state(None)
         start_time = time.time()
-        if self._call_global_plan:
+        if self._set_global_plan_perception:
             data = self._sensor_interface.get_data()
             control_command, det, other_cast_locs, other_cast_cmds = self._agent.run_step(data, None)
-            if det is None:
-                self._controller_bridge.apply_control(control_command)
-            else:                
-                self._object_detector.publish_object_detection(det)
-                self._object_detector.publish_prediction(other_cast_locs, other_cast_cmds)
-                self._controller_bridge.apply_control(control_command)
+            if det is not None:
                 self._carla_visualizer.draw_perception(self._vehicles[self._ego_vehicle_name].get_transform(), det, other_cast_locs, other_cast_cmds)
+            if self._set_global_plan_planning:
+                if det is None:
+                    self._controller_bridge.apply_control(control_command)
+                else:
+                    self._object_detector.publish_object_detection(det.copy())
+                    self._object_detector.publish_prediction(other_cast_locs.copy(), other_cast_cmds.copy())
+                    self._controller_bridge.apply_control()
+                
+                
         # print("Time elapsed: ", time.time() - start_time)
         # for veh_name, veh in self._vehicles.items():
         #     print(veh_name, veh.get_transform())
