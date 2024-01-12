@@ -105,3 +105,11 @@ For using the Gazebo simulator, run:
 ```bash
 roslaunch robot_gazebo gazebo_demo.launch
 ```
+
+## Common Issues and Solutions
+
+For information on common issues encountered during the installation and usage of this project, along with their respective solutions or workarounds, please refer to our [Issues](https://github.com/CAS-LRJ/ISS/issues) section. 
+
+One of our notable issues, which includes a comprehensive discussion on several key challenges, can be found here: [Issue #31](https://github.com/CAS-LRJ/ISS/issues/31).
+
+We encourage users to review these discussions for troubleshooting tips and to gain insights on how to resolve any problems you might encounter. Additionally, feel free to contribute by reporting new issues or suggesting improvements.
