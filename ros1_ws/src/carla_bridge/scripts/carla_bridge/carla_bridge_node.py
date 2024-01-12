@@ -8,8 +8,8 @@ from scipy.spatial.transform import Rotation as R
 
 import rospy
 
-from carla_bridge.gt_object_detector import GTObjectDetector
-from carla_bridge.gt_state_estimator import GTStateEstimator
+from ros1_ws.src.carla_bridge.scripts.carla_bridge.object_detector import GTObjectDetector
+from ros1_ws.src.carla_bridge.scripts.carla_bridge.state_estimator import GTStateEstimator
 from carla_bridge.carla_visualizer import CARLAVisualizer
 from carla_bridge.controller_bridge import ControllerBridge
 

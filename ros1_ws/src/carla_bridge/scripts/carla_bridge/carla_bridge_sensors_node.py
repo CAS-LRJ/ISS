@@ -7,11 +7,9 @@ import random
 from scipy.spatial.transform import Rotation as R
 import time
 import rospy
-import yaml
-import torch
 
-from carla_bridge.gt_object_detector import GTObjectDetector
-from carla_bridge.gt_state_estimator import GTStateEstimator
+from ros1_ws.src.carla_bridge.scripts.carla_bridge.object_detector import GTObjectDetector, LAVObjectDetector
+from ros1_ws.src.carla_bridge.scripts.carla_bridge.state_estimator import GTStateEstimator
 from carla_bridge.carla_visualizer import CARLAVisualizer
 from carla_bridge.controller_bridge import ControllerBridge
 from carla_bridge.sensor_utils import add_sensors, SensorInterface
@@ -24,7 +22,6 @@ import ISS
 import os
 
 ISS_PATH = os.path.dirname(ISS.__file__)
-
 
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
@@ -63,7 +60,8 @@ class CARLABridgeNode:
         add_sensors(self._vehicles[self._ego_vehicle_name], self._world, self._sensor_interface, self._agent.sensors(), self._sensors_list)
         self._world.tick()
         
-        self._gt_object_detector = GTObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
+        # self._gt_object_detector = GTObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
+        self._object_detector = LAVObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
         self._gt_state_estimator = GTStateEstimator(self._vehicles[self._ego_vehicle_name])
         self._controller_bridge = ControllerBridge(self._vehicles[self._ego_vehicle_name])
         self._carla_visualizer = CARLAVisualizer(self._world)
@@ -74,37 +72,39 @@ class CARLABridgeNode:
         self._call_global_plan = False
     
     def run(self):
-        # if self._controller_bridge.start_iss_agent(self._spawn_points[self.params["ego_destination"]]):
-        #     for key, vehicle in self._vehicles.items():
-        #         if key == self._ego_vehicle_name:
-        #             continue
-        #         vehicle.set_autopilot(True, self._traffic_manager_port)
-        start_location = self._spawn_points[self.params["ego_init"]].location
-        end_location = self._spawn_points[self.params["ego_destination"]].location
-        waypoints_trajectory = [start_location, end_location]
-        global_plan_gps, global_plan_world_coord = interpolate_trajectory(self._world, waypoints_trajectory)
-        self._agent.set_global_plan(global_plan_gps, global_plan_world_coord, downsample_route)
-        self._call_global_plan = True
-        for key, vehicle in self._vehicles.items():
-            if key == self._ego_vehicle_name:
-                continue
-            vehicle.set_autopilot(True, self._traffic_manager_port)
+        if self._controller_bridge.start_iss_agent(self._spawn_points[self.params["ego_destination"]]):
+            start_location = self._spawn_points[self.params["ego_init"]].location
+            end_location = self._spawn_points[self.params["ego_destination"]].location
+            waypoints_trajectory = [start_location, end_location]
+            global_plan_gps, global_plan_world_coord = interpolate_trajectory(self._world, waypoints_trajectory)
+            self._agent.set_global_plan(global_plan_gps, global_plan_world_coord, downsample_route)
+            self._call_global_plan = True
+            for key, vehicle in self._vehicles.items():
+                if key == self._ego_vehicle_name:
+                    continue
+                vehicle.set_autopilot(True, self._traffic_manager_port)
         
     def _carla_tick(self, event):
         self._step_cnt += 1
         self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
-        # self._gt_state_estimator.publish_ego_state(None)
+        self._gt_state_estimator.publish_ego_state(None)
         start_time = time.time()
         if self._call_global_plan:
             data = self._sensor_interface.get_data()
             control_command, det, other_cast_locs, other_cast_cmds = self._agent.run_step(data, None)
-            self._controller_bridge.apply_control(control_command)
-            if det is not None:
+            if det is None:
+                self._controller_bridge.apply_control(control_command)
+            else:                
+                self._object_detector.publish_object_detection(det)
+                self._object_detector.publish_prediction(other_cast_locs, other_cast_cmds)
+                self._controller_bridge.apply_control(control_command)
                 self._carla_visualizer.draw_perception(self._vehicles[self._ego_vehicle_name].get_transform(), det, other_cast_locs, other_cast_cmds)
-        print("Time elapsed: ", time.time() - start_time)
+        # print("Time elapsed: ", time.time() - start_time)
+        # for veh_name, veh in self._vehicles.items():
+        #     print(veh_name, veh.get_transform())
         self._world.tick()
         if self._step_cnt >= self._total_steps:
-            self._gt_object_detector.shutdown()
+            self._object_detector.shutdown()
             self._gt_state_estimator.shutdown()
             self._carla_timer.shutdown()
             self.destory()
@@ -135,7 +135,7 @@ class CARLABridgeNode:
         for p in self._spawn_points:
             if p != ego_spawn_point and \
                 np.hypot(p.location.x - ego_spawn_point.location.x,
-                         p.location.y - ego_spawn_point.location.y) < 20:
+                         p.location.y - ego_spawn_point.location.y) < 100:
                 nonego_spawn_points.append(p)
         self._add_ego_vehicle(ego_spawn_point)        
         for i in range(self.params["num_non_ego_vehicles"]):

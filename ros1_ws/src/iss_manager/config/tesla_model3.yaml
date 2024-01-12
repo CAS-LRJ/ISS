@@ -6,8 +6,8 @@ global_planning:
     GOAL_TORELANCE: 5
 
 prediction:
-  dt: 0.5
-  MAX_T: 6.0
+  method: "loaded_waypoint_predictor"
+  # method: "constant_velocity_predictor"
 
 local_planning:
   local_planning_frequency: 10

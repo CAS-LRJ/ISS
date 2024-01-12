@@ -1,75 +1,72 @@
 import numpy as np
 import math
 from scipy.spatial import KDTree
-
-def kinematic_bicycle_model(bicycle_model_state, acc, steer, L):
-    d_bicycle_model_state = np.zeros(4)
-    d_bicycle_model_state[0] = bicycle_model_state[3] * math.cos(bicycle_model_state[2])
-    d_bicycle_model_state[1] = bicycle_model_state[3] * math.sin(bicycle_model_state[2])
-    d_bicycle_model_state[2] = bicycle_model_state[3] * math.tan(steer) / L
-    d_bicycle_model_state[3] = acc
-    return d_bicycle_model_state
-
-def bicycle_model_step(bicycle_model_state, acc, steer, L, dt):
-    # Runge-Kutta 4th Order
-    k1 = kinematic_bicycle_model(bicycle_model_state, acc, steer, L)
-    k2 = kinematic_bicycle_model(bicycle_model_state + k1 * 0.5 * dt, acc, steer, L)
-    k3 = kinematic_bicycle_model(bicycle_model_state + k2 * 0.5 * dt, acc, steer, L)
-    k4 = kinematic_bicycle_model(bicycle_model_state + k3 * dt, acc, steer, L)
-    bicycle_model_state = bicycle_model_state + (k1 + 2. * k2 + 2. * k3 + k4) * dt / 6.
-    return bicycle_model_state
+from ISS.algorithms.utils.cubic_spline import Spline2D
 
 def get_circle_centers(x, y, heading_angle, length, width, num_circles=3):
-    # represent the vehicle circles, the state is the center of the bicycle model
-    centers = []
-    for j in range(1, num_circles + 1):
-        center = [0, 0]
-        center[0] = x + length / (2 * num_circles) * (2 * j - num_circles - 1) * math.cos(heading_angle)
-        center[1] = y + length / (2 * num_circles) * (2 * j - num_circles - 1) * math.sin(heading_angle)
-        centers.append(center)
+    spacing = length / num_circles
+    centers = [(x + spacing * (j - (num_circles + 1) / 2) * math.cos(heading_angle),
+                y + spacing * (j - (num_circles + 1) / 2) * math.sin(heading_angle))
+               for j in range(1, num_circles + 1)]
     r = 0.5 * math.sqrt((length / num_circles) ** 2 + width ** 2)
     return centers, r
     
-
-
 class ConstVelPredictor:
     def __init__(self, predictor_settings, lanemap_collision_checker, vehicle_info) -> None:
         self._predictor_settings = predictor_settings
         self._ego_veh_info = vehicle_info
-        self._obstacles = None
         self._lanemap_collision_checker = lanemap_collision_checker
-        self._obstacle_detections = None
-        self._kd_tree_list = []
+        self._obstacle_detections = None        
+        self._loaded_trajecotries = None        
+        self._spatial_temporal_obstacles = None
+        self._obstacles_info_list = None
 
     def update_obstacle(self, obstacle_detections):
         self._obstacle_detections = obstacle_detections
-        # obstacle_list = []
-        # for obstacle in obstacle_detections.detections:
-        #     obstacle_centers, r = get_circle_centers(obstacle.state.x, obstacle.state.y, obstacle.state.heading_angle, obstacle.bbox.size.x, obstacle.bbox.size.y)
-        #     obstacle_list.extend(obstacle_centers)
-        # if len(obstacle_list) > 0:
-        #     self._obstacles = KDTree(np.array(obstacle_list))
+    
+    def read_prediction(self, trajectories):
+        self._loaded_trajecotries = trajectories
     
     def update_prediction(self, dt, horizon):
-        self._kd_tree_list.clear()
-        obstacle_infos = [[obstacle.state.x, obstacle.state.y, obstacle.state.heading_angle, obstacle.bbox.size.x, obstacle.bbox.size.y, obstacle.state.velocity] for obstacle in self._obstacle_detections.detections]
-        for _ in range(horizon):
-            obstacle_centers_per_step = []
-            for i, obstacle in enumerate(obstacle_infos):
-                obstacle_centers, r = get_circle_centers(obstacle[0], obstacle[1], obstacle[2], obstacle[3], obstacle[4])
-                obstacle_centers_per_step.extend(obstacle_centers)
-                obstacle[0] += obstacle[5] * math.cos(obstacle[2]) * dt
-                obstacle[1] += obstacle[5] * math.sin(obstacle[2]) * dt
-            if len(obstacle_centers_per_step) > 0:
-                self._kd_tree_list.append(KDTree(np.array(obstacle_centers_per_step)))
+        spatial_temporal_obstacles_list = []
+        self._obstacles_info_list = []
+        if self._predictor_settings["method"] == "constant_velocity_predictor":
+            if self._obstacle_detections is None:
+                return
+            obstacle_infos = [[obstacle.state.x, obstacle.state.y, obstacle.state.heading_angle, obstacle.bbox.size.x, obstacle.bbox.size.y, obstacle.state.velocity]\
+                                for obstacle in self._obstacle_detections.detections]
+            for idx in range(horizon):
+                for _, obstacle in enumerate(obstacle_infos):
+                    obstacle_centers, r = get_circle_centers(obstacle[0], obstacle[1], obstacle[2], obstacle[3], obstacle[4])
+                    for obstacle_center in obstacle_centers:
+                        spatial_temporal_obstacles_list.append(obstacle_center)
+                        self._obstacles_info_list.append((idx, r))
+                    obstacle[0] += obstacle[5] * math.cos(obstacle[2]) * dt
+                    obstacle[1] += obstacle[5] * math.sin(obstacle[2]) * dt
+        elif self._predictor_settings["method"] == "loaded_waypoint_predictor":
+            if self._loaded_trajecotries is None:
+                return
+            for traj in self._loaded_trajecotries:
+                state_array = traj.get_states_array()
+                x = state_array[:, 0].tolist()
+                y = state_array[:, 1].tolist()
+                csp = Spline2D(x, y)
+                s = np.arange(0, csp.s[-1], horizon)
+                for idx, ss in enumerate(s):
+                    ox, oy = csp.calc_position(ss)
+                    oyaw = csp.calc_yaw(ss)
+                    obstacle_centers, r = get_circle_centers(ox, oy, oyaw, self._ego_veh_info['length'], self._ego_veh_info['width'])
+                    for obstacle_center in obstacle_centers:
+                        spatial_temporal_obstacles_list.append(obstacle_center)
+                        self._obstacles_info_list.append((idx, r))
+        if len(spatial_temporal_obstacles_list) > 0:
+            self._spatial_temporal_obstacles = KDTree(np.array(spatial_temporal_obstacles_list))
     
     def collision_check(self, path):
         if self._lanemap_collision_checker.check_path(path): #TODO: not accurate
             return True, 0
-        
-        if len(self._kd_tree_list) == 0:
+        if self._spatial_temporal_obstacles is None:
             return False, 0
-        
         ego_length = self._ego_veh_info['length']
         ego_width = self._ego_veh_info['width']
         for i, wpt in enumerate(path):
@@ -78,11 +75,15 @@ class ConstVelPredictor:
             ego_circle_centers, ego_radius = get_circle_centers(ego_center[0], ego_center[1], ego_heading, ego_length, ego_width)
             for ego_circle_center in ego_circle_centers:
                 ego_circle_center_array = np.array(ego_circle_center)
-                dist, ind = self._kd_tree_list[i].query(ego_circle_center_array)
-                if dist < 2 * (ego_radius):
-                    return True, 1
+                possible_obstacles = self._spatial_temporal_obstacles.query_ball_point(ego_circle_center_array, 3 * ego_radius)
+                for idx in possible_obstacles:
+                    obs_info = self._obstacles_info_list[idx]
+                    if obs_info[0] != i:
+                        continue
+                    dist = np.linalg.norm(ego_circle_center_array - self._spatial_temporal_obstacles.data[idx])
+                    if dist < (ego_radius + obs_info[1]):
+                        return True, 1
         return False, 0
-            
     
 
 if __name__=="__main__":

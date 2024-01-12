@@ -3,7 +3,7 @@ carla_port: 2000
 map_name: "Town06"
 fixed_delta_seconds: 0.05
 graphic_rendering: true
-num_non_ego_vehicles: 5
+num_non_ego_vehicles: 100
 simulation_duration: 300
 gt_state_estimation_frequency: 10
 gt_object_detection_frequency: 10
@@ -14,6 +14,7 @@ agent_control_frequency: 10
 ego_odom_topic: "ego_odom"
 ego_state_topic: "ego_state_estimation"
 object_detection_topic: "object_detection"
+motion_prediction_topic: "motion_prediction"
 
 world_frame: "odom"
 control_command_topic: "control_command"

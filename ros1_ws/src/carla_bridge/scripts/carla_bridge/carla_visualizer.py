@@ -10,6 +10,12 @@ color_map = {
     'yellow': carla.Color(255, 255, 0),
 }
 
+def rotate(loc, yaw):
+    loc_array = np.array(loc)
+    rot_mat = np.array([[np.cos(yaw), -np.sin(yaw)], [np.sin(yaw), np.cos(yaw)]])
+    loc_rotated = rot_mat @ loc_array
+    return loc_rotated
+
 class CARLAVisualizer:
     def __init__(self, world) -> None:
         self._world = world
@@ -47,19 +53,28 @@ class CARLAVisualizer:
             loc_transformed = ego_trans_matrix @ loc_vec
             ww = ww * meter_per_pixel
             hh = hh * meter_per_pixel
+            height = 1.5
+            
+            # box = carla.BoundingBox(carla.Location(x=loc_transformed[0], y=loc_transformed[1], z=loc_transformed[2]), carla.Vector3D(x=ww, y=hh, z=height))
+            # rot = carla.Rotation(pitch=0, yaw=0, roll=0)
+            # self._world.debug.draw_box(box, rot, color=color_map['yellow'], life_time=duration, thickness=10)
             
             p1 = tuple((loc_transformed.tolist()[:2] + [-ww,-hh]@np.array([[-rot_sin,rot_cos],[-rot_cos,-rot_sin]])))
             p2 = tuple((loc_transformed.tolist()[:2] + [-ww, hh]@np.array([[-rot_sin,rot_cos],[-rot_cos,-rot_sin]])))
             p3 = tuple((loc_transformed.tolist()[:2] + [ ww, hh]@np.array([[-rot_sin,rot_cos],[-rot_cos,-rot_sin]])))
             p4 = tuple((loc_transformed.tolist()[:2] + [ ww,-hh]@np.array([[-rot_sin,rot_cos],[-rot_cos,-rot_sin]])))
             base_corners = [p1, p2, p3, p4]
-            base_locations = [carla.Location(x=corner[0], y=corner[1], z=0) for corner in base_corners]
-            height = 1.5
-            top_locations = [carla.Location(x=corner[0], y=corner[1], z=height) for corner in base_corners]
-            for i in range(len(base_locations)):
-                self._world.debug.draw_line(base_locations[i], base_locations[(i+1)%len(base_locations)], life_time=duration, color=color_map['blue'])
-                self._world.debug.draw_line(base_locations[i], top_locations[i], life_time=duration, color=color_map['blue'])
-                self._world.debug.draw_line(top_locations[i], top_locations[(i+1)%len(top_locations)], life_time=duration, color=color_map['blue'])
+            base_locations = [carla.Location(x=float(corner[0]), y=float(corner[1]), z=0) for corner in base_corners]
+            top_locations = [carla.Location(x=float(corner[0]), y=float(corner[1]), z=height) for corner in base_corners]
+
+            for i in range(4):
+                self._world.debug.draw_string(base_locations[i], str(i), life_time=duration, color=color_map['green'])
+
+            for i in range(len(base_corners)):
+                self._world.debug.draw_line(base_locations[i], base_locations[(i+1)%len(base_corners)], life_time=duration, color=color_map['green'])
+                self._world.debug.draw_line(base_locations[i], top_locations[i], life_time=duration, color=color_map['green'])
+                self._world.debug.draw_line(top_locations[i], top_locations[(i+1)%len(base_corners)], life_time=duration, color=color_map['green'])
+
 
         # draw prediction
         # ego_trans_matrix = np.linalg.inv(ego_trans_matrix)
@@ -73,14 +88,7 @@ class CARLAVisualizer:
                     loc_rotated = rotate(loc, -np.pi/2)
                     loc_vec = np.array([-loc_rotated[0], -loc_rotated[1], 0.5, 1])
                     loc_transformed = ego_trans_matrix @ loc_vec
-                    if idx == 0:
-                        continue
                     self._world.debug.draw_string(carla.Location(x=loc_transformed[0], y=loc_transformed[1], z=loc_transformed[2]), str(idx), life_time=duration, color=color_map['red'])
             
-            
-def rotate(loc, yaw):
-    loc_array = np.array(loc)
-    rot_mat = np.array([[np.cos(yaw), -np.sin(yaw)], [np.sin(yaw), np.cos(yaw)]])
-    loc_rotated = rot_mat @ loc_array
-    return loc_rotated
+
 
