@@ -15,8 +15,11 @@ Before proceeding with the setup, ensure the following prerequisites are met:
 
 ## 2. Docker Setup
 
-### 2.1. pull the NVIDIA CUDA Docker image:
+### 2.1. Pull the NVIDIA CUDA Docker Image:
 
+Before pulling the NVIDIA CUDA Docker image, ensure that you select an image compatible with your computer's CUDA version. You can choose from various versions of NVIDIA's official devel images to match your setup.
+
+To pull a specific version of the NVIDIA CUDA Docker image, use the following command:
 ```bash
 docker pull nvidia/cuda:11.3.1-devel-ubuntu20.04
 ```
