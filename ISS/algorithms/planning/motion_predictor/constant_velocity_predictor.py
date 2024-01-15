@@ -2,6 +2,7 @@ import numpy as np
 import math
 from scipy.spatial import KDTree
 from ISS.algorithms.utils.cubic_spline import Spline2D
+import time
 
 def get_circle_centers(x, y, heading_angle, length, width, num_circles=3):
     spacing = length / num_circles
@@ -51,7 +52,7 @@ class ConstVelPredictor:
                 x = state_array[:, 0].tolist()
                 y = state_array[:, 1].tolist()
                 csp = Spline2D(x, y)
-                s = np.arange(0, csp.s[-1], horizon)
+                s = np.arange(0, csp.s[-1], (csp.s[-1] / horizon)) 
                 for idx, ss in enumerate(s):
                     ox, oy = csp.calc_position(ss)
                     oyaw = csp.calc_yaw(ss)
@@ -60,7 +61,9 @@ class ConstVelPredictor:
                         spatial_temporal_obstacles_list.append(obstacle_center)
                         self._obstacles_info_list.append((idx, r))
         if len(spatial_temporal_obstacles_list) > 0:
-            self._spatial_temporal_obstacles = KDTree(np.array(spatial_temporal_obstacles_list))
+            self._spatial_temporal_obstacles = KDTree(np.array(spatial_temporal_obstacles_list), copy_data=True)
+        else:
+            self._spatial_temporal_obstacles = None
     
     def collision_check(self, path):
         if self._lanemap_collision_checker.check_path(path): #TODO: not accurate
@@ -75,38 +78,12 @@ class ConstVelPredictor:
             ego_circle_centers, ego_radius = get_circle_centers(ego_center[0], ego_center[1], ego_heading, ego_length, ego_width)
             for ego_circle_center in ego_circle_centers:
                 ego_circle_center_array = np.array(ego_circle_center)
-                possible_obstacles = self._spatial_temporal_obstacles.query_ball_point(ego_circle_center_array, 3 * ego_radius)
+                possible_obstacles = self._spatial_temporal_obstacles.query_ball_point(ego_circle_center_array, 6 * ego_radius)
                 for idx in possible_obstacles:
                     obs_info = self._obstacles_info_list[idx]
-                    if obs_info[0] != i:
-                        continue
-                    dist = np.linalg.norm(ego_circle_center_array - self._spatial_temporal_obstacles.data[idx])
-                    if dist < (ego_radius + obs_info[1]):
-                        return True, 1
+                    if obs_info[0] in [(i + j) for j in range(-1, 2)]:                    
+                        dist = np.linalg.norm(ego_circle_center_array - self._spatial_temporal_obstacles.data[idx])
+                        if dist < (ego_radius + obs_info[1]):
+                            return True, 1
         return False, 0
     
-
-if __name__=="__main__":
-    x = 0
-    y = 0
-    heading_angle = 0
-    length = 0.32
-    width = 0.18
-    centers, r = get_circle_centers(x, y, heading_angle, length, width)
-    print(2*r)
-    import matplotlib.pyplot as plt
-    import matplotlib.patches as patches
-
-    fig, ax = plt.subplots()
-    for center in centers:
-        ax.plot(center[0], center[1], 'ro')
-        cir = patches.Circle(center, r, edgecolor='r', facecolor='none')
-        ax.add_patch(cir)
-
-    rect = patches.Rectangle((x - length / 2, y - width / 2), length, width, angle=heading_angle * 180 / math.pi, linewidth=1, edgecolor='r', facecolor='none')
-    ax.add_patch(rect)
-    
-    
-    ax.set_xlim(-1, 1)
-    ax.set_ylim(-1, 1)
-    plt.show()

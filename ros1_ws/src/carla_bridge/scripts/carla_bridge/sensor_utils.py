@@ -192,12 +192,11 @@ class SensorInterface(object):
         # Only sensor that doesn't get the data on tick, needs special treatment
         self._opendrive_tag = None
 
-
     def register_sensor(self, tag, sensor_type, sensor):
         if tag in self._sensors_objects:
             raise SensorConfigurationInvalid("Duplicated sensor tag [{}]".format(tag))
 
-        print("registered: ", tag)
+        # print("registered: ", tag)
         self._sensors_objects[tag] = sensor
 
         if sensor_type == 'sensor.opendrive_map': 

@@ -17,9 +17,8 @@ pip3 install install/torch_scatter-2.0.7-cp38-cp38-linux_x86_64.whl
 - Install this repository:
 ```
 git clone --recursive https://github.com/CAS-LRJ/ISS.git 
-cd ISS
-git checkout ros1-dev-reframe
-pip3 install -r requirements.txt
+cd ISS && git checkout ros1-dev-reframe
+pip3 install -r install/requirements.txt
 python3 setup.py develop
 cd ros1_ws && catkin build
 source devel/setup.bash

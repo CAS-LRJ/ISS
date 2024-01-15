@@ -9,6 +9,15 @@ from ISS.algorithms.utils.angle import pi_2_pi
 from ISS.algorithms.utils.cubic_spline import Spline2D
 
 
+DURATION = 0.05
+
+color_map = { 
+    'red': carla.Color(255, 0, 0),
+    'green': carla.Color(0, 255, 0),
+    'blue': carla.Color(0, 0, 255),
+    'yellow': carla.Color(255, 255, 0),
+}
+
 class GTObjectDetector:
     def __init__(self, vehicle_id, world) -> None:
         self._vehicle_id = vehicle_id
@@ -60,7 +69,8 @@ class GTObjectDetector:
 
 class LAVObjectDetector:
     def __init__(self, vehicle_id, world) -> None:
-        self._ego_transform_matrix = world.get_actor(vehicle_id).get_transform().get_matrix()
+        self._world = world
+        self._vehicle_id = vehicle_id
         self._object_detection_pub = rospy.Publisher(rospy.get_param("object_detection_topic"), ObjectDetection3DArray, queue_size=1)
         self._prediction_pub = rospy.Publisher(rospy.get_param("motion_prediction_topic"), StateArrayArray, queue_size=1)
         self._MAX_DISTANCE = 20
@@ -68,7 +78,7 @@ class LAVObjectDetector:
         self._THRESHOLD_PREDICTION = 0.2
         self._NUM_POINTS = 50
     
-    def publish_prediction(self, other_cast_locs, other_cast_cmds):
+    def publish_prediction(self, other_cast_locs, other_cast_cmds, ego_transform_matrix):
         all_trajs = StateArrayArray()
         for trajs, cmds in zip(other_cast_locs, other_cast_cmds):
             for traj, score in zip(trajs, cmds):
@@ -78,12 +88,13 @@ class LAVObjectDetector:
                 for idx, loc in enumerate(traj):
                     loc_rotated = rotate(loc, -np.pi/2)
                     loc_vec = np.array([-loc_rotated[0], -loc_rotated[1], 0.5, 1])
-                    loc_transformed = self._ego_transform_matrix @ loc_vec
+                    loc_transformed = ego_transform_matrix @ loc_vec
+                    self._world.debug.draw_string(carla.Location(x=loc_transformed[0], y=loc_transformed[1], z=loc_transformed[2]), str(idx), life_time=DURATION, color=color_map['red'])
                     state_array.states.append(State(x=loc_transformed[0], y=-loc_transformed[1]))
                 all_trajs.trajectories.append(state_array)
         self._prediction_pub.publish(all_trajs)
         
-    def publish_object_detection(self, det):
+    def publish_object_detection(self, det, ego_transform_matrix):
         all_detections = ObjectDetection3DArray()
         for det_x, det_y, det_ww, det_hh, cos, sin in det[1]:
             x = (det_x - 160) * self._METER_PER_PIXEL
@@ -93,9 +104,19 @@ class LAVObjectDetector:
             rot_sin = -cos
             rot_ang = np.arctan2(rot_sin, rot_cos)
             loc_vec = np.array([-loc_rotated[0], -loc_rotated[1], 0, 1])
-            loc_transformed = self._ego_transform_matrix @ loc_vec
+            loc_transformed = ego_transform_matrix @ loc_vec
             ww = det_ww * self._METER_PER_PIXEL
             hh = det_hh * self._METER_PER_PIXEL
+            
+            p1 = tuple((loc_transformed.tolist()[:2] + [-ww,-hh]@np.array([[-rot_sin,rot_cos],[-rot_cos,-rot_sin]])))
+            p2 = tuple((loc_transformed.tolist()[:2] + [-ww, hh]@np.array([[-rot_sin,rot_cos],[-rot_cos,-rot_sin]])))
+            p3 = tuple((loc_transformed.tolist()[:2] + [ ww, hh]@np.array([[-rot_sin,rot_cos],[-rot_cos,-rot_sin]])))
+            p4 = tuple((loc_transformed.tolist()[:2] + [ ww,-hh]@np.array([[-rot_sin,rot_cos],[-rot_cos,-rot_sin]])))
+            base_corners = [p1, p2, p3, p4]
+            base_locations = [carla.Location(x=float(corner[0]), y=float(corner[1]), z=0) for corner in base_corners]
+            for i in range(4):
+                self._world.debug.draw_string(base_locations[i], str(i), life_time=DURATION, color=color_map['green'])
+            
             detection = ObjectDetection3D()
             detection.header.stamp = rospy.Time.now()
             detection.header.frame_id = rospy.get_param("world_frame")

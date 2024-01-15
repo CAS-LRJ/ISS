@@ -60,7 +60,7 @@ class CARLABridgeNode:
         add_sensors(self._vehicles[self._ego_vehicle_name], self._world, self._sensor_interface, self._agent.sensors(), self._sensors_list)
         self._world.tick()
         
-        # self._gt_object_detector = GTObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
+        # self._object_detector = GTObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
         self._object_detector = LAVObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
         self._gt_state_estimator = GTStateEstimator(self._vehicles[self._ego_vehicle_name])
         self._controller_bridge = ControllerBridge(self._vehicles[self._ego_vehicle_name])
@@ -91,19 +91,22 @@ class CARLABridgeNode:
         self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
         self._gt_state_estimator.publish_ego_state(None)
         start_time = time.time()
+        data = self._sensor_interface.get_data()
         if self._set_global_plan_perception:
-            data = self._sensor_interface.get_data()
             control_command, det, other_cast_locs, other_cast_cmds = self._agent.run_step(data, None)
-            if det is not None:
-                self._carla_visualizer.draw_perception(self._vehicles[self._ego_vehicle_name].get_transform(), det, other_cast_locs, other_cast_cmds)
+            # if det is not None:
+            #     self._carla_visualizer.draw_perception(self._vehicles[self._ego_vehicle_name].get_transform(), det, other_cast_locs, other_cast_cmds)
             if self._set_global_plan_planning:
                 if det is None:
+                    print("No detection")
                     self._controller_bridge.apply_control(control_command)
                 else:
-                    self._object_detector.publish_object_detection(det.copy())
-                    self._object_detector.publish_prediction(other_cast_locs.copy(), other_cast_cmds.copy())
+                    ego_transform_matrix = self._vehicles[self._ego_vehicle_name].get_transform().get_matrix()
+                    self._object_detector.publish_object_detection(det, ego_transform_matrix)
+                    self._object_detector.publish_prediction(other_cast_locs, other_cast_cmds, ego_transform_matrix)
+                    if control_command.brake == 1:
+                        self._controller_bridge.apply_control(control_command)
                     self._controller_bridge.apply_control()
-                
                 
         # print("Time elapsed: ", time.time() - start_time)
         # for veh_name, veh in self._vehicles.items():
@@ -122,7 +125,6 @@ class CARLABridgeNode:
         vehicle = self._world.try_spawn_actor(vehicle_bp, spawn_point)
         if vehicle != None:
             self._vehicles[self._ego_vehicle_name] = vehicle
-            print("Spawned ego vehicle at %s" % spawn_point.location)
         else:
             print("Ego vehicle spawn failed")
     
@@ -133,7 +135,6 @@ class CARLABridgeNode:
         if vehicle != None:
             self._vehicles[role_name] = vehicle
             vehicle.set_autopilot(False, self._traffic_manager_port)
-            print("Spawned %s at %s" % (role_name, spawn_point.location))
 
     def _add_vehicles(self):
         ego_spawn_point = self._spawn_points[self.params["ego_init"]]
