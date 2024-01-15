@@ -24,7 +24,7 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker, MarkerArray
 
-from iss_manager.msg import State, StateArray, ObjectDetection3DArray
+from iss_manager.msg import State, StateArray, StateArrayArray, ObjectDetection3DArray
 from iss_manager.srv import SetGoal, SetGoalResponse
 
 DEBUG = False
@@ -32,7 +32,6 @@ DEBUG = False
 class PlanningManagerNode:
     def __init__(self) -> None:
         self._ego_state_sub = rospy.Subscriber(rospy.get_param("ego_state_topic"), State, self._ego_state_callback)
-        self._obstacle_sub = rospy.Subscriber(rospy.get_param("object_detection_topic"), ObjectDetection3DArray, self._obstacle_callback)
         self._ego_state = None
         
         self._world_frame = rospy.get_param("world_frame")
@@ -53,6 +52,8 @@ class PlanningManagerNode:
         # Motion predictor
         predictor_settings = rospy.get_param("prediction")
         self._motion_predictor = ConstVelPredictor(predictor_settings, self.lanemap_collision_checker, self._vehicle_info) # put lanemap into the predictor
+        self._obstacle_sub = rospy.Subscriber(rospy.get_param("object_detection_topic"), ObjectDetection3DArray, self._obstacle_callback)
+        self._prediction_sub = rospy.Subscriber(rospy.get_param("motion_prediction_topic"), StateArrayArray, self._prediction_callback)
         
         # Motion Planner
         self.local_planning_frequency = rospy.get_param("local_planning")["local_planning_frequency"]
@@ -110,6 +111,12 @@ class PlanningManagerNode:
     
     def _obstacle_callback(self, obstacle_msg):
         self._motion_predictor.update_obstacle(obstacle_msg)    
+
+    def _prediction_callback(self, prediction_msg):
+        trajectories = []
+        for state_array in prediction_msg.trajectories:
+            trajectories.append(traj_from_ros_msg(state_array))
+        self._motion_predictor.read_prediction(trajectories)
 
     def _local_planning_timer_callback(self, event):
         if self._ego_state is None:

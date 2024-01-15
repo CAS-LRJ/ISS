@@ -12,7 +12,7 @@ build/
 ## We do not update video logs
 *.mp4
 ## We do not update model files
-*.pt
+# *.pt
 *.pth
 ## We do not update cache files
 **/__pycache__
@@ -33,3 +33,5 @@ ISS.egg-info/
 dist/ISS-0.0-py3.9.egg
 *.bag
 dist/ISS-0.0-py3.7.egg
+ISS/algorithms/end_to_end/lav/weights/
+

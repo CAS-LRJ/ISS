@@ -1,5 +1,5 @@
 # ISS
-This repo provides ROS-noetic support for the ISS project, compatible with both CARLA 0.9.13 and Gazebo Classic. The development of this repository is ongoing.
+Intelligent Self-driving System (ISS) is an autonomous driving framework for research.
 
 ## Installation
 - Install [ROS Noetic](http://wiki.ros.org/noetic/Installation), together with the dependencies for building ROS packages:
@@ -12,25 +12,28 @@ sudo apt-get install ros-noetic-navigation ros-noetic-gmapping ros-noetic-teb-lo
 conda create -n iss python=3.8
 conda activate iss
 ```
+- Install PyTorch and torch-scatter:
+```
+pip3 install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
+pip3 install install/torch_scatter-2.0.7-cp38-cp38-linux_x86_64.whl
+```
 - Install this repository:
 ```
 git clone --recursive https://github.com/CAS-LRJ/ISS.git 
-cd ISS
-git checkout ros1-dev-reframe
-pip3 install -r requirements.txt
+cd ISS && git checkout ros1-dev-reframe
+pip3 install -r install/requirements.txt
 python3 setup.py develop
-cd ros1_ws && catkin build
-source devel/setup.bash
 ```
 
 ## Usage
-If using Gazebo simulator, simply do
+If using ROS-Noetic, first build the workspace by
 ```
-roslaunch robot_gazebo gazebo_demo.launch
+cd ros1_ws && catkin build
+source devel/setup.bash
 ```
-If using CARLA simulator, please launch CARLA simulator firstly. Then do
+If using CARLA, do
 ```
-roslaunch carla_bridge carla_demo.launch
+roslaunch carla_bridge carla_demo.launch 
 ```
 
 ## Conventions

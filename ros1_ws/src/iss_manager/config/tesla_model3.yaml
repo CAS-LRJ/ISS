@@ -6,8 +6,8 @@ global_planning:
     GOAL_TORELANCE: 5
 
 prediction:
-  dt: 0.5
-  MAX_T: 6.0
+  method: "loaded_waypoint_predictor"
+  # method: "constant_velocity_predictor"
 
 local_planning:
   local_planning_frequency: 10
@@ -22,9 +22,9 @@ local_planning:
     dt: 0.1              # sample time
     MAX_T: 5.0            # max prediction time [s]
     MIN_T: 5.0            # min prediction time [s]
-    TARGET_SPEED: 8.33     # target speed [m/s]
-    D_T_S: 1.38            # target speed sampling length [m/s]
-    N_S_SAMPLE: 4         # sampling number of target speed
+    TARGET_SPEED: 13.88     # target speed [m/s]
+    D_T_S: 4.16            # target speed sampling length [m/s]
+    N_S_SAMPLE: 2         # sampling number of target speed
     K_J: 0.1
     K_T: 0.5
     K_D: 5
@@ -35,7 +35,7 @@ control:
   control_frequency: 20
   pid_settings:
     lateral:
-      K_P: 2.0
+      K_P: 3.0
       K_I: 0.0
       K_D: 0.2
       output_max: 1

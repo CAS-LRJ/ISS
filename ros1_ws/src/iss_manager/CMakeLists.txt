@@ -67,6 +67,7 @@ add_message_files(
   ObjectDetection3DArray.msg
   State.msg
   StateArray.msg
+  StateArrayArray.msg
 )
 
 ## Generate services in the 'srv' folder

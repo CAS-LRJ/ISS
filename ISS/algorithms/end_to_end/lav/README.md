@@ -1,0 +1,1 @@
+This this an adaptation of the LAV algorithm from the paper [Learning from All Vehicles](https://arxiv.org/abs/2203.11934). The original implementation can be found [here](https://github.com/dotchen/LAV).
