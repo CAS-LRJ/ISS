@@ -17,8 +17,7 @@ conda activate iss
 - Install [git-lfs](https://git-lfs.github.com/)
 - Install this repository:
 ```
-git clone --recurse-submodules https://github.com/CAS-LRJ/ISS.git 
-cd ISS && git lfs pull
+git clone --recurse-submodules https://github.com/CAS-LRJ/ISS.git && cd ISS
 pip3 install -r Install/requirements.txt
 python3 Install/setup.py develop
 ```
