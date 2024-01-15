@@ -14,11 +14,6 @@ export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla
 conda create -n iss python=3.8
 conda activate iss
 ```
-- Install PyTorch and torch-scatter:
-```
-pip3 install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
-pip3 install Install/torch_scatter-2.0.7-cp38-cp38-linux_x86_64.whl
-```
 - Install [git-lfs](https://git-lfs.github.com/)
 - Install this repository:
 ```
@@ -27,4 +22,8 @@ cd ISS && git lfs pull
 pip3 install -r Install/requirements.txt
 python3 Install/setup.py develop
 ```
-
+- Install PyTorch and torch-scatter:
+```
+pip3 install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
+pip3 install Install/torch_scatter-2.0.7-cp38-cp38-linux_x86_64.whl
+```
