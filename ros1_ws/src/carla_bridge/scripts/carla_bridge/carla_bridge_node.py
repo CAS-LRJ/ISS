@@ -52,12 +52,13 @@ class CARLABridgeNode:
         # self._progress_bar = tqdm(total=self.params["simulation_duration"] + 0.1, unit="sec")
         self._step_cnt = 0
         self._carla_visualizer = CARLAVisualizer(self._world)
+    
+    def run(self):
         if self._controller_bridge.start_iss_agent(self._spawn_points[self.params["ego_destination"]]):
             for key, vehicle in self._vehicles.items():
                 if key == self._ego_vehicle_name:
                     continue
                 vehicle.set_autopilot(True, self._traffic_manager_port)
-        
         
     def _carla_tick(self, event):
         # self._progress_bar.update(self.params["fixed_delta_seconds"])
@@ -122,7 +123,6 @@ class CARLABridgeNode:
         # self._traffic_manager.set_synchronous_mode(False)
         for vehicle in self._vehicles.values():
             vehicle.destroy()
-        self._world.tick()
         self._world.apply_settings(self._original_settings)
             
 
@@ -135,4 +135,6 @@ if __name__ == "__main__":
     map_name = rospy.get_param('map_name', 'Town06')
     client.load_world(map_name)
     simulator = CARLABridgeNode(client.get_world(), client.get_trafficmanager())
+    rospy.on_shutdown(simulator.destory)
+    simulator.run()
     rospy.spin()

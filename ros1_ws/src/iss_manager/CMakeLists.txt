@@ -59,7 +59,10 @@ catkin_python_setup()
 add_message_files(
   FILES
   ControlCommand.msg
-  BBox3D.msg
+  BoundingBox2D.msg
+  ObjectDetection2D.msg
+  ObjectDetection2DArray.msg
+  BoundingBox3D.msg
   ObjectDetection3D.msg
   ObjectDetection3DArray.msg
   State.msg

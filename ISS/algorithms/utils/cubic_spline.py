@@ -12,7 +12,7 @@ license: MIT
 import math
 import numpy as np
 import bisect
-
+import matplotlib.pyplot as plt
 
 class Spline:
     u"""
@@ -60,8 +60,7 @@ class Spline:
         i = self.__search_index(t)
         dx = t - self.x[i]
         result = self.a[i] + self.b[i] * dx + \
-                 self.c[i] * dx ** 2.0 + self.d[i] * dx ** 3.0
-
+                self.c[i] * dx ** 2.0 + self.d[i] * dx ** 3.0
         return result
 
     def calcd(self, t):
@@ -157,6 +156,7 @@ class Spline2D:
 
     def __init__(self, x, y):
         self.s = self.__calc_s(x, y)
+        print(self.s)
         self.sx = Spline(self.s, x)
         self.sy = Spline(self.s, y)
 
@@ -290,4 +290,3 @@ def calc_spline_course(x, y, ds=0.1):
         rk.append(sp.calc_curvature(i_s))
 
     return rx, ry, ryaw, rk, s
-
