@@ -156,7 +156,6 @@ class Spline2D:
 
     def __init__(self, x, y):
         self.s = self.__calc_s(x, y)
-        print(self.s)
         self.sx = Spline(self.s, x)
         self.sy = Spline(self.s, y)
 
