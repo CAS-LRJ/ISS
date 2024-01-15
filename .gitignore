@@ -30,8 +30,7 @@ ros1_ws/build/
 ros1_ws/.catkin_tools/
 
 ISS.egg-info/
-dist/ISS-0.0-py3.9.egg
+dist/
 *.bag
-dist/ISS-0.0-py3.7.egg
 ISS/algorithms/end_to_end/lav/weights/
 
