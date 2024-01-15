@@ -2,7 +2,7 @@
 Intelligent Self-driving System (ISS) is an autonomous driving framework for research. The code is tested on **Ubuntu 20.04**.
 
 ## Installation
-Refer to [Install/INSTALL.md](Install/INSTALL.md) for installation instructions.
+Refer [here](Install/INSTALL.md) for installation instructions.
 
 ## Usage
 If using ROS-Noetic, first build the workspace by
