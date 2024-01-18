@@ -4,11 +4,7 @@
 ```
 sudo apt-get install ros-noetic-navigation ros-noetic-gmapping ros-noetic-teb-local-planner ros-noetic-ackermann-msgs ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control ros-noetic-joint-state-publisher-gui ros-noetic-ros-control ros-noetic-ros-controllers
 ```
-- Install [CARLA 0.9.13](https://carla-releases.s3.eu-west-3.amazonaws.com/Linux/CARLA_0.9.13.tar.gz) and set the environment variables:
-```
-export CARLA_ROOT=</path/to/carla>
-export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla
-```
+- Install CARLA 0.9.15, then set the environment variable `CARLA_ROOT` to the root directory of CARLA.
 - Create a virtual environment for this repository:
 ```
 conda create -n iss python=3.8
@@ -25,4 +21,13 @@ python3 Install/setup.py develop
 ```
 pip3 install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
 pip3 install Install/torch_scatter-2.0.7-cp38-cp38-linux_x86_64.whl
+```
+- Set the environment variable `CARLA_ROOT` to the root directory of CARLA, the varialbe `ISS_ROOT` to the root directory of this repository. For example, add the following lines to `~/.bashrc`:
+```
+export CARLA_ROOT=/home/iss/carla_0.9.15
+export ISS_ROOT=/home/iss/ISS
+```
+- Finally, set the other environment variables by running:
+```
+source Install/setup.sh
 ```
