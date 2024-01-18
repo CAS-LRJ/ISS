@@ -106,7 +106,8 @@ class CARLABridgeNode:
                     self._object_detector.publish_prediction(other_cast_locs, other_cast_cmds, ego_transform_matrix)
                     if control_command.brake == 1:
                         self._controller_bridge.apply_control(control_command)
-                    self._controller_bridge.apply_control()
+                    else:
+                        self._controller_bridge.apply_control()
                 
         # print("Time elapsed: ", time.time() - start_time)
         # for veh_name, veh in self._vehicles.items():
