@@ -5,22 +5,14 @@ Intelligent Self-driving System (ISS) is an autonomous driving framework for res
 Refer [here](Install/INSTALL.md) for installation instructions.
 
 ## Usage
-If using ROS-Noetic, first build the workspace by
+First launch the CARLA server by 
 ```
-cd ros1_ws && catkin build
-source devel/setup.bash # or setup.zsh
+carla_launch
 ```
-If using CARLA, first launch the CARLA server, then do
+Then do
 ```
 roslaunch carla_bridge carla_demo.launch 
 ```
-If using Gazebo, do
-```
-roslaunch robot_gazebo gazebo_demo.launch
-```
-
-## Documentation
-Refer [here](https://tis.ios.ac.cn/iss/) for the documentation.
 
 ## Conventions
 1. This repository utilizes **ROS's right-handed** coordinate system. This is distinct from **CARLA's left-handed** coordinate system. The ``carla_bridge`` node is responsible for handling the necessary conversions between these two coordinate systems.

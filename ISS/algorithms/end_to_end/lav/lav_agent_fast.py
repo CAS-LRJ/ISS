@@ -238,7 +238,7 @@ class LAVAgent(AutonomousAgent):
 
         if self.num_frames <= 1:
             self.prev_lidar = lidar
-            return carla.VehicleControl(), None, None, None
+            return carla.VehicleControl(), None, None, None, None
 
 
         if self.prev_lidar is not None:
@@ -361,7 +361,7 @@ class LAVAgent(AutonomousAgent):
         if len(self.vizs) >= 12000:
             self.flush_data()
 
-        return carla.VehicleControl(steer=steer, throttle=throt, brake=brake), det, other_cast_locs, other_cast_cmds
+        return carla.VehicleControl(steer=steer, throttle=throt, brake=brake), det, other_cast_locs, other_cast_cmds, float(pred_bra)
 
 
     def get_stacked_lidar(self):

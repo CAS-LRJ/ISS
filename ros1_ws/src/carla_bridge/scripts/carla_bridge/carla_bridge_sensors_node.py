@@ -93,7 +93,7 @@ class CARLABridgeNode:
         start_time = time.time()
         data = self._sensor_interface.get_data()
         if self._set_global_plan_perception:
-            control_command, det, other_cast_locs, other_cast_cmds = self._agent.run_step(data, None)
+            control_command, det, other_cast_locs, other_cast_cmds, pred_bra = self._agent.run_step(data, None)
             # if det is not None:
             #     self._carla_visualizer.draw_perception(self._vehicles[self._ego_vehicle_name].get_transform(), det, other_cast_locs, other_cast_cmds)
             if self._set_global_plan_planning:
@@ -106,7 +106,8 @@ class CARLABridgeNode:
                     self._object_detector.publish_prediction(other_cast_locs, other_cast_cmds, ego_transform_matrix)
                     if control_command.brake == 1:
                         self._controller_bridge.apply_control(control_command)
-                    self._controller_bridge.apply_control()
+                    else:
+                        self._controller_bridge.apply_control()
                 
         # print("Time elapsed: ", time.time() - start_time)
         # for veh_name, veh in self._vehicles.items():
@@ -177,7 +178,7 @@ if __name__ == "__main__":
     carla_host = rospy.get_param('carla_host', 'localhost')
     carla_port = rospy.get_param('carla_port', 2000)
     client = carla.Client(carla_host, carla_port)
-    client.set_timeout(5.0)
+    client.set_timeout(10.0)
     map_name = rospy.get_param('map_name', 'Town06')
     client.load_world(map_name)
     simulator = CARLABridgeNode(client.get_world(), client.get_trafficmanager())
