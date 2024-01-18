@@ -1,0 +1,19 @@
+<launch>
+
+    <!-- ROS WEB INTERFACE -->
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+    <node name="tf2_web_republisher" pkg="tf2_web_republisher" type="tf2_web_republisher" output="screen"/>
+
+
+    <!-- ISS STACK -->
+    <arg name="robot_name_0" default="ego_vehicle"/>
+    <arg name="robot_type_0" default="tesla_model3"/>
+
+    <group ns="$(arg robot_name_0)">
+        <param name="robot_name" value="$(arg robot_name_0)"/>
+
+        <rosparam command="load" file="$(find iss_manager)/config/$(arg robot_type_0).yaml"/>
+        <include file="$(find iss_manager)/launch/iss_manager.launch"/>
+    </group>
+
+</launch>

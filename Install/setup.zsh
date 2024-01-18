@@ -10,6 +10,6 @@ export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/:${SCENARIO_RUNNER_R
 export ROUTES=${LEADERBOARD_ROOT}/data/routes_devtest.xml
 export REPETITIONS=1
 export DEBUG_CHALLENGE=1
-export TEAM_AGENT=${LEADERBOARD_ROOT}/leaderboard/autoagents/ros1_agent.py
+export TEAM_AGENT=${ISS_ROOT}/ros1_ws/src/carla_bridge/scripts/carla_bridge/iss_leaderboard_agent.py
 export CHECKPOINT_ENDPOINT=${LEADERBOARD_ROOT}/results.json
 export CHALLENGE_TRACK_CODENAME=SENSORS

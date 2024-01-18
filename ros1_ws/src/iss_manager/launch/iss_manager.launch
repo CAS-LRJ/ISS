@@ -1,4 +1,5 @@
 <launch>
+    <node pkg="iss_manager" type="end_to_end_manager_node.py" name="end_to_end_manager_node" output="screen"/>
 
     <node pkg="iss_manager" type="planning_manager_node.py" name="planning_manager_node" output="screen">
         <remap from="planning/lanelet2_planner/trajectory" to="planning/global_planner/trajectory"/>

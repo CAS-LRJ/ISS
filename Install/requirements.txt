@@ -30,7 +30,6 @@ requests
 
 # roslibpy
 roslibpy
-bson
 tornado
 pymongo
 
