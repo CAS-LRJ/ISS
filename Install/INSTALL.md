@@ -2,7 +2,7 @@
 
 - Install [ROS Noetic](http://wiki.ros.org/noetic/Installation), together with the dependencies for building ROS packages:
 ```
-sudo apt-get install ros-noetic-navigation ros-noetic-gmapping ros-noetic-teb-local-planner ros-noetic-ackermann-msgs ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control ros-noetic-joint-state-publisher-gui ros-noetic-ros-control ros-noetic-ros-controllers
+sudo apt-get install ros-noetic-navigation ros-noetic-gmapping ros-noetic-teb-local-planner ros-noetic-ackermann-msgs ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control ros-noetic-joint-state-publisher-gui ros-noetic-ros-control ros-noetic-ros-controllers ros-noetic-derived-object-msgs ros-noetic-rosbridge-server ros-noetic-tf2-web-republisher
 ```
 - Install CARLA 0.9.15, then set the environment variable `CARLA_ROOT` to the root directory of CARLA.
 - Create a virtual environment for this repository:
@@ -27,7 +27,8 @@ pip3 install Install/torch_scatter-2.0.7-cp38-cp38-linux_x86_64.whl
 export CARLA_ROOT=/home/iss/carla_0.9.15
 export ISS_ROOT=/home/iss/ISS
 ```
-- Finally, set the other environment variables by running:
+- Finally, build the ROS workspace and set the other environment variables by running:
 ```
-source Install/setup.sh
+cd ${ISS_ROOT}/ros1_ws && catkin build
+cd .. && source Install/setup.zsh
 ```

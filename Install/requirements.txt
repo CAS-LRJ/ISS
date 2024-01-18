@@ -27,7 +27,13 @@ simple-pid
 # leaderboard
 dictor
 requests
+
+# roslibpy
 roslibpy
+bson
+tornado
+pymongo
+
 
 # ros-noetic
 rospkg
@@ -42,6 +48,7 @@ scikit-learn
 ipykernel
 dubins
 cvxpy
+casadi
 
 # LAV
 dictor

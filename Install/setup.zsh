@@ -1,3 +1,5 @@
+source ros1_ws/devel/setup.zsh
+conda activate iss
 alias carla_launch="bash $CARLA_ROOT/CarlaUE4.sh -quality-level=Low -windowed -resx=800 -resy=600"
 
 export LEADERBOARD_ROOT=${ISS_ROOT}/ros1_ws/src/leaderboard
