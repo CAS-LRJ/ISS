@@ -10,11 +10,11 @@
 	path = ros1_ws/src/official_carla_ros_bridge
 	url = https://github.com/carla-simulator/ros-bridge.git
 	branch = leaderboard-2.0
-[submodule "scenario_runner"]
+[submodule "ros1_ws/src/scenario_runner"]
 	path = ros1_ws/src/scenario_runner
 	url = https://github.com/carla-simulator/scenario_runner.git
 	branch = leaderboard-2.0
-[submodule "leaderboard"]
+[submodule "ros1_ws/src/leaderboard"]
 	path = ros1_ws/src/leaderboard
 	url = https://github.com/carla-simulator/leaderboard.git
 	branch = leaderboard-2.0
