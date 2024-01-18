@@ -1,24 +1,49 @@
-carla==0.9.13
+carla==0.9.15
 
-networkx
+# scenario_runner
+py-trees==0.8.3
+numpy==1.18.4; python_version >= '3.0'
+networkx==2.2
+Shapely==1.7.1
+psutil
+xmlschema==1.0.18
+ephem
+tabulate
+opencv-python==4.2.0.32
+matplotlib
+six
+simple-watchdog-timer
+
+# ros-bridge
+pep8
+autopep8
+cmake_format==0.6.11
+pylint
+transforms3d
+pygame
+pexpect
+simple-pid
+
+# leaderboard
+dictor
+requests
+roslibpy
+
+# ros-noetic
+rospkg
+catkin_pkg
+empy==3.3.4
+defusedxml
+
+# ISS
 numpy
 lanelet2==1.2.1
-opencv-python
 scikit-learn
-matplotlib
-pandas
-cvxpy
 ipykernel
-ipywidgets
-transforms3d
-shapely
-empy==3.3.4
-catkin_pkg
-rospkg
 dubins
-scipy
-casadi
+cvxpy
 
+# LAV
 dictor
 lmdb==1.1.1
 tqdm
@@ -28,7 +53,6 @@ imageio-ffmpeg
 ray==1.1.0
 requests
 pyyaml
-# py_trees==0.8.3
 tabulate
 six
 wandb
@@ -37,4 +61,3 @@ einops==0.3.2
 Pillow==5.4.1
 imgaug==0.4.0
 ephem
-defusedxml

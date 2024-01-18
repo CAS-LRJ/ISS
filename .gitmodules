@@ -1,8 +1,7 @@
-[submodule "ros1_ws/src/gazebo_bridge"]
-	path = ros1_ws/src/gazebo_bridge
-	url = https://github.com/SailorBrandon/car-like-robot-gazebo.git
-	branch = iss-dev
-	
+# [submodule "ros1_ws/src/gazebo_bridge"]
+# 	path = ros1_ws/src/gazebo_bridge
+# 	url = https://github.com/SailorBrandon/car-like-robot-gazebo.git
+# 	branch = iss-dev
 # [submodule "ros1_ws/src/darknet_ros"]
 # 	path = ros1_ws/src/darknet_ros
 # 	url = https://github.com/SailorBrandon/darknet_ros
@@ -12,10 +11,10 @@
 	url = https://github.com/carla-simulator/ros-bridge.git
 	branch = leaderboard-2.0
 [submodule "scenario_runner"]
-	path = scenario_runner
+	path = ros1_ws/src/scenario_runner
 	url = https://github.com/carla-simulator/scenario_runner.git
 	branch = leaderboard-2.0
 [submodule "leaderboard"]
-	path = leaderboard
+	path = ros1_ws/src/leaderboard
 	url = https://github.com/carla-simulator/leaderboard.git
 	branch = leaderboard-2.0
