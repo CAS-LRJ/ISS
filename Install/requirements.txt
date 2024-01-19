@@ -23,6 +23,8 @@ transforms3d
 pygame
 pexpect
 simple-pid
+gnupg
+pycryptodomex
 
 # leaderboard
 dictor
