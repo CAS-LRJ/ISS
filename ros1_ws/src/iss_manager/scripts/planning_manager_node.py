@@ -13,7 +13,7 @@ from ISS.algorithms.utils.lanelet2_utils import get_solid_checker
 from ISS.algorithms.planning.global_planner.lanelet2_planner import Lanelet2Planner
 from ISS.algorithms.utils.trajectory import Trajectory
 from ISS.algorithms.planning.motion_predictor.constant_velocity_predictor import ConstVelPredictor
-from ISS.algorithms.planning.local_planner.motion_primitive.lattice_planner import LatticePlanner
+from ISS.algorithms.planning.local_planner.motion_primitive.frenet_planner import FrenetPlanner
 from ISS.algorithms.planning.local_planner.ilqr.ilqr_wrapper import iLQRPlanner
 from ISS.algorithms.planning.local_planner.mpcc.mpcc_wrapper import MPCCPlanner
 
@@ -58,9 +58,9 @@ class PlanningManagerNode:
         # Motion Planner
         self.local_planning_frequency = rospy.get_param("local_planning")["local_planning_frequency"]
         lattice_settings = rospy.get_param("local_planning")["lattice_settings"]
-        self._lattice_planner = LatticePlanner(lattice_settings)
-        self._ilqr_planner = iLQRPlanner()
-        self._lattice_planner_timer = None
+        self._local_coarse_planner = FrenetPlanner(lattice_settings)
+        self._local_fine_planner = iLQRPlanner()
+        self._local_coarse_planner_timer = None
         self._local_planner_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
 
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
@@ -69,7 +69,7 @@ class PlanningManagerNode:
             self._global_planner_path_pub = rospy.Publisher("planning/lanelet2_planner/path", Path, queue_size=1, latch=True)
             self._local_planner_path_pub = rospy.Publisher("planning/lattice_planner/path", Path, queue_size=1)
             self._lanelet2_planner_debug_pub = rospy.Publisher("planning/lanelet2_planner/debug", Marker, queue_size=1)
-            self._lattice_planner_debug_pub = rospy.Publisher("planning/lattice_planner/debug", MarkerArray, queue_size=1)
+            self._local_coarse_planner_debug_pub = rospy.Publisher("planning/lattice_planner/debug", MarkerArray, queue_size=1)
 
     def _set_goal_srv_callback(self, req):
         while self._ego_state == None:
@@ -82,8 +82,8 @@ class PlanningManagerNode:
             return SetGoalResponse(False)
         rospy.loginfo("Lanelet2 planner: Success")
         self._global_planner_pub.publish(traj_to_ros_msg(global_traj, frame_id=self._world_frame))
-        self._lattice_planner.update(global_traj.get_waypoints())
-        self._lattice_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)
+        self._local_coarse_planner.update(global_traj.get_waypoints())
+        self._local_coarse_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)
         if DEBUG:
             self._global_planner_path_pub.publish(traj_to_ros_msg_path(global_traj, frame_id=self._world_frame))
             solid_lane = Marker()
@@ -121,7 +121,7 @@ class PlanningManagerNode:
     def _local_planning_timer_callback(self, event):
         if self._ego_state is None:
             return
-        local_traj, all_path_vis = self._lattice_planner.run_step(self._ego_state, self._motion_predictor)
+        local_traj, all_path_vis = self._local_coarse_planner.run_step(self._ego_state, self._motion_predictor)
         if DEBUG:        
             all_path_vis_msg = MarkerArray()
             for i, [path_list, info] in enumerate(all_path_vis):
@@ -160,11 +160,11 @@ class PlanningManagerNode:
                     point_msg.z = 0.0
                     marker_msg.points.append(point_msg)
                 all_path_vis_msg.markers.append(marker_msg)
-            self._lattice_planner_debug_pub.publish(all_path_vis_msg)
+            self._local_coarse_planner_debug_pub.publish(all_path_vis_msg)
         if local_traj.is_empty():
-            rospy.logwarn("Lattice planner: Failed")
+            rospy.logwarn("Local planner: Failed")
             return
-        # self._ilqr_planner.run_step(self._ego_state, local_traj)
+        # self._local_fine_planner.run_step(self._ego_state, local_traj)
         if DEBUG: 
             self._local_planner_path_pub.publish(traj_to_ros_msg_path(local_traj, frame_id=self._world_frame))
         self._local_planner_pub.publish(traj_to_ros_msg(local_traj, frame_id=self._world_frame))

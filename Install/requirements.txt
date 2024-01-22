@@ -1,12 +1,11 @@
 carla==0.9.13
 
 networkx
-numpy
+numpy==1.19.5
 lanelet2==1.2.1
 opencv-python
 scikit-learn
 matplotlib
-pandas
 cvxpy
 ipykernel
 ipywidgets
