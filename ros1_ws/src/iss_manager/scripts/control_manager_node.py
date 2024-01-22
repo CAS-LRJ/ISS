@@ -77,5 +77,5 @@ class ControlManagerNode:
 
 if __name__ == "__main__":
     rospy.init_node("control_manager_node")
-    control_manager_node = ControlManagerNode()
+    # control_manager_node = ControlManagerNode()
     rospy.spin()
