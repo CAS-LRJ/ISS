@@ -3,7 +3,8 @@ hd_map: "Town06_hy.osm"
 global_planning:
   lanelet2_settings:
     TURNING_RADIUS: 5.6
-    GOAL_TORELANCE: 5
+    POSITION_TOLERANCE: 1
+    YAW_TOLERANCE: 0.1
 
 prediction:
   method: "loaded_waypoint_predictor"

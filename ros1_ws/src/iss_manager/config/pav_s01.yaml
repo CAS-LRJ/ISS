@@ -3,7 +3,8 @@ hd_map: "simple_road_v1.osm"
 global_planning:
   lanelet2_settings:
     TURNING_RADIUS: 0.3
-    GOAL_TORELANCE: 0.2
+    POSITION_TOLERANCE: 0.2
+    YAW_TOLERANCE: 0.1
 
 prediction:
   method: "constant_velocity_predictor"

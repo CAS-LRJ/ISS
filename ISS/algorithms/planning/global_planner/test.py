@@ -19,13 +19,14 @@ traffic_rules = lanelet2.traffic_rules.create(lanelet2.traffic_rules.Locations.G
 solid_checker, _ = get_solid_checker(loadedMap, 4.6, 2)
 lanelet2_settings = dict()
 lanelet2_settings['TURNING_RADIUS'] = 5
-lanelet2_settings["GOAL_TORELANCE"] = 1
+lanelet2_settings["POSITION_TOLERANCE"] = 1
+lanelet2_settings["YAW_TOLERANCE"] = 0.1
 global_planner = Lanelet2Planner(loadedMap, traffic_rules, solid_checker, lanelet2_settings)
 
 
 start = (584.831238, 23.577756, 3.134272156385384)
 # goal = (284.831238, 15.577756, 3.134272156385384)
-goal = (200.566803, -45.258755, 0)
+goal = (500.566803, -45.258755, 0)
 
 start_time = time.time()
 traj = global_planner.run_step(start, goal)
@@ -38,3 +39,4 @@ plt.axes().set_xlim(-200, 700)
 plt.axes().set_ylim(-100, 80)
 plt.axes().set_aspect('equal')
 plt.show()
+
