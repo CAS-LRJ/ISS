@@ -12,7 +12,7 @@ from lanelet2.core import (AllWayStop, AttributeMap, BasicPoint2d,
 from lanelet2.projection import (UtmProjector, MercatorProjector,
                                  LocalCartesianProjector, GeocentricProjector)
 
-from ISS.algorithms.utils.angle import calculate_rot_angle
+from ISS.algorithms.utils.angle import calculate_rot_angle, pi_2_pi
 from ISS.algorithms.utils.trajectory import Trajectory
 
 # To-DO: Use mapping objects instead of fixed lanelet2
@@ -39,17 +39,18 @@ def smooth(trajectory: Trajectory):
         print("Error: Cannot smooth the trajectory")
 
 class PlanningNode:
-    def __init__(self, points=[], current_lanelet_id=-1, current_index=0, lane_change_num=0, distance=0., solid_conflicts=0, conflicts=set()):
+    def __init__(self, points=[], current_lanelet_id=-1, current_index=0, lane_change_num=0, distance=0., heuristic=0, solid_conflicts=0, conflicts=set()):
         self.points = points
         self.current_lanelet_id = current_lanelet_id
         self.current_index = current_index
         self.lane_change_num = lane_change_num
         self.distance = distance
+        self.heuristic = heuristic
 
     def __gt__(self, other):
-        if self.distance > other.distance:
+        if (self.distance + self.heuristic) > (other.distance + other.heuristic):
             return True
-        elif self.distance < other.distance:
+        elif (self.distance + self.heuristic) < (other.distance + other.heuristic):
             return False
 
         if self.lane_change_num > other.lane_change_num:
@@ -111,17 +112,20 @@ class Lanelet2Planner(object):
                 tar_nextpoint = target_lanelet_centerline[target_ind+1]
                 tar_rot = calculate_rot_angle(
                     np.array([tar_nextpoint.x - tar_point.x, (tar_nextpoint.y - tar_point.y)]))
-
+                if np.linalg.norm([cur_point.x - tar_point.x, cur_point.y - tar_point.y]) < (np.hypot(3.5, 8)):
+                    target_ind += 1
+                    continue
                 dubins_path = dubins.shortest_path(
                     (cur_point.x, cur_point.y, cur_rot), (tar_point.x, tar_point.y, tar_rot), self.turning_radius)
                 dubins_points, dubins_dis = dubins_path.sample_many(0.1)
-                if len(dubins_points) > 0 and np.linalg.norm([cur_point.x - tar_point.x, cur_point.y - tar_point.y]) * 1.5 > dubins_dis[-1]:
-                    check_result = self.collision_detector.check_path(
-                        dubins_points)
+                if len(dubins_points) > 0 and np.linalg.norm([cur_point.x - tar_point.x, cur_point.y - tar_point.y]) * 1.5 > dubins_dis[-1]: # TODO
+                    # check_result = self.collision_detector.check_path(
+                    #     dubins_points)
+                    check_result = True
                     if check_result:
                         found_path = True
                         newNode = PlanningNode(node.points + passed_points + list(dubins_points), target_lanelet.id,
-                                               target_ind, node.lane_change_num + 1, dubins_dis[-1] + node.distance)
+                                               target_ind, node.lane_change_num + 1, dubins_dis[-1] + node.distance, heuristic=np.linalg.norm([self.goal_pos[0] - tar_point.x, self.goal_pos[1] - tar_point.y]))
                         if minNode == None or newNode < minNode:
                             minNode = newNode
                         # Early Stop
@@ -148,11 +152,9 @@ class Lanelet2Planner(object):
                 forward_centerline = list(forward_lanelet.centerline)
                 if len(forward_centerline) > 1:
                     first_point = forward_centerline[0]
-                    second_point = forward_centerline[1]
-                    rot_ = calculate_rot_angle(
-                        np.array([second_point.x - first_point.x, (second_point.y - first_point.y)]))
+                dist = np.linalg.norm([cur_remain_points[0][0] - first_point.x, cur_remain_points[0][1] - first_point.y])
                 newNode = PlanningNode(node.points + cur_remain_points,
-                                       forward_lanelet.id, 0, node.lane_change_num, node.distance)
+                                       forward_lanelet.id, 0, node.lane_change_num, node.distance + dist, heuristic=np.linalg.norm([self.goal_pos[0] - first_point.x, self.goal_pos[1] - first_point.y]))
                 results.append(newNode)
         return results
 
@@ -184,10 +186,15 @@ class Lanelet2Planner(object):
             point = fromLanelet_centerline[ind]
             rot = calculate_rot_angle(np.array(
                 [fromLanelet_centerline[ind + 1].x - point.x, (fromLanelet_centerline[ind + 1].y - point.y)]))
-            if (np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 0.5 and np.abs(rot - start_pos[2]) < 0.1) \
-                or (np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 0.1):
+
+            if (np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 1 and np.abs(rot - start_pos[2]) < 0.1) \
+                or (np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 1):
                 cloesetNode = PlanningNode([start_pos], fromLanelet.id, ind, 0, 0)
                 break
+            # if (np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 0.5 and np.abs(rot - start_pos[2]) < 0.1) \
+            #     or (np.linalg.norm([start_pos[0] - point.x, start_pos[1] - point.y]) < 0.1):
+            #     cloesetNode = PlanningNode([start_pos], fromLanelet.id, ind, 0, 0)
+            #     break
             dubins_path = dubins.shortest_path(
                 start_pos, (point.x, point.y, rot), self.turning_radius)
             dubins_points, dubins_dis = dubins_path.sample_many(0.1)
@@ -202,6 +209,7 @@ class Lanelet2Planner(object):
                         cloesetNode = newNode
         assert cloesetNode != None
 
+        print("Start Planning")
         pqueue = PriorityQueue()
         pqueue.put(cloesetNode)
         self.reach_map[cloesetNode.current_lanelet_id] = cloesetNode.current_index
@@ -223,7 +231,9 @@ class Lanelet2Planner(object):
                     point = toLanelet_centerline[ind]
                     rot = calculate_rot_angle(np.array(
                         [toLanelet_centerline[ind+1].x - point.x, (toLanelet_centerline[ind+1].y - point.y)]))
-                    if np.linalg.norm([goal_pos[0] - point.x, goal_pos[1] - point.y]) < 0.5 and np.abs(rot - goal_pos[2]) < 0.1:
+
+                    # if np.linalg.norm([goal_pos[0] - point.x, goal_pos[1] - point.y]) < 0.5 and np.abs(rot - goal_pos[2]) < 0.1:
+                    if np.linalg.norm([goal_pos[0] - point.x, goal_pos[1] - point.y]) < 2 and pi_2_pi(np.abs(rot - goal_pos[2])) < 0.1:
                         point_list = currentNode.points
                         for traj_ind in range(currentNode.current_index, ind):
                             point = toLanelet_centerline[traj_ind]
@@ -233,8 +243,8 @@ class Lanelet2Planner(object):
                         point_list.append(goal_pos)
                         traj = Trajectory()
                         traj.update_waypoints(point_list)
-                        if self.turning_radius < 2: # small robot
-                            smooth(traj)
+                        # if self.turning_radius < 2: # small robot
+                        #     smooth(traj)
                         return traj
                     dubins_path = dubins.shortest_path(
                         (point.x, point.y, rot), goal_pos, self.turning_radius)
@@ -255,8 +265,8 @@ class Lanelet2Planner(object):
                             # Global path does not need any speed information
                             traj = Trajectory()
                             traj.update_waypoints(point_list)   
-                            if self.turning_radius < 2: # small robot
-                                smooth(traj)
+                            # if self.turning_radius < 2: # small robot
+                            #     smooth(traj)
                             return traj
 
             results = self.explore(currentNode)
