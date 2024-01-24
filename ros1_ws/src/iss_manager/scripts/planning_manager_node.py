@@ -27,7 +27,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from iss_manager.msg import State, StateArray, StateArrayArray, ObjectDetection3DArray
 from iss_manager.srv import SetGoal, SetGoalResponse
 
-DEBUG = False
+DEBUG = True
 
 class PlanningManagerNode:
     def __init__(self) -> None:
@@ -82,7 +82,7 @@ class PlanningManagerNode:
             return SetGoalResponse(False)
         rospy.loginfo("Global planner: Success")
         self._global_planner_pub.publish(traj_to_ros_msg(global_traj, frame_id=self._world_frame))
-        self._local_coarse_planner.update(global_traj.get_waypoints())
+        self._local_coarse_planner.update_reference_line(global_traj.get_waypoints())
         self._local_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)
         if DEBUG:
             self._global_planner_path_pub.publish(traj_to_ros_msg_path(global_traj, frame_id=self._world_frame))

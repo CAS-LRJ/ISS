@@ -3,6 +3,7 @@ import math
 from scipy.spatial import KDTree
 from ISS.algorithms.utils.cubic_spline import Spline2D
 import time
+import pickle
 
 def get_circle_centers(x, y, heading_angle, length, width, num_circles=3):
     spacing = length / num_circles
@@ -27,6 +28,12 @@ class ConstVelPredictor:
     
     def read_prediction(self, trajectories):
         self._loaded_trajecotries = trajectories
+    
+    def save_obstacle(self):
+        with open("/home/shaohang/work_space/autonomous_vehicle/ISS/obstacle.pkl", "wb") as f:
+            pickle.dump(self._spatial_temporal_obstacles.data, f)
+        with open("/home/shaohang/work_space/autonomous_vehicle/ISS/obstacle_info.pkl", "wb") as f:
+            pickle.dump(self._obstacles_info_list, f)
     
     def update_prediction(self, dt, horizon):
         spatial_temporal_obstacles_list = []
