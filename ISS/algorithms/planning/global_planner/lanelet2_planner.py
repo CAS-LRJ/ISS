@@ -104,12 +104,11 @@ class Lanelet2Planner(object):
         for target_lanelet in lanechange_lanelets:
             if target_lanelet.id in self.closed_set:
                 continue
-            passed_points = []
             new_node = None
             target_lanelet_centerline = list(target_lanelet.centerline)
             target_lanelet_length = len(target_lanelet_centerline)
             cur_ind = node.current_index
-            target_ind = node.current_index # TODO: Change this to 0
+            target_ind = 0 # TODO: Change this to 0
             while (cur_ind < current_lanelet_length - 1) and (target_ind < target_lanelet_length - 1):
                 cur_point = current_lanelet_centerline[cur_ind]
                 cur_nextpoint = current_lanelet_centerline[cur_ind+1]
@@ -189,29 +188,31 @@ class Lanelet2Planner(object):
             current_node = open_set.get()
             if current_node.current_lanelet_id == toLanelet.id:
                 toLanelet_centerline = list(toLanelet.centerline)
-                start_ind = current_node.current_index
-                for ind in range(start_ind, len(toLanelet_centerline)-1):
+                start_ind = 0
+                final_points = []
+                for ind in range(current_node.current_index, len(toLanelet_centerline)-1):
                     point = toLanelet_centerline[ind]
                     rot = calculate_rot_angle(np.array([toLanelet_centerline[ind+1].x - point.x, (toLanelet_centerline[ind+1].y - point.y)]))
-                    get_valid_path = False
-                    dubins_points = []
+                    final_points.append([point.x, point.y, rot])
+                    is_valid_path = False
                     if self.is_close([point.x, point.y, rot], goal_pos):
-                        get_valid_path = True
-                    else: 
-                        dubins_path = dubins.shortest_path((point.x, point.y, rot), goal_pos, self.TURNING_RADIUS)
+                        final_points.append(goal_pos)
+                        is_valid_path = True
+                    else:
+                        dubins_start = [point.x, point.y, rot]
+                        # for i in range(2):
+                        #     if abs(dubins_start[i] - goal_pos[i]) < self.POSITION_TOLERANCE:
+                        #         dubins_start[i] = goal_pos[i]
+                        dubins_path = dubins.shortest_path(tuple(dubins_start), goal_pos, self.TURNING_RADIUS)
                         dubins_points, dubins_dis = dubins_path.sample_many(0.5)
-                        if self.is_dubins_valid([point.x, point.y, rot], goal_pos, dubins_points):
-                            get_valid_path = True
-                    if get_valid_path:
-                        point_list = current_node.points
-                        for traj_ind in range(current_node.current_index, ind):
-                            point = toLanelet_centerline[traj_ind]
-                            rot = calculate_rot_angle(np.array([toLanelet_centerline[traj_ind+1].x - point.x, (toLanelet_centerline[traj_ind+1].y - point.y)]))
-                            point_list.append([point.x, point.y, rot])
-                        point_list += dubins_points
-                        point_list.append(goal_pos)
+                        if self.is_dubins_valid(dubins_start, goal_pos, dubins_points):
+                            final_points += dubins_points
+                            is_valid_path = True
+                    if is_valid_path:
+                        point_list = current_node.points + final_points
                         traj = Trajectory()
                         traj.update_waypoints(point_list)
+                        self.closed_set.clear()
                         return traj
                     
             results = self.expand(current_node)
@@ -219,5 +220,6 @@ class Lanelet2Planner(object):
                 self.closed_set.add(result_node.current_lanelet_id)
                 open_set.put(result_node)
 
+        self.closed_set.clear()
         return None
 
