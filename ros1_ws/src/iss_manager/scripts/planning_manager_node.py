@@ -60,7 +60,7 @@ class PlanningManagerNode:
         lattice_settings = rospy.get_param("local_planning")["lattice_settings"]
         self._local_coarse_planner = FrenetPlanner(lattice_settings)
         self._local_fine_planner = iLQRPlanner()
-        self._local_coarse_planner_timer = None
+        self._local_planner_timer = None
         self._local_planner_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
 
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
@@ -72,18 +72,18 @@ class PlanningManagerNode:
             self._local_coarse_planner_debug_pub = rospy.Publisher("planning/lattice_planner/debug", MarkerArray, queue_size=1)
 
     def _set_goal_srv_callback(self, req):
-        while self._ego_state == None:
+        while self._ego_state is None:
             rospy.sleep(0.1)
         start_point = (self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle)
         end_point = (req.x, req.y, req.yaw)
         global_traj = self._global_planner.run_step(start_point, end_point)
-        if global_traj == None:
-            rospy.logerr("Lanelet2 planner: Failed")
+        if global_traj is None:
+            rospy.logerr("Global planner: Failed")
             return SetGoalResponse(False)
-        rospy.loginfo("Lanelet2 planner: Success")
+        rospy.loginfo("Global planner: Success")
         self._global_planner_pub.publish(traj_to_ros_msg(global_traj, frame_id=self._world_frame))
         self._local_coarse_planner.update(global_traj.get_waypoints())
-        self._local_coarse_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)
+        self._local_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)
         if DEBUG:
             self._global_planner_path_pub.publish(traj_to_ros_msg_path(global_traj, frame_id=self._world_frame))
             solid_lane = Marker()
