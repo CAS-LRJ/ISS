@@ -10,21 +10,21 @@ prediction:
   method: "constant_velocity_predictor"
 
 local_planning:
-  local_planning_frequency: 5
+  local_planning_frequency: 10
   lattice_settings:
-    dt: 0.25 # time step
-    D_T: 0.5 # prediction sampling length (s)
     MAX_T: 5.0 # max prediction time [s]
     MIN_T: 5.0 # min prediction time [s]
+    D_T: 1 # prediction sampling length (s)
+    dt: 0.1 # time step
 
-    d_r: 0.35
-    d_l: 0.35
-    D_S: 0.35 # sample Frenet d
+    d_r: 0.45
+    d_l: 0.45
+    D_S: 0.15 # sample Frenet d
 
-    MAX_SPEED: 1 # maximum speed [m/s]
-    MIN_SPEED: -0.25 # minimum speed [m/s]
-    TARGET_SPEED: 0.5 # target speed [m/s]
-    D_V_S: 0.25 # target speed sampling length [m/s]
+    MAX_SPEED: 2 # maximum speed [m/s]
+    MIN_SPEED: 0 # minimum speed [m/s]
+    TARGET_SPEED: 1 # target speed [m/s]
+    D_V_S: 0.5 # target speed sampling length [m/s]
 
     K_J: 0.1
     K_T: 0.5
@@ -32,11 +32,11 @@ local_planning:
     K_LAT: 0.1
     K_LON: 0.8
 
-    MAX_ACCEL: 1 # maximum acceleration [m/ss]
-    MAX_CURVATURE: 10.0 # maximum curvature [1/m]
+    MAX_ACCEL: 5 # maximum acceleration [m/ss]
+    MAX_CURVATURE: 1 # maximum curvature [1/m]
 
 control:
-  control_frequency: 10
+  control_frequency: 20
   pid_settings:
     lateral:
       K_P: 1.0

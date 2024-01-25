@@ -13,10 +13,10 @@ prediction:
 local_planning:
   local_planning_frequency: 10
   lattice_settings:
-    dt: 0.1              # sample time
-    D_T: 1                 # prediction timestep length (s)
     MAX_T: 5.0            # max prediction time [s]
     MIN_T: 5.0            # min prediction time [s]
+    D_T: 1                 # prediction timestep length (s)
+    dt: 0.1              # sample time
 
     d_r: 3.5
     d_l: 3.5
@@ -34,7 +34,7 @@ local_planning:
     K_LON: 0.8
     
     MAX_ACCEL: 5          # maximum acceleration [m/ss]
-    MAX_CURVATURE: 10.0    # maximum curvature [1/m]
+    MAX_CURVATURE: 1.0    # maximum curvature [1/m]
 
 control:
   control_frequency: 20

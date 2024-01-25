@@ -62,40 +62,36 @@ class VehiclePIDController:
         ## Braking if no traj or location was given
         current_location = (vehicle_location.x, vehicle_location.y, vehicle_location.heading_angle)
         current_speed = vehicle_location.velocity
+    
         
-
-        ## Skip waypoints behind the vehicle        
-        while self.waypoint_index < len(self.traj) - 1:
-            traj_point = self.traj[self.waypoint_index]
-            next_traj_point = self.traj[self.waypoint_index + 1]
-            v_vec = (current_location[0] - traj_point[0], current_location[1] - traj_point[1])
-            w_vec = (next_traj_point[0] - traj_point[0], next_traj_point[1] - traj_point[1])
-            if np.sign(np.dot(v_vec, w_vec)) < 0.:
-                break
-            self.waypoint_index += 1
-
         ## Waypoint should have a distance from current location
         while self.waypoint_index < len(self.traj) - 1:
             traj_point = self.traj[self.waypoint_index]
             v_vec = (current_location[0] - traj_point[0], current_location[1] - traj_point[1])
-            if np.linalg.norm(v_vec) > 4.:
+            if np.linalg.norm(v_vec) > 0.1:
                 break
             self.waypoint_index += 1
         
-        traj_point = self.traj[self.waypoint_index]
+        # ## Skip waypoints behind the vehicle        
+        # while self.waypoint_index < len(self.traj) - 1:
+        #     traj_point = self.traj[self.waypoint_index]
+        #     next_traj_point = self.traj[self.waypoint_index + 1]
+        #     v_vec = (traj_point[0] - current_location[0], traj_point[1] - current_location[1])
+            
+        #     w_vec = (next_traj_point[0] - traj_point[0], next_traj_point[1] - traj_point[1])
+        #     if np.sign(np.dot(v_vec, w_vec)) < 0:
+        #         break
+        #     self.waypoint_index += 1
         
-        next_traj_point = None
-        if (self.waypoint_index < len(self.traj) - 1):
-            next_traj_point = self.traj[self.waypoint_index + 1]
-        prev_traj_point = self.traj[self.waypoint_index-1]
-        v_vec = (current_location[0] - traj_point[0], current_location[1] - traj_point[1])
-        w_vec = (traj_point[0] - prev_traj_point[0], traj_point[1] - prev_traj_point[1])
-        # print(np.linalg.norm(v_vec))
 
-
+        
+        if self.waypoint_index >= len(self.traj) - 1:
+            return 0.0, 0.0
+        traj_point = self.traj[self.waypoint_index]
         target_speed = self.traj[self.waypoint_index][3]
         throttle = self._lon_controller.run_step(current_speed, target_speed)
         steering =  - self._lat_controller.run_step(current_location, traj_point)
+        self.waypoint_index += 1
         return throttle, steering
         
 

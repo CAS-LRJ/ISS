@@ -26,7 +26,6 @@ from ISS.algorithms.utils.trajectory import Trajectory
 from ISS.algorithms.utils.cubic_spline import Spline2D
 from ISS.algorithms.utils.quartic_polynomial import QuarticPolynomial
 from ISS.algorithms.utils.quintic_polynomial import QuinticPolynomial
-from ISS.algorithms.utils.angle import pi_2_pi
 
 class FrenetPath:
 
@@ -52,7 +51,6 @@ class FrenetPath:
         self.c = []
         self.T = 0 # duration
         
-        self.zero = False
 
 
 class FrenetPlanner(object):
@@ -120,9 +118,7 @@ class FrenetPlanner(object):
                     fp.cd = self.K_J * Jp + self.K_T * Ti + self.K_D * fp.d[-1] ** 2
                     fp.cv = self.K_J * Js + self.K_T * Ti + self.K_D * ds
                     fp.cf = self.K_LAT * fp.cd + self.K_LON * fp.cv
-                    
-                    if tv == 0 and di == 0:
-                        fp.zero = True
+                
                     frenet_paths.append(fp)
 
         return frenet_paths
@@ -181,77 +177,42 @@ class FrenetPlanner(object):
 
         return self.state_frenet
 
-    def _calc_curvature_paths(self, fp):
-        # find curvature
-        # source: http://www.kurims.kyoto-u.ac.jp/~kyodo/kokyuroku/contents/pdf/1111-16.pdf
-        # and https://math.stackexchange.com/questions/2507540/numerical-way-to-solve-for-the-curvature-of-a-curve
-
-        n_t = len(fp.t)
-        n_x = len(fp.x)
-        n = min(n_x, n_t)
-
-        fp.c.append(0.0)
-        for i in range(1, n - 1):
-            a = np.hypot(fp.x[i - 1] - fp.x[i], fp.y[i - 1] - fp.y[i])
-            b = np.hypot(fp.x[i] - fp.x[i + 1], fp.y[i] - fp.y[i + 1])
-            c = np.hypot(fp.x[i + 1] - fp.x[i - 1], fp.y[i + 1] - fp.y[i - 1])
-
-            # Compute inverse radius of circle using surface of triangle (for which Heron's formula is used)
-            k = np.sqrt(np.abs((a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (
-                a + (b - c)))) / 4  # Heron's formula for triangle's surface
-            # Denumerator; make sure there is no division by zero.
-            den = a * b * c
-            if den == 0.0:  # just for sure
-                fp.c.append(0.0)
-            else:
-                fp.c.append(4 * k / den)
-        fp.c.append(0.0)
-
-        return fp
-
     def _calc_global_paths(self, fplist):
-        transformed_fplist = []
-        for fp in fplist:
-            is_valid = True
-            x, y, v, yaw, ds = [], [], [], [], []
-
-            # Transform Frenet to Cartesian coordinates
-            for s, d, s_d, d_d in zip(fp.s, fp.d, fp.s_d, fp.d_d):
+        valid_fplist = []
+        for fp in fplist:            
+            for s, d in zip(fp.s, fp.d):
                 ix, iy = self.csp.calc_position(s)
                 if ix is None or iy is None:
-                    is_valid = False
                     break
                 i_yaw = self.csp.calc_yaw(s)
                 fx = ix + d * math.cos(i_yaw + math.pi / 2.0)
                 fy = iy + d * math.sin(i_yaw + math.pi / 2.0)
-                fv = math.hypot(s_d, d_d)
-                x.append(fx)
-                y.append(fy)
-                v.append(fv)
+                fp.x.append(fx)
+                fp.y.append(fy)
+                fp.ix.append(ix)
+                fp.iy.append(iy)
+                fp.iyaw.append(i_yaw)
             
-            if not is_valid:
+            if len(fp.x) != len(fp.s):
                 continue
             
-            # Calculate yaw and ds
-            for i in range(len(x) - 1):
-                dx = x[i + 1] - x[i]
-                dy = y[i + 1] - y[i]
-                yaw.append(math.atan2(dy, dx))
-                ds.append(math.hypot(dx, dy))
+            for i in range(len(fp.x) - 1):
+                dx = fp.x[i + 1] - fp.x[i]
+                dy = fp.y[i + 1] - fp.y[i]
+                fp.yaw.append(math.atan2(dy, dx))
+                fp.ds.append(math.hypot(dx, dy))
+            fp.yaw.append(fp.yaw[-1])
+            fp.ds.append(fp.ds[-1])
+            
+            for i in range(len(fp.yaw) - 1):
+                fp.c.append((fp.yaw[i + 1] - fp.yaw[i]) / fp.ds[i])
 
-            # Append last yaw and ds for consistency
-            yaw.append(yaw[-1])
-            ds.append(ds[-1])
-
-            # Update the fp object or create a new structure for the transformed path
-            fp.x, fp.y, fp.v, fp.yaw, fp.ds = x, y, v, yaw, ds
-            # Assuming _calc_curvature_paths is another method to process the path
-            transformed_fplist.append(self._calc_curvature_paths(fp))
-
-        return transformed_fplist
+            fp.v = fp.s_d
+            valid_fplist.append(fp)
+            
+        return valid_fplist
 
     def _check_paths(self, fplist, motion_predictor):
-        print("-------------------")
         ok_ind = []
         speed = 0
         accel = 0
@@ -268,16 +229,12 @@ class FrenetPlanner(object):
                 speed += 1
                 all_path_vis[-1][-1] = "velocity"
                 continue
-            elif any([self.MAX_ACCEL < a for a in frenet_path.s_dd]) and (frenet_path.s_dd[0] < self.MAX_ACCEL):
+            elif any([self.MAX_ACCEL < abs(a) for a in frenet_path.s_dd]):
                 accel += 1
                 all_path_vis[-1][-1] = "acceleration"
                 continue
             # elif any([self.MAX_CURVATURE < abs(c) for c in frenet_path.c]):
             #     curvature += 1
-            #     all_path_vis[-1][-1] = "curvature"
-            #     if frenet_path.zero:
-            #         print("error in curvature")
-            #         print(max(frenet_path.c))
             #     continue
             else:
                 frenet_path_tuple = [(x, y, yaw) for x, y, yaw in zip(
@@ -289,11 +246,6 @@ class FrenetPlanner(object):
                 
                 res, coll_type = motion_predictor.collision_check(frenet_path_tuple)
                 if res:
-                    if frenet_path.zero:
-                        print("error in obstacle with collision type: ", coll_type)
-                        print(frenet_path.v)
-                        print(frenet_path_tuple)
-                        motion_predictor.save_obstacle()
                     if coll_type == 0:
                         solid_boundary += 1
                         all_path_vis[-1][-1] = "solid_boundary"
@@ -302,8 +254,9 @@ class FrenetPlanner(object):
                         all_path_vis[-1][-1] = "obstacle"
                     continue
             ok_ind.append(i)
-        print("before path num: ", len(fplist))
-        print("speed: ", speed, "accel: ", accel, "curvature: ", curvature, "obstacle: ", obstacle, "solid_boundary: ", solid_boundary)
+        # print("-------------------")
+        # print("before path num: ", len(fplist))
+        # print("speed: ", speed, "accel: ", accel, "curvature: ", curvature, "obstacle: ", obstacle, "solid_boundary: ", solid_boundary)
         return [fplist[i] for i in ok_ind], all_path_vis
     
     def _path_planning(self, motion_predictor):
