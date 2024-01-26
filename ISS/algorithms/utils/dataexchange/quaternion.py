@@ -1,6 +1,6 @@
 import numpy as np
 
-class Quaternion(object):
+class ISSQuaternion(object):
 
     def __init__(self) -> None:
         self.quaternion = np.zeros(4)

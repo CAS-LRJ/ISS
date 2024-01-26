@@ -3,12 +3,15 @@
 import numpy as np
 
 from ISS.algorithms.utils.trajectory import Trajectory
+from ISS.dataexchange.Sensor import ISSCamera, ISSLidar, ISSRadar, ISSGnss, ISSImu, ISSCan, ISSUs, ISSRtk, ISSV2x, ISSRsu, ISSRsuCamera, ISSRsuLidar, ISSRsuRadar, ISSRsuGnss, ISSRsuImu, ISSRsuCan, ISSRsuUs, ISSRsuRtk, ISSRsuV2x
 
 import rospy
 import tf
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from iss_manager.msg import State, StateArray
+
+# Trajectory <-> ROS message
 
 def traj_to_ros_msg(trajectory: Trajectory, frame_id="map"):
     trajectory_msg = StateArray()
@@ -74,3 +77,13 @@ def traj_from_ros_msg(trajectory_msg: StateArray):
         states.append(state)
     trajectory.update_states_from_list(states)
     return trajectory
+
+# Sensor <-> ROS message
+
+## Camera
+
+def camera_to_ros_msg(camera: ISSCamera, frame_id="map"):
+    pass
+
+def camera_from_ros_msg(camera_msg):
+    pass
