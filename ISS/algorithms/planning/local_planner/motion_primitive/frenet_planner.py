@@ -51,6 +51,7 @@ class FrenetPath:
         self.c = []
         self.T = 0 # duration
         
+        # self._fail_proof = False
 
 
 class FrenetPlanner(object):
@@ -87,18 +88,31 @@ class FrenetPlanner(object):
             self.rk.append(self.csp.calc_curvature(i_s))
         return self.rx, self.ry, self.ryaw, self.rk, self.csp
 
-    def _calc_frenet_paths(self):
+    def _calc_frenet_paths(self, motion_predictor):
+        # Sampling the Frenet paths
         frenet_paths = []
         if self.state_frenet is None:
             return frenet_paths
         s, s_d, s_dd, d, d_d, d_dd = self.state_frenet
         d_r, d_l = self.d_r, -self.d_l
+        
+        # Get the front obstacle if it exists
+        s_obstacle = motion_predictor.get_front_obstacle(self.csp, s, self.LOOK_AHEAD_DISTANCE)
         for Ti in np.arange(self.MIN_T, self.MAX_T + self.D_T, self.D_T):
             for tv in np.arange(self.MIN_SPEED, self.MAX_SPEED + self.D_V_S, self.D_V_S):
-                lon_qp = QuarticPolynomial(s, s_d, 0, tv, 0.0, Ti)
+                if tv == 0 and (s_obstacle is not None):
+                    lon_qp = QuinticPolynomial(s, s_d, s_dd, s_obstacle - self.SAFE_DISTANCE, tv, 0.0, Ti)
+                else:
+                    lon_qp = QuarticPolynomial(s, s_d, 0, tv, 0.0, Ti)
                 for di in np.arange(d_l, d_r + self.D_S, self.D_S):
                     lat_qp = QuinticPolynomial(d, d_d, d_dd, di, 0.0, 0.0, Ti)
                     fp = FrenetPath()
+                    # if tv == 0 and (s_obstacle is not None):
+                    #     fp._fail_proof = True
+                    #     if di == 0:
+                    #         fp._fail_proof = True
+                    #     else:
+                    #         continue
                     fp.T = Ti
                     fp.t = list(np.arange(0.0, Ti, self.dt))
                     fp.d = [lat_qp.calc_point(t) for t in fp.t]
@@ -118,26 +132,22 @@ class FrenetPlanner(object):
                     fp.cd = self.K_J * Jp + self.K_T * Ti + self.K_D * fp.d[-1] ** 2
                     fp.cv = self.K_J * Js + self.K_T * Ti + self.K_D * ds
                     fp.cf = self.K_LAT * fp.cd + self.K_LON * fp.cv
-                
+
                     frenet_paths.append(fp)
 
         return frenet_paths
 
     def _get_frenet_state(self):
         state_c = self.state_cartesian
-
         # idx_r = get_closest_waypoints(state_c[0], state_c[1], list(zip(self.rx, self.ry)))
         _, idx_r = self.ref_kdtree.query([state_c[0], state_c[1]])
-
         s_r = self.s[idx_r]
         x_r, y_r = self.csp.calc_position(s_r)
         x1_r, y1_r = self.rx[idx_r], self.ry[idx_r]
-
         k_r = self.csp.calc_curvature(s_r)
         yaw_r = self.csp.calc_yaw(s_r)
         dyaw_r = self.csp.calc_curvature_d(s_r)
         delta_theta = state_c[2] - yaw_r
-
         # k_x: curvature of vehicle's route
         if self.state_cartesian is not None and self.state_cartesian_prev is not None:
             dx = self.state_cartesian[0] - self.state_cartesian_prev[0]
@@ -150,7 +160,6 @@ class FrenetPlanner(object):
                 k_x = None
         else:
             k_x = None
-
         # s, d = get_frenet_coord(state_c[0], state_c[1], list(zip(self.rx, self.ry)))
         s = s_r
         x_delta = self.state_cartesian[0] - x_r
@@ -158,12 +167,9 @@ class FrenetPlanner(object):
         d = np.sign(y_delta * math.cos(yaw_r) - x_delta *
                     math.sin(yaw_r)) * math.hypot(x_delta, y_delta)
         d_d = state_c[3] * math.sin(delta_theta)
-
         coeff_1 = 1 - k_r * d
-
         d_dd = state_c[4] * math.sin(delta_theta)
         s_d = state_c[3] * math.cos(delta_theta) / coeff_1
-
         if k_x is None:
             s_dd = 0
         else:
@@ -172,9 +178,7 @@ class FrenetPlanner(object):
             coeff_3 = dyaw_r * d + yaw_r * s_ds
             s_dd = state_c[4] * math.cos(delta_theta) - \
                 (s_d ** 2) * (s_ds * coeff_2 - coeff_3) / coeff_1
-
         self.state_frenet = [s, s_d, s_dd, d, d_d, d_dd]
-
         return self.state_frenet
 
     def _calc_global_paths(self, fplist):
@@ -189,9 +193,6 @@ class FrenetPlanner(object):
                 fy = iy + d * math.sin(i_yaw + math.pi / 2.0)
                 fp.x.append(fx)
                 fp.y.append(fy)
-                fp.ix.append(ix)
-                fp.iy.append(iy)
-                fp.iyaw.append(i_yaw)
             
             if len(fp.x) != len(fp.s):
                 continue
@@ -225,13 +226,15 @@ class FrenetPlanner(object):
             path_vis = [[x, y, yaw] for x, y, yaw in zip(
                     frenet_path.x, frenet_path.y, frenet_path.yaw)]
             all_path_vis.append([path_vis, "safe"])
+            # if frenet_path._fail_proof:
+            #     all_path_vis[-1][-1] = "fail_proof"
             if any([self.MAX_SPEED < v for v in frenet_path.s_d]):
                 speed += 1
-                all_path_vis[-1][-1] = "velocity"
+                # all_path_vis[-1][-1] = "velocity"
                 continue
             elif any([self.MAX_ACCEL < abs(a) for a in frenet_path.s_dd]):
                 accel += 1
-                all_path_vis[-1][-1] = "acceleration"
+                # all_path_vis[-1][-1] = "acceleration"
                 continue
             # elif any([self.MAX_CURVATURE < abs(c) for c in frenet_path.c]):
             #     curvature += 1
@@ -248,10 +251,10 @@ class FrenetPlanner(object):
                 if res:
                     if coll_type == 0:
                         solid_boundary += 1
-                        all_path_vis[-1][-1] = "solid_boundary"
+                        # all_path_vis[-1][-1] = "solid_boundary"
                     elif coll_type == 1:
                         obstacle += 1
-                        all_path_vis[-1][-1] = "obstacle"
+                        # all_path_vis[-1][-1] = "obstacle"
                     continue
             ok_ind.append(i)
         # print("-------------------")
@@ -260,7 +263,7 @@ class FrenetPlanner(object):
         return [fplist[i] for i in ok_ind], all_path_vis
     
     def _path_planning(self, motion_predictor):
-        fplist = self._calc_frenet_paths()
+        fplist = self._calc_frenet_paths(motion_predictor)
         fplist = self._calc_global_paths(fplist)
         fplist, all_path_vis = self._check_paths(fplist, motion_predictor)
         best_path = min(fplist, key=lambda fp: fp.cf, default=None)

@@ -140,9 +140,9 @@ class PlanningManagerNode:
                     marker_msg.color.b = 0.0
                 elif info == "obstacle":
                     marker_msg.color.a = 1.0
-                    marker_msg.color.r = 1.0
-                    marker_msg.color.g = 0.0
-                    marker_msg.color.b = 0.0
+                    marker_msg.color.r = 0.0
+                    marker_msg.color.g = 1.0
+                    marker_msg.color.b = 1.0
                 elif info == "safe":
                     marker_msg.color.a = 1.0
                     marker_msg.color.r = 0.0
@@ -150,9 +150,9 @@ class PlanningManagerNode:
                     marker_msg.color.b = 0.0
                 else:
                     marker_msg.color.a = 0.5
-                    marker_msg.color.r = 0.0
+                    marker_msg.color.r = 1.0
                     marker_msg.color.g = 0.0
-                    marker_msg.color.b = 1.0
+                    marker_msg.color.b = 0.0
                 for x, y, yaw in path_list:
                     point_msg = Point()
                     point_msg.x = x
