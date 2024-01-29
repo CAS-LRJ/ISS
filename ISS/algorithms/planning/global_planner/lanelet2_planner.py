@@ -17,7 +17,7 @@ def smooth(trajectory: Trajectory):
     points = trajectory.get_states_array()[:, :2]
     points_opt = cp.Variable(points.shape)
     cost = 0
-    FAC_SMOOTH = 100
+    FAC_SMOOTH = 1
     for i in range(1, points.shape[0] - 1):
         cost += FAC_SMOOTH * cp.norm(points_opt[i + 1] + points_opt[i - 1] - 2 * points_opt[i]) ** 2
     for i in range(0, points.shape[0]):
@@ -214,7 +214,7 @@ class Lanelet2Planner(object):
                         traj = Trajectory()
                         traj.update_waypoints(point_list)
                         self.closed_set.clear()
-                        # smooth(traj)
+                        smooth(traj)
                         return traj
                     
             results = self.expand(current_node)

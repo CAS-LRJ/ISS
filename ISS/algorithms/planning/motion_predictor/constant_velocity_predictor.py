@@ -72,13 +72,15 @@ class ConstVelPredictor:
         else:
             self._spatial_temporal_obstacles = None
     
-    def collision_check(self, path):
+    def collision_check(self, path, ego_length=None, ego_width=None):
         if self._lanemap_collision_checker.check_path(path): #TODO: not accurate
             return True, 0
         if self._spatial_temporal_obstacles is None:
             return False, 0
-        ego_length = self._ego_veh_info['length']
-        ego_width = self._ego_veh_info['width']
+        if ego_length is None:
+            ego_length = self._ego_veh_info['length']
+        if ego_width is None:
+            ego_width = self._ego_veh_info['width']
         for i, wpt in enumerate(path):
             ego_heading = wpt[2]
             ego_center = [wpt[0], wpt[1]]
@@ -104,5 +106,10 @@ class ConstVelPredictor:
             if d < self._ego_veh_info["width"] / 2:
                 return s_obstacle
         return None
-            
+    
+    def check_emergency_stop(self, x, y, heading_angle):
+        LEN_INF_FACTOR = 1.25
+        WID_INF_FACTOR = 1.1
+        res, _ = self.collision_check([[x, y, heading_angle]], LEN_INF_FACTOR * self._ego_veh_info['length'], WID_INF_FACTOR * self._ego_veh_info['width'])
+        return res
         

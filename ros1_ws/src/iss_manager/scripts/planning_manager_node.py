@@ -25,7 +25,7 @@ from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker, MarkerArray
 
 from iss_manager.msg import State, StateArray, StateArrayArray, ObjectDetection3DArray
-from iss_manager.srv import SetGoal, SetGoalResponse
+from iss_manager.srv import SetGoal, SetGoalResponse, EmergencyStop
 
 DEBUG = True
 
@@ -47,7 +47,7 @@ class PlanningManagerNode:
         self.lanemap_collision_checker, self._solid_points = get_solid_checker(loadedMap, self._vehicle_info["length"], self._vehicle_info["width"])
         lanelet2_settings = rospy.get_param("global_planning")["lanelet2_settings"]
         self._global_planner = Lanelet2Planner(loadedMap, traffic_rules, self.lanemap_collision_checker, lanelet2_settings)
-        self._global_planner_pub = rospy.Publisher("planning/lanelet2_planner/trajectory", StateArray, queue_size=1, latch=True)
+        self._global_planner_pub = rospy.Publisher("planning/global_planner/trajectory", StateArray, queue_size=1, latch=True)
         
         # Motion predictor
         predictor_settings = rospy.get_param("prediction")
@@ -61,15 +61,15 @@ class PlanningManagerNode:
         self._local_coarse_planner = FrenetPlanner(lattice_settings)
         self._local_fine_planner = iLQRPlanner()
         self._local_planner_timer = None
-        self._local_planner_pub = rospy.Publisher("planning/lattice_planner/trajectory", StateArray, queue_size=1)
+        self._local_planner_pub = rospy.Publisher("planning/local_planner/trajectory", StateArray, queue_size=1)
 
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
 
         if DEBUG:
-            self._global_planner_path_pub = rospy.Publisher("planning/lanelet2_planner/path", Path, queue_size=1, latch=True)
-            self._local_planner_path_pub = rospy.Publisher("planning/lattice_planner/path", Path, queue_size=1)
-            self._lanelet2_planner_debug_pub = rospy.Publisher("planning/lanelet2_planner/debug", Marker, queue_size=1)
-            self._local_coarse_planner_debug_pub = rospy.Publisher("planning/lattice_planner/debug", MarkerArray, queue_size=1)
+            self._global_planner_path_pub = rospy.Publisher("planning/global_planner/path", Path, queue_size=1, latch=True)
+            self._local_planner_path_pub = rospy.Publisher("planning/local_planner/path", Path, queue_size=1)
+            self._lanelet2_planner_debug_pub = rospy.Publisher("planning/global_planner/debug", Marker, queue_size=1)
+            self._local_coarse_planner_debug_pub = rospy.Publisher("planning/local_planner/debug", MarkerArray, queue_size=1)
 
     def _set_goal_srv_callback(self, req):
         while self._ego_state is None:
@@ -122,6 +122,16 @@ class PlanningManagerNode:
         if self._ego_state is None:
             return
         local_traj, all_path_vis = self._local_coarse_planner.run_step(self._ego_state, self._motion_predictor)
+        if self._motion_predictor.check_emergency_stop(self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle):
+            rospy.wait_for_service('control/emergency_stop', timeout=2)
+            try:
+                emergency_stop = rospy.ServiceProxy('control/emergency_stop', EmergencyStop)
+                rospy.logerr("Emergency stop!")
+                resp = emergency_stop()
+                return resp.success
+            except rospy.ServiceException as e:
+                print("Service call failed: %s"%e)
+                return False
         if DEBUG:        
             all_path_vis_msg = MarkerArray()
             for i, [path_list, info] in enumerate(all_path_vis):

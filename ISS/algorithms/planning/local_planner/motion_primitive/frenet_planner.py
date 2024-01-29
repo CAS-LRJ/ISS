@@ -51,7 +51,7 @@ class FrenetPath:
         self.c = []
         self.T = 0 # duration
         
-        # self._fail_proof = False
+        self.fail_proof = False
 
 
 class FrenetPlanner(object):
@@ -107,12 +107,8 @@ class FrenetPlanner(object):
                 for di in np.arange(d_l, d_r + self.D_S, self.D_S):
                     lat_qp = QuinticPolynomial(d, d_d, d_dd, di, 0.0, 0.0, Ti)
                     fp = FrenetPath()
-                    # if tv == 0 and (s_obstacle is not None):
-                    #     fp._fail_proof = True
-                    #     if di == 0:
-                    #         fp._fail_proof = True
-                    #     else:
-                    #         continue
+                    if tv == 0 and (s_obstacle is not None):
+                        fp.fail_proof = True
                     fp.T = Ti
                     fp.t = list(np.arange(0.0, Ti, self.dt))
                     fp.d = [lat_qp.calc_point(t) for t in fp.t]
@@ -226,15 +222,15 @@ class FrenetPlanner(object):
             path_vis = [[x, y, yaw] for x, y, yaw in zip(
                     frenet_path.x, frenet_path.y, frenet_path.yaw)]
             all_path_vis.append([path_vis, "safe"])
-            # if frenet_path._fail_proof:
-            #     all_path_vis[-1][-1] = "fail_proof"
+            if frenet_path.fail_proof:
+                all_path_vis[-1][-1] = "fail_proof"
             if any([self.MAX_SPEED < v for v in frenet_path.s_d]):
                 speed += 1
-                # all_path_vis[-1][-1] = "velocity"
+                all_path_vis[-1][-1] = "velocity"
                 continue
             elif any([self.MAX_ACCEL < abs(a) for a in frenet_path.s_dd]):
                 accel += 1
-                # all_path_vis[-1][-1] = "acceleration"
+                all_path_vis[-1][-1] = "acceleration"
                 continue
             # elif any([self.MAX_CURVATURE < abs(c) for c in frenet_path.c]):
             #     curvature += 1
@@ -251,10 +247,14 @@ class FrenetPlanner(object):
                 if res:
                     if coll_type == 0:
                         solid_boundary += 1
-                        # all_path_vis[-1][-1] = "solid_boundary"
+                        # if frenet_path.fail_proof:
+                        #     print("boundary error")
+                        all_path_vis[-1][-1] = "solid_boundary"
                     elif coll_type == 1:
                         obstacle += 1
-                        # all_path_vis[-1][-1] = "obstacle"
+                        # if frenet_path.fail_proof:
+                        #     print("obstacle error")
+                        all_path_vis[-1][-1] = "obstacle"
                     continue
             ok_ind.append(i)
         # print("-------------------")
