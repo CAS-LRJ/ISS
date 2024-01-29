@@ -108,8 +108,8 @@ class ConstVelPredictor:
         return None
     
     def check_emergency_stop(self, x, y, heading_angle):
-        LEN_INF_FACTOR = 1.25
-        WID_INF_FACTOR = 1.1
+        LEN_INF_FACTOR = 1.1
+        WID_INF_FACTOR = 1.05
         res, _ = self.collision_check([[x, y, heading_angle]], LEN_INF_FACTOR * self._ego_veh_info['length'], WID_INF_FACTOR * self._ego_veh_info['width'])
         return res
         

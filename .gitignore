@@ -34,3 +34,5 @@ dist/
 *.bag
 ISS/algorithms/end_to_end/lav/weights/
 
+traj.pkl
+recorded_states.pkl

@@ -41,8 +41,9 @@ class VehiclePIDController:
         self._lat_controller.reset()    
     
     def set_traj(self, traj):
-        self.reset()
+        self.waypoint_index = 0
         self.traj = traj
+        # not clear the errors to keep smooth tracking
 
     def run_step(self, vehicle_location):
         """

@@ -38,18 +38,18 @@ local_planning:
     MAX_CURVATURE: 1 # maximum curvature [1/m]
 
 control:
-  control_frequency: 10
+  control_frequency: 50
   pid_settings:
     lateral:
-      K_P: 1
-      K_I: 0.0
+      K_P: 1.5
+      K_I: 0.1
       K_D: 0.0
       output_max: 0.5
       output_min: -0.5
       dt: 0.1 
     longitudinal:
-      K_P: 1
-      K_I: 0
+      K_P: 2
+      K_I: 0.1
       K_D: 0.0
       output_max: 1
       output_min: 0

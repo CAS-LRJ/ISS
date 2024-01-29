@@ -8,6 +8,7 @@ from ISS.algorithms.control.linear_mpc_tracker import VehicleLinearMPCController
 from ISS.algorithms.utils.trajectory import Trajectory
 
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float32
 from iss_manager.data_utils import traj_from_ros_msg
 from iss_manager.msg import StateArray, State, ControlCommand
 from iss_manager.srv import EmergencyStop, EmergencyStopResponse
@@ -16,8 +17,8 @@ import pickle
 
 class ControlManagerNode:
     def __init__(self) -> None:
-        ctrl_freq = rospy.get_param("control")["control_frequency"]
-        self._timer = rospy.Timer(rospy.Duration(1 / ctrl_freq), self._timer_callback)
+        self._ctrl_freq = rospy.get_param("control")["control_frequency"]
+        self._timer = rospy.Timer(rospy.Duration(1 / self._ctrl_freq), self._timer_callback)
         self._ctrl_pub = rospy.Publisher(rospy.get_param("control_command_topic"), ControlCommand, queue_size=1)
         self._ego_state_sub = rospy.Subscriber(rospy.get_param("ego_state_topic"), State, self._state_callback)
         self._trajectory_sub = rospy.Subscriber("planning/local_planner/trajectory", StateArray, self._trajectory_callback)
@@ -50,7 +51,12 @@ class ControlManagerNode:
         self._trajectory = Trajectory()
         self._ctrl_array = None
         self._ctrl_idx = 0
-        # self._recorded_states = []
+        self._recorded_states = []
+        self._tunning_sub = rospy.Subscriber("control/tunning", Float32, self._tunning_callback)
+    
+    def _tunning_callback(self, msg):
+        traj = pickle.load(open("/home/shaohang/work_space/autonomous_vehicle/ISS/traj.pkl", "rb"))
+        self._pid_tracker.set_traj(traj)
     
     def _emergency_stop_callback(self, req):
         DURATION_SEC = 1
@@ -67,7 +73,8 @@ class ControlManagerNode:
             self._ctrl_pub.publish(ctrl_msg)
             return
         throttle, steering = self._pid_tracker.run_step(self._ego_state)
-        # self._recorded_states.append([self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle, self._ego_state.velocity])
+        if len(self._pid_tracker.traj) != 0:
+            self._recorded_states.append([self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle, self._ego_state.velocity])
         # throttle, steering = self._mpc_tracker.run_step(self._ego_state)
         # throttle = 0
         # steering = 0
@@ -85,13 +92,12 @@ class ControlManagerNode:
         # print("Received Control Array:")
         self._trajectory = traj_from_ros_msg(msg)
         # self._mpc_tracker.set_traj(self._trajectory)
-        self._pid_tracker.set_traj(self._trajectory.get_states_list())
+        states_list = self._trajectory.get_states_list(1 / self._ctrl_freq)
+        self._pid_tracker.set_traj(states_list)
+        pickle.dump(states_list, open("/home/shaohang/work_space/autonomous_vehicle/ISS/traj.pkl", "wb"))
         # self._ctrl_array = self._trajectory.get_states_array()[:, 3:5]
         # self._ctrl_idx = 0
-        # print("Finished Receiving Control Array")
-
-    def set_traj(self, traj):
-        self._pid_tracker.set_traj(traj)
+        # print("Finished Receiving Control Array")        
 
     def save(self):
         pickle.dump(self._recorded_states, open("/home/shaohang/work_space/autonomous_vehicle/ISS/recorded_states.pkl", "wb"))
@@ -99,7 +105,5 @@ class ControlManagerNode:
 if __name__ == "__main__":
     rospy.init_node("control_manager_node")
     control_manager_node = ControlManagerNode()
-    # traj = pickle.load(open("/home/shaohang/work_space/autonomous_vehicle/ISS/traj.pkl", "rb"))
-    # control_manager_node.set_traj(traj)
-    # rospy.on_shutdown(control_manager_node.save)
+    rospy.on_shutdown(control_manager_node.save)
     rospy.spin()

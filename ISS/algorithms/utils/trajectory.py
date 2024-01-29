@@ -36,8 +36,17 @@ class Trajectory:
         if len(states_list) != 0:
             self._states = np.array(states_list)
 
-    def get_states_list(self):
-        return self._states.tolist()
+    def get_states_list(self, dt):
+        states_list = []
+        # linear interpolation
+        for i in range(self._states.shape[0] - 1):
+            num_steps = int((self._states[i+1, -1] - self._states[i, -1]) / dt)
+            for j in range(num_steps):
+                ratio = j / num_steps
+                state = self._states[i, :] * (1 - ratio) + \
+                    self._states[i+1, :] * ratio
+                states_list.append(state)
+        return states_list
 
     def get_states_array(self):
         return self._states.copy()
@@ -84,3 +93,10 @@ class Trajectory:
 
     def collision_check_trajectory(self, trajectory, target_bbox_size):
         return
+
+    def get_closest_point(self, x, y):
+        if self._states is None:
+            return None, None
+        distances = np.linalg.norm(self._states[:, :2] - np.array([x, y]), axis=1)
+        closest_index = np.argmin(distances)
+        return self._states[closest_index, :3]

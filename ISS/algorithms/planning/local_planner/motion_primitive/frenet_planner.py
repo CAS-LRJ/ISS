@@ -269,9 +269,9 @@ class FrenetPlanner(object):
         best_path = min(fplist, key=lambda fp: fp.cf, default=None)
         return best_path, all_path_vis
     
-    def run_step(self, ego_state, motion_predictor):
+    def run_step(self, init_planning_state, motion_predictor):
         self.state_cartesian_prev = self.state_cartesian
-        self.state_cartesian = (ego_state.x, ego_state.y, ego_state.heading_angle, ego_state.velocity, ego_state.acceleration)
+        self.state_cartesian = init_planning_state
         # get curr ego_vehicle's frenet coordinate
         self._get_frenet_state()
         self.best_path, all_path_vis = self._path_planning(motion_predictor)

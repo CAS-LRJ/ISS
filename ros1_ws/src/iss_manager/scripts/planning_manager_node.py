@@ -4,7 +4,7 @@ import rospy
 import rospkg
 import os
 import numpy as np
-import time
+import copy
 
 import lanelet2
 from lanelet2.projection import UtmProjector
@@ -62,6 +62,8 @@ class PlanningManagerNode:
         self._local_fine_planner = iLQRPlanner()
         self._local_planner_timer = None
         self._local_planner_pub = rospy.Publisher("planning/local_planner/trajectory", StateArray, queue_size=1)
+        self._local_traj = None
+        self._init_planning_state = None
 
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
 
@@ -108,6 +110,9 @@ class PlanningManagerNode:
     
     def _ego_state_callback(self, state_msg):
         self._ego_state = state_msg
+        self._init_planning_state = [state_msg.x, state_msg.y, state_msg.heading_angle, state_msg.velocity, state_msg.acceleration]
+        if self._local_traj is not None:
+            self._init_planning_state[:3]  = self._local_traj.get_closest_point(self._init_planning_state[0], self._init_planning_state[1])
     
     def _obstacle_callback(self, obstacle_msg):
         self._motion_predictor.update_obstacle(obstacle_msg)    
@@ -121,7 +126,7 @@ class PlanningManagerNode:
     def _local_planning_timer_callback(self, event):
         if self._ego_state is None:
             return
-        local_traj, all_path_vis = self._local_coarse_planner.run_step(self._ego_state, self._motion_predictor)
+        self._local_traj, all_path_vis = self._local_coarse_planner.run_step(copy.deepcopy(self._init_planning_state), self._motion_predictor)
         if self._motion_predictor.check_emergency_stop(self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle):
             rospy.wait_for_service('control/emergency_stop', timeout=2)
             try:
@@ -171,13 +176,13 @@ class PlanningManagerNode:
                     marker_msg.points.append(point_msg)
                 all_path_vis_msg.markers.append(marker_msg)
             self._local_coarse_planner_debug_pub.publish(all_path_vis_msg)
-        if local_traj.is_empty():
+        if self._local_traj.is_empty():
             rospy.logwarn("Local planner: Failed")
             return
         # self._local_fine_planner.run_step(self._ego_state, local_traj)
         if DEBUG: 
-            self._local_planner_path_pub.publish(traj_to_ros_msg_path(local_traj, frame_id=self._world_frame))
-        self._local_planner_pub.publish(traj_to_ros_msg(local_traj, frame_id=self._world_frame))
+            self._local_planner_path_pub.publish(traj_to_ros_msg_path(self._local_traj, frame_id=self._world_frame))
+        self._local_planner_pub.publish(traj_to_ros_msg(self._local_traj, frame_id=self._world_frame))
 
 if __name__ == "__main__":
     rospy.init_node("planning_manager_node", anonymous=True)
