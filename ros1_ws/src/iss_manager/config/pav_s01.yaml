@@ -10,7 +10,7 @@ prediction:
   method: "constant_velocity_predictor"
 
 local_planning:
-  local_planning_frequency: 10
+  local_planning_frequency: 0.25
   lattice_settings:
     MAX_T: 5.0 # max prediction time [s]
     MIN_T: 5.0 # min prediction time [s]
@@ -41,16 +41,16 @@ control:
   control_frequency: 50
   pid_settings:
     lateral:
-      K_P: 1.5
+      K_P: 1
       K_I: 0.1
-      K_D: 0.0
+      K_D: 1
       output_max: 0.5
       output_min: -0.5
       dt: 0.1 
     longitudinal:
-      K_P: 2
+      K_P: 0.5
       K_I: 0.1
-      K_D: 0.0
+      K_D: 0.5
       output_max: 1
       output_min: 0
       dt: 0.1

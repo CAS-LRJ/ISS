@@ -64,8 +64,8 @@ class FrenetPlanner(object):
         # Initialize
         self.waypoints_xy = None
         self.state_frenet = None
-        self.state_cartesian = None
-        self.state_cartesian_prev = None
+        state_cartesian = None
+        state_cartesian_prev = None
         self.best_path = None
 
     def update_reference_line(self, waypoints):
@@ -133,22 +133,21 @@ class FrenetPlanner(object):
 
         return frenet_paths
 
-    def _get_frenet_state(self):
-        state_c = self.state_cartesian
-        # idx_r = get_closest_waypoints(state_c[0], state_c[1], list(zip(self.rx, self.ry)))
-        _, idx_r = self.ref_kdtree.query([state_c[0], state_c[1]])
+    def _get_frenet_state(self, state_cartesian, state_cartesian_prev):
+        _, idx_r = self.ref_kdtree.query([state_cartesian[0], state_cartesian[1]])
+        if idx_r >= len(self.s): # TODO
+            idx_r = len(self.s) - 1
         s_r = self.s[idx_r]
         x_r, y_r = self.csp.calc_position(s_r)
-        x1_r, y1_r = self.rx[idx_r], self.ry[idx_r]
         k_r = self.csp.calc_curvature(s_r)
         yaw_r = self.csp.calc_yaw(s_r)
         dyaw_r = self.csp.calc_curvature_d(s_r)
-        delta_theta = state_c[2] - yaw_r
+        delta_theta = state_cartesian[2] - yaw_r
         # k_x: curvature of vehicle's route
-        if self.state_cartesian is not None and self.state_cartesian_prev is not None:
-            dx = self.state_cartesian[0] - self.state_cartesian_prev[0]
-            dy = self.state_cartesian[1] - self.state_cartesian_prev[1]
-            dyaw = self.state_cartesian[2] - self.state_cartesian_prev[2]
+        if state_cartesian is not None and state_cartesian_prev is not None:
+            dx = state_cartesian[0] - state_cartesian_prev[0]
+            dy = state_cartesian[1] - state_cartesian_prev[1]
+            dyaw = state_cartesian[2] - state_cartesian_prev[2]
             ds = math.hypot(dx, dy)
             if 0 < ds:
                 k_x = dyaw / math.hypot(dx, dy)
@@ -156,26 +155,25 @@ class FrenetPlanner(object):
                 k_x = None
         else:
             k_x = None
-        # s, d = get_frenet_coord(state_c[0], state_c[1], list(zip(self.rx, self.ry)))
+        # s, d = get_frenet_coord(state_cartesian[0], state_cartesian[1], list(zip(self.rx, self.ry)))
         s = s_r
-        x_delta = self.state_cartesian[0] - x_r
-        y_delta = self.state_cartesian[1] - y_r
+        x_delta = state_cartesian[0] - x_r
+        y_delta = state_cartesian[1] - y_r
         d = np.sign(y_delta * math.cos(yaw_r) - x_delta *
                     math.sin(yaw_r)) * math.hypot(x_delta, y_delta)
-        d_d = state_c[3] * math.sin(delta_theta)
+        d_d = state_cartesian[3] * math.sin(delta_theta)
         coeff_1 = 1 - k_r * d
-        d_dd = state_c[4] * math.sin(delta_theta)
-        s_d = state_c[3] * math.cos(delta_theta) / coeff_1
+        d_dd = state_cartesian[4] * math.sin(delta_theta)
+        s_d = state_cartesian[3] * math.cos(delta_theta) / coeff_1
         if k_x is None:
             s_dd = 0
         else:
             s_ds = coeff_1 * math.tan(delta_theta)
             coeff_2 = coeff_1 / math.cos(delta_theta) * k_x - k_r
             coeff_3 = dyaw_r * d + yaw_r * s_ds
-            s_dd = state_c[4] * math.cos(delta_theta) - \
+            s_dd = state_cartesian[4] * math.cos(delta_theta) - \
                 (s_d ** 2) * (s_ds * coeff_2 - coeff_3) / coeff_1
         self.state_frenet = [s, s_d, s_dd, d, d_d, d_dd]
-        return self.state_frenet
 
     def _calc_global_paths(self, fplist):
         valid_fplist = []
@@ -269,11 +267,8 @@ class FrenetPlanner(object):
         best_path = min(fplist, key=lambda fp: fp.cf, default=None)
         return best_path, all_path_vis
     
-    def run_step(self, init_planning_state, motion_predictor):
-        self.state_cartesian_prev = self.state_cartesian
-        self.state_cartesian = init_planning_state
-        # get curr ego_vehicle's frenet coordinate
-        self._get_frenet_state()
+    def run_step(self, init_planning_state, init_planning_state_prev, motion_predictor):
+        self._get_frenet_state(init_planning_state, init_planning_state_prev)
         self.best_path, all_path_vis = self._path_planning(motion_predictor)
         states_list = []
         if self.best_path is not None:

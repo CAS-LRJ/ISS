@@ -53,9 +53,10 @@ class ControlManagerNode:
         self._ctrl_idx = 0
         self._recorded_states = []
         self._tunning_sub = rospy.Subscriber("control/tunning", Float32, self._tunning_callback)
+        self._traj_cnt = 0
     
     def _tunning_callback(self, msg):
-        traj = pickle.load(open("/home/shaohang/work_space/autonomous_vehicle/ISS/traj.pkl", "rb"))
+        traj = pickle.load(open("/home/shaohang/work_space/autonomous_vehicle/ISS/data/traj.pkl", "rb"))
         self._pid_tracker.set_traj(traj)
     
     def _emergency_stop_callback(self, req):
@@ -75,32 +76,25 @@ class ControlManagerNode:
         throttle, steering = self._pid_tracker.run_step(self._ego_state)
         if len(self._pid_tracker.traj) != 0:
             self._recorded_states.append([self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle, self._ego_state.velocity])
-        # throttle, steering = self._mpc_tracker.run_step(self._ego_state)
-        # throttle = 0
-        # steering = 0
-        # if self._ctrl_array is not None:
-        #     throttle, steering = self._ctrl_array[self._ctrl_idx]
-        #     self._ctrl_idx += 1
         ctrl_msg.throttle = throttle
         ctrl_msg.steering = steering
+        # print(ctrl_msg.throttle, ctrl_msg.steering)
         self._ctrl_pub.publish(ctrl_msg)
     
     def _state_callback(self, msg):
         self._ego_state = msg
     
     def _trajectory_callback(self, msg):
-        # print("Received Control Array:")
+        rospy.logwarn("Received trajectory")       
         self._trajectory = traj_from_ros_msg(msg)
-        # self._mpc_tracker.set_traj(self._trajectory)
         states_list = self._trajectory.get_states_list(1 / self._ctrl_freq)
         self._pid_tracker.set_traj(states_list)
-        pickle.dump(states_list, open("/home/shaohang/work_space/autonomous_vehicle/ISS/traj.pkl", "wb"))
-        # self._ctrl_array = self._trajectory.get_states_array()[:, 3:5]
-        # self._ctrl_idx = 0
-        # print("Finished Receiving Control Array")        
+        # pickle.dump(states_list, open("/home/shaohang/work_space/autonomous_vehicle/ISS/data/traj_" + str(self._traj_cnt) + ".pkl", "wb"))
+        self._traj_cnt += 1       
+ 
 
     def save(self):
-        pickle.dump(self._recorded_states, open("/home/shaohang/work_space/autonomous_vehicle/ISS/recorded_states.pkl", "wb"))
+        pickle.dump(self._recorded_states, open("/home/shaohang/work_space/autonomous_vehicle/ISS/data/recorded_states.pkl", "wb"))
 
 if __name__ == "__main__":
     rospy.init_node("control_manager_node")

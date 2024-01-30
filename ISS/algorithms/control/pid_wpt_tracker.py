@@ -41,9 +41,8 @@ class VehiclePIDController:
         self._lat_controller.reset()    
     
     def set_traj(self, traj):
-        self.waypoint_index = 0
         self.traj = traj
-        # not clear the errors to keep smooth tracking
+        self.waypoint_index = 1
 
     def run_step(self, vehicle_location):
         """
@@ -62,7 +61,7 @@ class VehiclePIDController:
         traj_point = self.traj[self.waypoint_index]
         target_speed = self.traj[self.waypoint_index][3]
         throttle = self._lon_controller.run_step(current_speed, target_speed)
-        steering =  - self._lat_controller.run_step(current_location, traj_point)
+        steering = self._lat_controller.run_step(current_location, traj_point)
         self.waypoint_index += 1
         return throttle, steering
     
@@ -120,7 +119,6 @@ class PIDLongitudinalController:
         else:
             _de = 0.0
             _ie = 0.0
-
         return np.clip((self._K_P * error) + (self._K_D * _de) + (self._K_I * _ie), self._output_min, self._output_max)
 
     def change_parameters(self, K_P, K_I, K_D, dt):
@@ -164,7 +162,7 @@ class PIDLateralController:
             +1 maximum steering to left
             -1 represent maximum steering to right
         """
-        return -self._pid_control(vehicle_location, waypoint)
+        return self._pid_control(vehicle_location, waypoint)
 
     def _pid_control(self, vehicle_location, waypoint):
         """
@@ -192,7 +190,9 @@ class PIDLateralController:
             _de = 0.0
             _ie = 0.0
 
-        return np.clip((self._K_P * _dot) + (self._K_D * _de) + (self._K_I * _ie), self._output_min, self._output_max)
+        steering_from_yaw = np.clip((self._K_P * _dot) + (self._K_D * _de) + (self._K_I * _ie), self._output_min, self._output_max)
+        return steering_from_yaw
+        
 
     def change_parameters(self, K_P, K_I, K_D, dt):
         """Changes the PID parameters"""
