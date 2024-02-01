@@ -214,7 +214,7 @@ class Lanelet2Planner(object):
                         traj = Trajectory()
                         traj.update_waypoints(point_list)
                         self.closed_set.clear()
-                        smooth(traj)
+                        # smooth(traj)
                         return traj
                     
             results = self.expand(current_node)

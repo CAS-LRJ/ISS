@@ -62,7 +62,7 @@ class PlanningManagerNode:
         self._local_fine_planner = iLQRPlanner()
         self._local_planner_timer = None
         self._local_planner_pub = rospy.Publisher("planning/local_planner/trajectory", StateArray, queue_size=1)
-        self._local_traj = None
+        self._local_traj = Trajectory()
         self._init_planning_state_prev = None
 
         self._set_goal_srv = rospy.Service("planning/set_goal", SetGoal, self._set_goal_srv_callback)
@@ -124,14 +124,13 @@ class PlanningManagerNode:
         if self._ego_state is None:
             return
         init_planning_state = [self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle, self._ego_state.velocity, self._ego_state.acceleration]
-        if self._local_traj is not None:
-            init_planning_state[:4]  = self._local_traj.get_closest_point(init_planning_state[0],
-                                                                          init_planning_state[1],
-                                                                          init_planning_state[2],
-                                                                          init_planning_state[3])
+        # if not self._local_traj.is_empty():
+        #     init_planning_state[:4]  = self._local_traj.get_closest_point(init_planning_state[0],
+        #                                                                   init_planning_state[1],
+        #                                                                   init_planning_state[2],
+        #                                                                   init_planning_state[3])
         self._local_traj, all_path_vis = self._local_coarse_planner.run_step(init_planning_state, self._init_planning_state_prev, self._motion_predictor)
         self._init_planning_state_prev = init_planning_state
-        print("Local planner: Success")
         if self._motion_predictor.check_emergency_stop(self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle):
             rospy.wait_for_service('control/emergency_stop', timeout=2)
             try:
@@ -155,7 +154,7 @@ class PlanningManagerNode:
                 marker_msg.lifetime = rospy.Duration(10)
                 if info == "solid_boundary":
                     marker_msg.color.a = 1.0
-                    marker_msg.color.r = 1
+                    marker_msg.color.r = 1.0
                     marker_msg.color.g = 1.0
                     marker_msg.color.b = 0.0
                 elif info == "obstacle":
@@ -181,6 +180,7 @@ class PlanningManagerNode:
                     marker_msg.points.append(point_msg)
                 all_path_vis_msg.markers.append(marker_msg)
             self._local_coarse_planner_debug_pub.publish(all_path_vis_msg)
+            print(len(all_path_vis))
         if self._local_traj.is_empty():
             rospy.logwarn("Local planner: Failed")
             return

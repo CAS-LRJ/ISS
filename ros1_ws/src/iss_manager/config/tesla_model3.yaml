@@ -34,6 +34,7 @@ local_planning:
     K_D: 5
     K_LAT: 0.1
     K_LON: 0.8
+    K_D_DIFF: 1
     
     MAX_ACCEL: 5          # maximum acceleration [m/ss]
     MAX_CURVATURE: 1.0    # maximum curvature [1/m]

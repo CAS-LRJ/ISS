@@ -93,7 +93,6 @@ class Trajectory:
 
     def get_closest_point(self, x, y, yaw, speed):
         if self.is_empty():
-            print("Trajectory is empty")
             return x, y, yaw, speed
         distances = np.linalg.norm(self._states[:, :2] - np.array([x, y]), axis=1)
         closest_index = np.argmin(distances)

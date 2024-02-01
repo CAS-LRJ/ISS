@@ -123,9 +123,10 @@ class FrenetPlanner(object):
                     Jp = sum(np.power(fp.d_ddd, 2))  # square of jerk
                     Js = sum(np.power(fp.s_ddd, 2))  # square of jerk
                     ds = (self.TARGET_SPEED - fp.s_d[-1]) ** 2  # square of diff from target speed
+                    Jd = sum(np.power(fp.d, 2))  # square of diff from ref path
 
                     # cost
-                    fp.cd = self.K_J * Jp + self.K_T * Ti + self.K_D * fp.d[-1] ** 2
+                    fp.cd = self.K_J * Jp + self.K_T * Ti + self.K_D * fp.d[-1] ** 2 + self.K_D_DIFF * Jd
                     fp.cv = self.K_J * Js + self.K_T * Ti + self.K_D * ds
                     fp.cf = self.K_LAT * fp.cd + self.K_LON * fp.cv
 
@@ -255,9 +256,9 @@ class FrenetPlanner(object):
                         all_path_vis[-1][-1] = "obstacle"
                     continue
             ok_ind.append(i)
-        # print("-------------------")
-        # print("before path num: ", len(fplist))
-        # print("speed: ", speed, "accel: ", accel, "curvature: ", curvature, "obstacle: ", obstacle, "solid_boundary: ", solid_boundary)
+        print("-------------------")
+        print("before path num: ", len(fplist))
+        print("speed: ", speed, "accel: ", accel, "curvature: ", curvature, "obstacle: ", obstacle, "solid_boundary: ", solid_boundary)
         return [fplist[i] for i in ok_ind], all_path_vis
     
     def _path_planning(self, motion_predictor):

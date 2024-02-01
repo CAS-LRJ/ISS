@@ -1,4 +1,8 @@
-hd_map: "simple_road_v1.osm"
+# hd_map: "simple_road_v1.osm"
+hd_map: "road_2024.osm"
+
+# 6.82 5.25 3.14
+# 1.6, 4.37 -1.54
 
 global_planning:
   lanelet2_settings:
@@ -10,7 +14,7 @@ prediction:
   method: "constant_velocity_predictor"
 
 local_planning:
-  local_planning_frequency: 0.25
+  local_planning_frequency: 10
   lattice_settings:
     MAX_T: 5.0 # max prediction time [s]
     MIN_T: 5.0 # min prediction time [s]
@@ -33,28 +37,43 @@ local_planning:
     K_D: 5
     K_LAT: 0.1
     K_LON: 0.8
+    K_D_DIFF: 1
 
     MAX_ACCEL: 5 # maximum acceleration [m/ss]
     MAX_CURVATURE: 1 # maximum curvature [1/m]
 
 control:
   control_frequency: 50
+  # pid_settings:
+  #   lateral:
+  #     K_P: 1
+  #     K_I: 0.1
+  #     K_D: 1
+  #     output_max: 0.5
+  #     output_min: -0.5
+  #     dt: 0.1 
+  #   longitudinal:
+  #     K_P: 0.5
+  #     K_I: 0.1
+  #     K_D: 0.5
+  #     output_max: 1
+  #     output_min: 0
+  #     dt: 0.1
   pid_settings:
     lateral:
       K_P: 1
-      K_I: 0.1
-      K_D: 1
+      K_I: 0
+      K_D: 0
       output_max: 0.5
       output_min: -0.5
       dt: 0.1 
     longitudinal:
-      K_P: 0.5
-      K_I: 0.1
-      K_D: 0.5
+      K_P: 1
+      K_I: 0
+      K_D: 0
       output_max: 1
       output_min: 0
       dt: 0.1
-
 
 vehicle_info:
   length: 0.35

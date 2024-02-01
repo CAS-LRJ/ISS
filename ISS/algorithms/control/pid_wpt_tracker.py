@@ -58,6 +58,14 @@ class VehiclePIDController:
         
         current_location = (vehicle_location.x, vehicle_location.y, vehicle_location.heading_angle)
         current_speed = vehicle_location.velocity
+        
+        while self.waypoint_index < len(self.traj) - 1:
+            traj_point = self.traj[self.waypoint_index]
+            v_vec = (current_location[0] - traj_point[0], current_location[1] - traj_point[1])
+            if np.linalg.norm(v_vec) > 0.2:
+                break
+            self.waypoint_index += 1
+
         traj_point = self.traj[self.waypoint_index]
         target_speed = self.traj[self.waypoint_index][3]
         throttle = self._lon_controller.run_step(current_speed, target_speed)

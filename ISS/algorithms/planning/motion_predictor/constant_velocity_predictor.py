@@ -97,6 +97,8 @@ class ConstVelPredictor:
         return False, 0
     
     def get_front_obstacle(self, csp, s_ego, LOOK_AHEAD_DISTANCE):
+        if len(self._obstacle_detections.detections) == 0:
+            return None
         s_obstacle = s_ego
         obstacle_detections_kdtree = KDTree(np.array([[obstacle.state.x, obstacle.state.y] for obstacle in self._obstacle_detections.detections]), copy_data=True)
         while s_obstacle < (s_ego + LOOK_AHEAD_DISTANCE):
