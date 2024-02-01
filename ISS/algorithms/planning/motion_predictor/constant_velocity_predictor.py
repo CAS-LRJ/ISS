@@ -97,6 +97,8 @@ class ConstVelPredictor:
         return False, 0
     
     def get_front_obstacle(self, csp, s_ego, LOOK_AHEAD_DISTANCE):
+        if self._obstacle_detections is None:
+            return None
         if len(self._obstacle_detections.detections) == 0:
             return None
         s_obstacle = s_ego

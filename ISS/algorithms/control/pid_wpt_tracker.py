@@ -11,7 +11,7 @@ class VehiclePIDController:
     low level control a vehicle from client side
     """
 
-    def __init__(self, args_lateral=None, args_longitudinal=None):
+    def __init__(self, args_lateral=None, args_longitudinal=None, look_ahead=1):
         """        
         :param args_lateral: dictionary of arguments to set the lateral PID controller using the following semantics:
                              K_P -- Proportional term
@@ -27,7 +27,7 @@ class VehiclePIDController:
             args_lateral = {'K_P': 2, 'K_I': 0., 'K_D': 0.2, "output_max": 1, "output_min": -1, "dt": 0.1}
         if not args_longitudinal:            
             args_longitudinal = {'K_P': 2, 'K_I': 0., 'K_D': 0.1, "output_max": 1, "output_min": 0, "dt": 0.1}
-
+        self._look_ahead = look_ahead
         self._lon_controller = PIDLongitudinalController(**args_longitudinal)
         self._lat_controller = PIDLateralController(**args_lateral)        
         self.traj = []
@@ -62,7 +62,7 @@ class VehiclePIDController:
         while self.waypoint_index < len(self.traj) - 1:
             traj_point = self.traj[self.waypoint_index]
             v_vec = (current_location[0] - traj_point[0], current_location[1] - traj_point[1])
-            if np.linalg.norm(v_vec) > 0.2:
+            if np.linalg.norm(v_vec) > self._look_ahead:
                 break
             self.waypoint_index += 1
 
