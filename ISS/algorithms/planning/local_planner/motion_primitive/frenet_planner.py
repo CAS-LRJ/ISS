@@ -201,7 +201,10 @@ class FrenetPlanner(object):
             fp.ds.append(fp.ds[-1])
             
             for i in range(len(fp.yaw) - 1):
-                fp.c.append((fp.yaw[i + 1] - fp.yaw[i]) / fp.ds[i])
+                if fp.ds[i] == 0:
+                    fp.c.append(0)
+                else:
+                    fp.c.append((fp.yaw[i + 1] - fp.yaw[i]) / fp.ds[i])
 
             fp.v = fp.s_d
             valid_fplist.append(fp)

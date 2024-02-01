@@ -124,11 +124,11 @@ class PlanningManagerNode:
         if self._ego_state is None:
             return
         init_planning_state = [self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle, self._ego_state.velocity, self._ego_state.acceleration]
-        # if not self._local_traj.is_empty():
-        #     init_planning_state[:4]  = self._local_traj.get_closest_point(init_planning_state[0],
-        #                                                                   init_planning_state[1],
-        #                                                                   init_planning_state[2],
-        #                                                                   init_planning_state[3])
+        if not self._local_traj.is_empty():
+            init_planning_state[:4]  = self._local_traj.get_closest_point(init_planning_state[0],
+                                                                          init_planning_state[1],
+                                                                          init_planning_state[2],
+                                                                          init_planning_state[3])
         self._local_traj, all_path_vis = self._local_coarse_planner.run_step(init_planning_state, self._init_planning_state_prev, self._motion_predictor)
         self._init_planning_state_prev = init_planning_state
         if self._motion_predictor.check_emergency_stop(self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle):
