@@ -70,8 +70,26 @@ class PlanningManagerNode:
         if DEBUG:
             self._global_planner_path_pub = rospy.Publisher("planning/global_planner/path", Path, queue_size=1, latch=True)
             self._local_planner_path_pub = rospy.Publisher("planning/local_planner/path", Path, queue_size=1)
-            self._lanelet2_planner_debug_pub = rospy.Publisher("planning/global_planner/debug", Marker, queue_size=1)
             self._local_coarse_planner_debug_pub = rospy.Publisher("planning/local_planner/debug", MarkerArray, queue_size=1)
+            self._lanelet2_debug_pub = rospy.Publisher("planning/global_planner/debug", Marker, queue_size=1, latch=True)
+            solid_lane = Marker()
+            solid_lane.header.frame_id = rospy.get_namespace().replace("/", "") + "/" + self._world_frame
+            solid_lane.type = Marker.POINTS
+            solid_lane.action = Marker.ADD
+            solid_lane.scale.x = 0.02
+            solid_lane.lifetime = rospy.Duration(0)
+            solid_lane.pose.orientation.w = 1.0
+            solid_lane.color.a = 1.0
+            solid_lane.color.r = 1.0
+            solid_lane.color.g = 1.0
+            solid_lane.color.b = 0.0
+            for solid_point in self._solid_points:
+                point_msg = Point()
+                point_msg.x = solid_point[0]
+                point_msg.y = solid_point[1]
+                point_msg.z = 0.0
+                solid_lane.points.append(point_msg)
+            self._lanelet2_debug_pub.publish(solid_lane)
 
     def _set_goal_srv_callback(self, req):
         while self._ego_state is None:
@@ -88,24 +106,6 @@ class PlanningManagerNode:
         self._local_planner_timer = rospy.Timer(rospy.Duration(1.0/self.local_planning_frequency), self._local_planning_timer_callback)
         if DEBUG:
             self._global_planner_path_pub.publish(traj_to_ros_msg_path(global_traj, frame_id=self._world_frame))
-            solid_lane = Marker()
-            solid_lane.header.frame_id = rospy.get_namespace().replace("/", "") + "/" + self._world_frame
-            solid_lane.type = Marker.POINTS
-            solid_lane.action = Marker.ADD
-            solid_lane.scale.x = 0.02
-            solid_lane.lifetime = rospy.Duration(60)
-            solid_lane.pose.orientation.w = 1.0
-            solid_lane.color.a = 1.0
-            solid_lane.color.r = 1.0
-            solid_lane.color.g = 1.0
-            solid_lane.color.b = 0.0
-            for solid_point in self._solid_points:
-                point_msg = Point()
-                point_msg.x = solid_point[0]
-                point_msg.y = solid_point[1]
-                point_msg.z = 0.0
-                solid_lane.points.append(point_msg)
-            self._lanelet2_planner_debug_pub.publish(solid_lane)
         return SetGoalResponse(True)
     
     def _ego_state_callback(self, state_msg):
@@ -180,7 +180,6 @@ class PlanningManagerNode:
                     marker_msg.points.append(point_msg)
                 all_path_vis_msg.markers.append(marker_msg)
             self._local_coarse_planner_debug_pub.publish(all_path_vis_msg)
-            print(len(all_path_vis))
         if self._local_traj.is_empty():
             rospy.logwarn("Local planner: Failed")
             return

@@ -65,10 +65,9 @@ class VehiclePIDController:
             if np.linalg.norm(v_vec) > 0.2:
                 break
             self.waypoint_index += 1
-
         traj_point = self.traj[self.waypoint_index]
         target_speed = self.traj[self.waypoint_index][3]
-        throttle = self._lon_controller.run_step(current_speed, target_speed)
+        throttle = self._lon_controller.run_step(current_speed, target_speed) 
         steering = self._lat_controller.run_step(current_location, traj_point)
         self.waypoint_index += 1
         return throttle, steering
@@ -198,7 +197,7 @@ class PIDLateralController:
             _de = 0.0
             _ie = 0.0
 
-        steering_from_yaw = np.clip((self._K_P * _dot) + (self._K_D * _de) + (self._K_I * _ie), self._output_min, self._output_max)
+        steering_from_yaw = np.clip((self._K_P * _dot) + (self._K_D * _de) + (self._K_I * _ie), self._output_min, self._output_max) 
         return steering_from_yaw
         
 

@@ -39,7 +39,7 @@ import casadi as ca
 #         return x_next
 
 class BicycleModel:
-    def __init__(self, dt, wheel_base=3.):
+    def __init__(self, dt, wheel_base):
         self.n_states = 4
         self.n_controls = 2
         self.dt = dt

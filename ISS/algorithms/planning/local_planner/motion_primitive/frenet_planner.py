@@ -256,9 +256,9 @@ class FrenetPlanner(object):
                         all_path_vis[-1][-1] = "obstacle"
                     continue
             ok_ind.append(i)
-        print("-------------------")
-        print("before path num: ", len(fplist))
-        print("speed: ", speed, "accel: ", accel, "curvature: ", curvature, "obstacle: ", obstacle, "solid_boundary: ", solid_boundary)
+        # print("-------------------")
+        # print("before path num: ", len(fplist))
+        # print("speed: ", speed, "accel: ", accel, "curvature: ", curvature, "obstacle: ", obstacle, "solid_boundary: ", solid_boundary)
         return [fplist[i] for i in ok_ind], all_path_vis
     
     def _path_planning(self, motion_predictor):

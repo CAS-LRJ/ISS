@@ -85,7 +85,6 @@ class ControlManagerNode:
         self._ego_state = msg
     
     def _trajectory_callback(self, msg):
-        rospy.logwarn("Received trajectory")       
         self._trajectory = traj_from_ros_msg(msg)
         states_list = self._trajectory.get_states_list(1 / self._ctrl_freq)
         self._pid_tracker.set_traj(states_list)

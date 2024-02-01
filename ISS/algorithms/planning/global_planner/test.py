@@ -37,6 +37,9 @@ goal = (6.2, -4.7, 3.14)
 # goal = (3.84, 1.3, 3.14)
 trajectory = global_planner.run_step(start, goal)
 points = np.array(trajectory.get_waypoints())
+import pickle
+with open('points.pkl', 'wb') as f:
+    pickle.dump(points, f)
 # shortest_path = global_planner.run_step(start, goal)
 # points = []
 # for lanelet in shortest_path:

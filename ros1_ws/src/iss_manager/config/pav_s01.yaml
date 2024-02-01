@@ -1,8 +1,6 @@
 # hd_map: "simple_road_v1.osm"
 hd_map: "road_2024.osm"
 
-# 6.82 5.25 3.14
-# 1.6, 4.37 -1.54
 
 global_planning:
   lanelet2_settings:
@@ -61,7 +59,7 @@ control:
   #     dt: 0.1
   pid_settings:
     lateral:
-      K_P: 1
+      K_P: 1.5
       K_I: 0
       K_D: 0
       output_max: 0.5
