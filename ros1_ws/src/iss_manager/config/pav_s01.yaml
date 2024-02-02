@@ -72,7 +72,7 @@ control:
       output_max: 1
       output_min: 0
       dt: 0.1
-    look_ahead: 0.2
+    look_ahead: 0.3
 
 vehicle_info:
   length: 0.35

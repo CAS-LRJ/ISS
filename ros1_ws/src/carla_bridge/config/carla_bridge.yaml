@@ -7,7 +7,7 @@ num_non_ego_vehicles: 50
 simulation_duration: 300
 gt_state_estimation_frequency: 10
 gt_object_detection_frequency: 10
-ego_init: 73
+ego_init: 1
 ego_destination: 10
 agent_control_frequency: 10
 
@@ -18,3 +18,4 @@ motion_prediction_topic: "motion_prediction"
 
 world_frame: "odom"
 control_command_topic: "control_command"
+show_hd_map_rviz: false
