@@ -18,6 +18,7 @@ If using Gazebo, do
 ```
 roslaunch robot_gazebo gazebo_demo.launch
 ```
+You can set the goal using RViz when running in Gazebo.
 
 ## Documentation
 Refer [here](https://tis.ios.ac.cn/iss/) for the documentation.
