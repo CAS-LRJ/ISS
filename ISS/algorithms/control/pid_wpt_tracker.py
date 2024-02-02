@@ -42,7 +42,7 @@ class VehiclePIDController:
     
     def set_traj(self, traj):
         self.traj = traj
-        self.waypoint_index = 1
+        self.waypoint_index = 0
 
     def run_step(self, vehicle_location):
         """

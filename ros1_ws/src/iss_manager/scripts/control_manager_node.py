@@ -13,8 +13,6 @@ from iss_manager.data_utils import traj_from_ros_msg
 from iss_manager.msg import StateArray, State, ControlCommand
 from iss_manager.srv import EmergencyStop, EmergencyStopResponse
 
-import pickle
-
 class ControlManagerNode:
     def __init__(self) -> None:
         self._ctrl_freq = rospy.get_param("control")["control_frequency"]
@@ -55,10 +53,6 @@ class ControlManagerNode:
         self._tunning_sub = rospy.Subscriber("control/tunning", Float32, self._tunning_callback)
         self._traj_cnt = 0
     
-    def _tunning_callback(self, msg):
-        traj = pickle.load(open("/home/shaohang/work_space/autonomous_vehicle/ISS/data/traj.pkl", "rb"))
-        self._pid_tracker.set_traj(traj)
-    
     def _emergency_stop_callback(self, req):
         DURATION_SEC = 1
         self._emergency_stop = True
@@ -88,15 +82,9 @@ class ControlManagerNode:
         self._trajectory = traj_from_ros_msg(msg)
         states_list = self._trajectory.get_states_list(1 / self._ctrl_freq)
         self._pid_tracker.set_traj(states_list)
-        # pickle.dump(states_list, open("/home/shaohang/work_space/autonomous_vehicle/ISS/data/traj_" + str(self._traj_cnt) + ".pkl", "wb"))
         self._traj_cnt += 1       
  
-
-    def save(self):
-        pickle.dump(self._recorded_states, open("/home/shaohang/work_space/autonomous_vehicle/ISS/data/recorded_states.pkl", "wb"))
-
 if __name__ == "__main__":
     rospy.init_node("control_manager_node")
     control_manager_node = ControlManagerNode()
-    rospy.on_shutdown(control_manager_node.save)
     rospy.spin()
