@@ -46,7 +46,7 @@ class ReferencePath():
         # py = interpolate.splev(s, self.spline_y, der=0)
         px = self.f_px(s)
         py = self.f_py(s)
-        
+        return px, py
         return ca.vertcat(px.T, py.T)
     
     def compute_normalized_tangent(self, s):
@@ -129,6 +129,6 @@ class CostModel:
   
 from ISS.algorithms.planning.local_planner.mpcc.dynamics_models import BicycleModel
 class Vehicle:
-    def __init__(self, weights, targets, dt, reference_path):
+    def __init__(self, weights, targets, dt, reference_path, wheel_base):
         self.cost_model = CostModel(weights, targets, reference_path)
-        self.dynamics_model = BicycleModel(dt)
+        self.dynamics_model = BicycleModel(dt, wheel_base)

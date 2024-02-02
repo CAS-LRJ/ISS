@@ -1,4 +1,6 @@
-hd_map: "simple_road_v1.osm"
+# hd_map: "simple_road_v1.osm"
+hd_map: "road_2024.osm"
+
 
 global_planning:
   lanelet2_settings:
@@ -10,45 +12,67 @@ prediction:
   method: "constant_velocity_predictor"
 
 local_planning:
-  local_planning_frequency: 5
+  local_planning_frequency: 10
   lattice_settings:
+    MAX_T: 5.0 # max prediction time [s]
+    MIN_T: 5.0 # min prediction time [s]
+    D_T: 1 # prediction sampling length (s)
+    dt: 0.1 # time step
+
+    d_r: 0.35
+    d_l: 0.35
+    D_S: 0.175 # sample Frenet d
+
     MAX_SPEED: 2 # maximum speed [m/s]
-    MAX_ACCEL: 1 # maximum acceleration [m/ss]
-    MAX_CURVATURE: 100.0 # maximum curvature [1/m]
-    d_r: 0.5
-    d_l: 0.5
-    D_S: 0.1 # sample Frenet d
-    DT: 0.5 # prediction timestep length (s)
-    dt: 0.25 # sample time
-    MAX_T: 6.0 # max prediction time [s]
-    MIN_T: 4.0 # min prediction time [s]
-    TARGET_SPEED: 0.4 # target speed [m/s]
-    D_T_S: 0.2 # target speed sampling length [m/s]
-    N_S_SAMPLE: 2 # sampling number of target speed
+    MIN_SPEED: 0 # minimum speed [m/s]
+    TARGET_SPEED: 1 # target speed [m/s]
+    D_V_S: 0.5 # target speed sampling length [m/s]
+    SAFE_DISTANCE: 0.5 # safe distance to the front vehicle[m]
+    LOOK_AHEAD_DISTANCE: 5 # look ahead distance [m]
+
     K_J: 0.1
     K_T: 0.5
     K_D: 5
     K_LAT: 0.1
     K_LON: 0.8
+    K_D_DIFF: 1
+
+    MAX_ACCEL: 5 # maximum acceleration [m/ss]
+    MAX_CURVATURE: 1 # maximum curvature [1/m]
 
 control:
-  control_frequency: 10
+  control_frequency: 50
+  # pid_settings:
+  #   lateral:
+  #     K_P: 1
+  #     K_I: 0.1
+  #     K_D: 1
+  #     output_max: 0.5
+  #     output_min: -0.5
+  #     dt: 0.1 
+  #   longitudinal:
+  #     K_P: 0.5
+  #     K_I: 0.1
+  #     K_D: 0.5
+  #     output_max: 1
+  #     output_min: 0
+  #     dt: 0.1
   pid_settings:
     lateral:
-      K_P: 1.0
-      K_I: 0.0
-      K_D: 0.0
+      K_P: 1.5
+      K_I: 0
+      K_D: 0
       output_max: 0.5
       output_min: -0.5
       dt: 0.1 
     longitudinal:
-      K_P: 1.0
-      K_I: 0.0
-      K_D: 0.0
+      K_P: 1
+      K_I: 0
+      K_D: 0
       output_max: 1
       output_min: 0
       dt: 0.1
-
+    look_ahead: 0.3
 
 vehicle_info:
   length: 0.35

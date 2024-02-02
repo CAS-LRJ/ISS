@@ -34,3 +34,4 @@ dist/
 *.bag
 ISS/algorithms/end_to_end/lav/weights/
 
+data/

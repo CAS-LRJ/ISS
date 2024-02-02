@@ -18,3 +18,4 @@ motion_prediction_topic: "motion_prediction"
 
 world_frame: "odom"
 control_command_topic: "control_command"
+show_hd_map_rviz: false

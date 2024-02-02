@@ -2,7 +2,6 @@ import numpy as np
 import math
 from scipy.spatial import KDTree
 from ISS.algorithms.utils.cubic_spline import Spline2D
-import time
 
 def get_circle_centers(x, y, heading_angle, length, width, num_circles=3):
     spacing = length / num_circles
@@ -65,13 +64,15 @@ class ConstVelPredictor:
         else:
             self._spatial_temporal_obstacles = None
     
-    def collision_check(self, path):
-        if self._lanemap_collision_checker.check_path(path): #TODO: not accurate
+    def collision_check(self, path, ego_length=None, ego_width=None, check_solid=True):
+        if check_solid and self._lanemap_collision_checker.check_path(path): #TODO: not accurate
             return True, 0
         if self._spatial_temporal_obstacles is None:
             return False, 0
-        ego_length = self._ego_veh_info['length']
-        ego_width = self._ego_veh_info['width']
+        if ego_length is None:
+            ego_length = self._ego_veh_info['length']
+        if ego_width is None:
+            ego_width = self._ego_veh_info['width']
         for i, wpt in enumerate(path):
             ego_heading = wpt[2]
             ego_center = [wpt[0], wpt[1]]
@@ -87,3 +88,24 @@ class ConstVelPredictor:
                             return True, 1
         return False, 0
     
+    def get_front_obstacle(self, csp, s_ego, LOOK_AHEAD_DISTANCE):
+        if self._obstacle_detections is None:
+            return None
+        if len(self._obstacle_detections.detections) == 0:
+            return None
+        s_obstacle = s_ego
+        obstacle_detections_kdtree = KDTree(np.array([[obstacle.state.x, obstacle.state.y] for obstacle in self._obstacle_detections.detections]), copy_data=True)
+        while s_obstacle < (s_ego + LOOK_AHEAD_DISTANCE):
+            s_obstacle += self._ego_veh_info["length"] / 2
+            x, y = csp.calc_position(s_obstacle)
+            d, idx = obstacle_detections_kdtree.query([x, y])
+            if d < self._ego_veh_info["width"] / 2:
+                return s_obstacle
+        return None
+    
+    def check_emergency_stop(self, x, y, heading_angle, check_solid):
+        LEN_INF_FACTOR = 1.1
+        WID_INF_FACTOR = 1.05
+        res, _ = self.collision_check([[x, y, heading_angle]], LEN_INF_FACTOR * self._ego_veh_info['length'], WID_INF_FACTOR * self._ego_veh_info['width'], check_solid)
+        return res
+        

@@ -104,10 +104,11 @@ class CARLABridgeNode:
                     ego_transform_matrix = self._vehicles[self._ego_vehicle_name].get_transform().get_matrix()
                     self._object_detector.publish_object_detection(det, ego_transform_matrix)
                     self._object_detector.publish_prediction(other_cast_locs, other_cast_cmds, ego_transform_matrix)
-                    if control_command.brake == 1:
-                        self._controller_bridge.apply_control(control_command)
-                    else:
-                        self._controller_bridge.apply_control()
+                    self._controller_bridge.apply_control()
+                    # if control_command.brake == 1:
+                    #     self._controller_bridge.apply_control(control_command)
+                    # else:
+                    #     self._controller_bridge.apply_control()
                 
         # print("Time elapsed: ", time.time() - start_time)
         # for veh_name, veh in self._vehicles.items():

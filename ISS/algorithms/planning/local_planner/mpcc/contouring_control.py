@@ -8,8 +8,8 @@ import time
 
 @dataclass
 class PlannerParams:
-    progress_search_range: float = 10. #(5 m)
-    search_resolution: float = 1. #(1 m)
+    progress_search_range: float = 1 #(5 m)
+    search_resolution: float = 0.1 #(1 m)
     horizon: int = 50
 
 class ContouringController:
@@ -30,8 +30,8 @@ class ContouringController:
        
         self.state_bound = {"lb": ca.DM([-ca.inf, -ca.inf, -ca.pi, -ca.inf]),
                             "ub": ca.DM([ ca.inf,  ca.inf,  ca.pi,  ca.inf])}      
-        self.input_bound = {"lb": ca.DM([-5, -ca.pi/18 * 4]),
-                            "ub": ca.DM([ 5,  ca.pi/18 * 4])}
+        self.input_bound = {"lb": ca.DM([-0.1, -ca.pi/18 * 4]),
+                            "ub": ca.DM([ 0.1,  ca.pi/18 * 4])}
         
         self.agent = agent 
         self.params = params
