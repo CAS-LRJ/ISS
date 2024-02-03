@@ -7,32 +7,32 @@ class EKF:
         self._dt = 1 / settings['frequency']
         self._vehicle_info = settings['vehicle_info']
         self._state = np.zeros(5)
-        self._P = np.eye(5) * 1e-5  # Adjusted initialization
-        self._R = np.eye(5) * 1e-5  # Measurement noise covariance
-        self._Q = np.diag([1e-4, 1e-4, 1e-6, 1e-3, 1e-2])  # Process noise covariance
+        self._SIGMA = np.eye(5) * 1e-5  # Adjusted initialization
+        self._R = np.eye(5) * 1e-5  # Process noise covariance
+        self._Q = np.eye(5) * 1e-5  # Measurement noise covariance
         self._H = np.eye(5)  # Measurement matrix
-        self._F = None
+        self._G = None
 
     def init(self, lat, long, compass, speed, acc_x, lat_std, long_std, compass_std, speed_std, acc_x_std):
         x, y = self.geo_to_xy(lat, long)
         self._state = np.array([x, y, compass, speed, acc_x])
-        self._R = np.diag([lat_std**2, long_std**2, compass_std**2, speed_std**2, acc_x_std**2])
+        self._Q = np.diag([lat_std**2, long_std**2, compass_std**2, speed_std**2, acc_x_std**2])
 
     def step(self, acc_x, compass, lat, lon, speed, steer):
         # Update the state with the bicycle model
         self.bicycle_model_step(acc_x, steer)
         # Calculate the Jacobian of the motion model
-        self._F = self.calculate_jacobian(self._state, steer, acc_x)
+        self._G = self.calculate_jacobian(self._state, steer, acc_x)
         # Predict the error covariance
-        self._P = self._F @ self._P @ self._F.T + self._Q
+        self._SIGMA = self._G @ self._SIGMA @ self._G.T + self._R
         # Calculate the Kalman Gain
-        K = self._P @ self._H.T @ np.linalg.inv(self._H @ self._P @ self._H.T + self._R)
+        K = self._SIGMA @ self._H.T @ np.linalg.inv(self._H @ self._SIGMA @ self._H.T + self._Q)
         # Update the state with the new measurements
         obs_x, obs_y = self.geo_to_xy(lat, lon)
         z = np.array([obs_x, obs_y, compass, speed, acc_x])
         self._state = self._state + K @ (z - self._H @ self._state)
         # Update the error covariance
-        self._P = (np.eye(5) - K @ self._H) @ self._P
+        self._SIGMA = (np.eye(5) - K @ self._H) @ self._SIGMA
         return self._state
 
     def calculate_jacobian(self, state, steer, acc_x):
