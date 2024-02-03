@@ -1,44 +1,62 @@
 import numpy as np
-from ISS.algorithms.state_estimation.ekf.rotations import Quaternion
 
 class EKF:
-    
-    EARTH_RADIUS = 6378135 # Aequatorradii
-    G = 9.81
-    
+    EARTH_RADIUS = 6378135 # Equator radius
+
     def __init__(self, settings) -> None:
         self._dt = 1 / settings['frequency']
         self._vehicle_info = settings['vehicle_info']
         self._state = np.zeros(5)
-        self._P = np.zeros((5, 5)) * 1e-7
-        self._R = np.eye(5) * 1e-7
-        self._Q = np.zeros((5, 5))
-        self._H = np.eye(5)
-    
+        self._P = np.eye(5) * 1e-5  # Adjusted initialization
+        self._R = np.eye(5) * 1e-5  # Measurement noise covariance
+        self._Q = np.diag([1e-4, 1e-4, 1e-6, 1e-3, 1e-2])  # Process noise covariance
+        self._H = np.eye(5)  # Measurement matrix
+        self._F = None
+
     def init(self, lat, long, compass, speed, acc_x, lat_std, long_std, compass_std, speed_std, acc_x_std):
         x, y = self.geo_to_xy(lat, long)
-        self._state[0] = x
-        self._state[1] = y
-        self._state[2] = compass
-        self._state[3] = speed
-        self._state[4] = acc_x
-        self._R = np.diag([lat_std, long_std, compass_std, speed_std, acc_x_std])
-    
+        self._state = np.array([x, y, compass, speed, acc_x])
+        self._R = np.diag([lat_std**2, long_std**2, compass_std**2, speed_std**2, acc_x_std**2])
+
     def step(self, acc_x, compass, lat, lon, speed, steer):
-        self._F = np.eye(5) # TODO: Implement Jacobian
-        obs_x, obs_y = self.geo_to_xy(lat, lon)
+        # Update the state with the bicycle model
         self.bicycle_model_step(acc_x, steer)
+        # Calculate the Jacobian of the motion model
+        self._F = self.calculate_jacobian(self._state, steer, acc_x)
+        # Predict the error covariance
         self._P = self._F @ self._P @ self._F.T + self._Q
+        # Calculate the Kalman Gain
         K = self._P @ self._H.T @ np.linalg.inv(self._H @ self._P @ self._H.T + self._R)
-        self._state = self._state + K @ (np.array([obs_x, obs_y, compass, speed, acc_x]) - self._state)
+        # Update the state with the new measurements
+        obs_x, obs_y = self.geo_to_xy(lat, lon)
+        z = np.array([obs_x, obs_y, compass, speed, acc_x])
+        self._state = self._state + K @ (z - self._H @ self._state)
+        # Update the error covariance
         self._P = (np.eye(5) - K @ self._H) @ self._P
         return self._state
-    
+
+    def calculate_jacobian(self, state, steer, acc_x):
+        x, y, theta, v, _ = state
+        dt = self._dt
+        L = self._vehicle_info['wheelbase']
+        F = np.array([
+            [1, 0, -v*np.sin(theta)*dt, np.cos(theta)*dt, 0],
+            [0, 1, v*np.cos(theta)*dt, np.sin(theta)*dt, 0],
+            [0, 0, 1, np.tan(steer)/L*dt, 0],
+            [0, 0, 0, 1, dt],
+            [0, 0, 0, 0, 1]
+        ])
+        return F
+
     def bicycle_model_step(self, acc_x, steer):
-        self._state[0] += self._dt * self._state[3] * np.cos(self._state[2])
-        self._state[1] += self._dt * self._state[3] * np.sin(self._state[2])
-        self._state[2] += self._dt * self._state[3] * np.tan(self._state[2]) * np.cos(steer) / self._vehicle_info['wheelbase']
-        self._state[3] += self._dt * acc_x
+        x, y, theta, v, _ = self._state
+        dt = self._dt
+        L = self._vehicle_info['wheelbase']
+        self._state[0] += v * np.cos(theta) * dt
+        self._state[1] += v * np.sin(theta) * dt
+        self._state[2] += v * np.tan(steer) / L * dt
+        self._state[3] += acc_x * dt
+        # Assuming constant acceleration within this step
         self._state[4] = acc_x
         
     def geo_to_xy(self, lat, lon):
