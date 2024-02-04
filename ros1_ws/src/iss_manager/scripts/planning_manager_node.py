@@ -27,7 +27,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from iss_manager.msg import State, StateArray, StateArrayArray, ObjectDetection3DArray
 from iss_manager.srv import SetGoal, SetGoalResponse, EmergencyStop
 
-DEBUG = False
+DEBUG = True
 class PlanningManagerNode:
     def __init__(self) -> None:
         self._ego_state_sub = rospy.Subscriber(rospy.get_param("ego_state_topic"), State, self._ego_state_callback)
@@ -47,6 +47,7 @@ class PlanningManagerNode:
         lanelet2_settings = rospy.get_param("global_planning")["lanelet2_settings"]
         self._global_planner = Lanelet2Planner(loadedMap, traffic_rules, self.lanemap_collision_checker, lanelet2_settings)
         self._global_planner_pub = rospy.Publisher("planning/global_planner/trajectory", StateArray, queue_size=1, latch=True)
+        self._goal_point = None
         
         # Motion predictor
         predictor_settings = rospy.get_param("prediction")
@@ -98,6 +99,7 @@ class PlanningManagerNode:
         start_point = (self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle)
         end_point = (req.x, req.y, req.yaw)
         global_traj = self._global_planner.run_step(start_point, end_point)
+        self._goal_point = end_point
         if global_traj is None:
             rospy.logerr("Global planner: Failed")
             return SetGoalResponse(False)
@@ -125,6 +127,10 @@ class PlanningManagerNode:
         if self._ego_state is None:
             return
         init_planning_state = [self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle, self._ego_state.velocity, self._ego_state.acceleration]
+        dist_to_goal = np.linalg.norm(np.array([self._ego_state.x, self._ego_state.y]) - np.array(self._goal_point[:2]))
+        if  dist_to_goal < 0.5:
+            # TODO: stop the vehicle
+            return
         # if not self._local_traj.is_empty():
         #     init_planning_state[:4]  = self._local_traj.get_closest_point(init_planning_state[0],
         #                                                                   init_planning_state[1],

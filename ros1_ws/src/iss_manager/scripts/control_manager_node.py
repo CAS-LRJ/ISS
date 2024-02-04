@@ -50,7 +50,6 @@ class ControlManagerNode:
         self._ctrl_array = None
         self._ctrl_idx = 0
         self._recorded_states = []
-        self._tunning_sub = rospy.Subscriber("control/tunning", Float32, self._tunning_callback)
         self._traj_cnt = 0
     
     def _emergency_stop_callback(self, req):
