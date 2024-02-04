@@ -1,1 +1,0 @@
-This is an adaptation of the EKF algorithm. The original implementation can be found [here](https://github.com/jasleon/Vehicle-State-Estimation).

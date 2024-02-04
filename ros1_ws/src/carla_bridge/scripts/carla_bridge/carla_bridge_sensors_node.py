@@ -9,7 +9,7 @@ import time
 import rospy
 
 from ros1_ws.src.carla_bridge.scripts.carla_bridge.object_detector import GTObjectDetector, LAVObjectDetector
-from ros1_ws.src.carla_bridge.scripts.carla_bridge.state_estimator import GTStateEstimator
+from ros1_ws.src.carla_bridge.scripts.carla_bridge.state_estimator import GTStateEstimator, EKFStateEstimator
 from carla_bridge.carla_visualizer import CARLAVisualizer
 from carla_bridge.controller_bridge import ControllerBridge
 from carla_bridge.sensor_utils import add_sensors, SensorInterface
@@ -62,7 +62,8 @@ class CARLABridgeNode:
         
         # self._object_detector = GTObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
         self._object_detector = LAVObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
-        self._gt_state_estimator = GTStateEstimator(self._vehicles[self._ego_vehicle_name])
+        # self._gt_state_estimator = GTStateEstimator(self._vehicles[self._ego_vehicle_name])
+        self._state_estimator = EKFStateEstimator()
         self._controller_bridge = ControllerBridge(self._vehicles[self._ego_vehicle_name])
         self._carla_visualizer = CARLAVisualizer(self._world)
         
@@ -89,9 +90,11 @@ class CARLABridgeNode:
     def _carla_tick(self, event):
         self._step_cnt += 1
         self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
-        self._gt_state_estimator.publish_ego_state(None)
-        start_time = time.time()
         data = self._sensor_interface.get_data()
+        control = self._controller_bridge.get_control()
+        MAX_STEER_ANGLE = 70
+        steer = control.steer * np.deg2rad(MAX_STEER_ANGLE)
+        self._state_estimator.run_step(data, steer)
         if self._set_global_plan_perception:
             control_command, det, other_cast_locs, other_cast_cmds = self._agent.run_step(data, None)
             # if det is not None:
@@ -109,14 +112,10 @@ class CARLABridgeNode:
                     #     self._controller_bridge.apply_control(control_command)
                     # else:
                     #     self._controller_bridge.apply_control()
-                
-        # print("Time elapsed: ", time.time() - start_time)
-        # for veh_name, veh in self._vehicles.items():
-        #     print(veh_name, veh.get_transform())
+
         self._world.tick()
         if self._step_cnt >= self._total_steps:
             self._object_detector.shutdown()
-            self._gt_state_estimator.shutdown()
             self._carla_timer.shutdown()
             self.destory()
             rospy.signal_shutdown("Simulation finished!")

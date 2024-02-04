@@ -54,3 +54,6 @@ class ControllerBridge:
         else:
             self._control.throttle = min(throttle, 1.0)
             self._control.brake = 0
+
+    def get_control(self):
+        return self._control

@@ -12,13 +12,18 @@ class EKF:
         self._Q = np.eye(5) * 1e-5  # Measurement noise covariance
         self._H = np.eye(5)  # Measurement matrix
         self._G = None
+        self._is_initialized = False
 
-    def init(self, lat, long, compass, speed, acc_x, lat_std, long_std, compass_std, speed_std, acc_x_std):
-        x, y = self.geo_to_xy(lat, long)
-        self._state = np.array([x, y, compass, speed, acc_x])
-        self._Q = np.diag([lat_std**2, long_std**2, compass_std**2, speed_std**2, acc_x_std**2])
-
-    def step(self, acc_x, compass, lat, lon, speed, steer):
+    def initialize(self, obs_x, obs_y, compass, speed, acc_x, x_std, y_std, compass_std, speed_std, acc_x_std):
+        self._state = np.array([obs_x, obs_y, compass, speed, acc_x])
+        self._Q = np.diag([x_std**2, y_std**2, compass_std**2, speed_std**2, acc_x_std**2])
+        self._is_initialized = True
+    
+    def is_initialized(self):
+        return self._is_initialized
+    
+    def step(self, acc_x, compass, obs_x, obs_y, speed, steer):
+        assert self._is_initialized, "EKF is not initialized"
         # Update the state with the bicycle model
         self.bicycle_model_step(acc_x, steer)
         # Calculate the Jacobian of the motion model
@@ -28,7 +33,6 @@ class EKF:
         # Calculate the Kalman Gain
         K = self._SIGMA @ self._H.T @ np.linalg.inv(self._H @ self._SIGMA @ self._H.T + self._Q)
         # Update the state with the new measurements
-        obs_x, obs_y = self.geo_to_xy(lat, lon)
         z = np.array([obs_x, obs_y, compass, speed, acc_x])
         self._state = self._state + K @ (z - self._H @ self._state)
         # Update the error covariance
@@ -59,6 +63,9 @@ class EKF:
         # Assuming constant acceleration within this step
         self._state[4] = acc_x
         
+    def get_state(self):
+        return self._state.tolist()
+    
     def geo_to_xy(self, lat, lon):
         # https://github.com/carla-simulator/carla/issues/3871
         lat_rad = (np.deg2rad(lat) + np.pi) % (2 * np.pi) - np.pi
