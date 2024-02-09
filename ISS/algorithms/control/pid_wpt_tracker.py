@@ -67,7 +67,7 @@ class VehiclePIDController:
             self.waypoint_index += 1
         traj_point = self.traj[self.waypoint_index]
         target_speed = self.traj[self.waypoint_index][3]
-        throttle = self._lon_controller.run_step(current_speed, target_speed) 
+        throttle = self._lon_controller.run_step(current_speed, target_speed) + target_speed
         steering = self._lat_controller.run_step(current_location, traj_point)
         self.waypoint_index += 1
         return throttle, steering

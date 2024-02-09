@@ -32335,6 +32335,64 @@
     <nd ref='-121224' />
     <tag k='subtype' v='solid' />
   </way>
+  <way id='-102931' action='modify' visible='true'>
+    <nd ref='-108575' />
+    <nd ref='-108490' />
+    <nd ref='-108216' />
+    <nd ref='-108111' />
+    <nd ref='-107414' />
+    <nd ref='-107346' />
+    <nd ref='-107244' />
+    <nd ref='-107193' />
+    <nd ref='-107126' />
+    <nd ref='-107058' />
+    <nd ref='-107024' />
+    <nd ref='-106971' />
+    <nd ref='-106916' />
+    <nd ref='-106143' />
+    <nd ref='-105983' />
+    <nd ref='-105858' />
+    <nd ref='-105153' />
+    <nd ref='-104974' />
+    <nd ref='-104778' />
+    <nd ref='-104254' />
+    <nd ref='-104151' />
+    <nd ref='-104108' />
+    <nd ref='-104054' />
+    <nd ref='-104015' />
+    <nd ref='-103985' />
+    <nd ref='-103939' />
+    <nd ref='-103919' />
+    <nd ref='-103889' />
+  </way>
+  <way id='-102958' action='modify' visible='true'>
+    <nd ref='-109699' />
+    <nd ref='-108897' />
+  </way>
+  <way id='-102959' action='modify' visible='true'>
+    <nd ref='-108880' />
+    <nd ref='-108778' />
+    <nd ref='-108659' />
+    <nd ref='-108574' />
+    <nd ref='-108524' />
+    <nd ref='-108395' />
+    <nd ref='-108198' />
+    <nd ref='-108147' />
+    <nd ref='-107448' />
+    <nd ref='-107243' />
+    <nd ref='-107192' />
+    <nd ref='-107108' />
+    <nd ref='-106988' />
+    <nd ref='-106873' />
+    <nd ref='-106269' />
+    <nd ref='-106207' />
+    <nd ref='-106092' />
+    <nd ref='-105981' />
+    <nd ref='-105923' />
+    <nd ref='-105856' />
+    <nd ref='-105827' />
+    <nd ref='-105799' />
+  </way>
   <relation id='-99843' action='modify' visible='true'>
     <member type='way' ref='-101835' role='right' />
     <member type='way' ref='-101839' role='left' />
