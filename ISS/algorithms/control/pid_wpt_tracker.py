@@ -44,7 +44,7 @@ class VehiclePIDController:
         self.traj = traj
         self.waypoint_index = 0
 
-    def run_step(self, vehicle_location):
+    def run_step(self, vehicle_location, thro_as_speed=False):
         """
         Execute one step of control invoking both lateral and longitudinal PID controllers to reach a target waypoint
         at a given target_speed.
@@ -67,9 +67,11 @@ class VehiclePIDController:
             self.waypoint_index += 1
         traj_point = self.traj[self.waypoint_index]
         target_speed = self.traj[self.waypoint_index][3]
-        throttle = self._lon_controller.run_step(current_speed, target_speed) + target_speed
+        throttle = self._lon_controller.run_step(current_speed, target_speed)
         steering = self._lat_controller.run_step(current_location, traj_point)
         self.waypoint_index += 1
+        if thro_as_speed:
+            throttle = target_speed
         return throttle, steering
     
 

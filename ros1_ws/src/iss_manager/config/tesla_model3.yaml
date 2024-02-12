@@ -57,6 +57,7 @@ control:
       output_min: 0
       dt: 0.05
     look_ahead: 4
+    thro_as_speed: False
 
 vehicle_info:
   length: 4.69
