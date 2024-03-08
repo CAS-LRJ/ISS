@@ -23,6 +23,7 @@ import os
 
 ISS_PATH = os.path.dirname(ISS.__file__)
 
+DEBUG = True
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
         self._ego_vehicle_name = rospy.get_param('robot_name', 'ego_vehicle')
@@ -48,6 +49,8 @@ class CARLABridgeNode:
         self._traffic_manager.set_synchronous_mode(True)
         self._map = self._world.get_map()
         self._spawn_points = self._map.get_spawn_points()
+        if DEBUG:
+            rospy.loginfo("CARLABridgeNode.init: self._spawn_points[1]: " + str(self._spawn_points[1]))
         self._spectator = self._world.get_spectator()
         
         path_to_config = ISS_PATH + "/algorithms/end_to_end/lav/config.yaml"
