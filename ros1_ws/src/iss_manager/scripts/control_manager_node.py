@@ -50,8 +50,8 @@ class ControlManagerNode:
         self._ctrl_array = None
         self._ctrl_idx = 0
         self._recorded_states = []
-        self._tunning_sub = rospy.Subscriber("control/tunning", Float32, self._tunning_callback)
         self._traj_cnt = 0
+        self._thro_as_speed = pid_settings["thro_as_speed"]
     
     def _emergency_stop_callback(self, req):
         DURATION_SEC = 1
@@ -67,7 +67,7 @@ class ControlManagerNode:
         if self._emergency_stop:
             self._ctrl_pub.publish(ctrl_msg)
             return
-        throttle, steering = self._pid_tracker.run_step(self._ego_state)
+        throttle, steering = self._pid_tracker.run_step(self._ego_state, thro_as_speed=self._thro_as_speed)
         if len(self._pid_tracker.traj) != 0:
             self._recorded_states.append([self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle, self._ego_state.velocity])
         ctrl_msg.throttle = throttle
