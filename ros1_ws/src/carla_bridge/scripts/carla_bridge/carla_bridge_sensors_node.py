@@ -21,9 +21,6 @@ from ISS.algorithms.end_to_end.lav.lav_agent_fast import LAVAgent
 import ISS
 import os
 
-
-import pickle
-
 ISS_PATH = os.path.dirname(ISS.__file__)
 
 DEBUG = True
@@ -66,22 +63,14 @@ class CARLABridgeNode:
         add_sensors(self._vehicles[self._ego_vehicle_name], self._world, self._sensor_interface, self._agent.sensors(), self._sensors_list)
         self._world.tick()
         
-        # self._object_detector = GTObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
         self._object_detector = LAVObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
-        # self._gt_state_estimator = GTStateEstimator(self._vehicles[self._ego_vehicle_name])
         self._state_estimator = EKFStateEstimator()
         self._controller_bridge = ControllerBridge(self._vehicles[self._ego_vehicle_name])
         self._carla_visualizer = CARLAVisualizer(self._world)
-        
-        self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
-        self._step_cnt = 0
         self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
         self._set_global_plan_perception = False
         self._set_global_plan_planning = False
-        self.estimated_states = []
-        self.gt_states = []
-        for key, vehicle in self._vehicles.items():
-            vehicle.set_autopilot(True, self._traffic_manager_port)
+        self._num_frames = 0
     
     def run(self):
         start_location = self._spawn_points[self.params["ego_init"]].location
@@ -98,50 +87,37 @@ class CARLABridgeNode:
                 vehicle.set_autopilot(True, self._traffic_manager_port)
         
     def _carla_tick(self, event):
-        self._step_cnt += 1
         self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
-        data = self._sensor_interface.get_data() # need to throw away the data
-        # control = self._controller_bridge.get_control()
-        # MAX_STEER_ANGLE = 70
-        # steer = control.steer * np.deg2rad(MAX_STEER_ANGLE)
-        
-        ego_control = self._vehicles[self._ego_vehicle_name].get_control()
-        MAX_STEER_ANGLE = 70
-        steering_angle = -ego_control.steer * np.deg2rad(MAX_STEER_ANGLE)
+        data = self._sensor_interface.get_data() 
+        WARM_UP_FRAMES = 5
+        if self._num_frames < WARM_UP_FRAMES: # need to throw away first few frames of data
+            self._num_frames += 1
+            self._world.tick()
+            return
+        control = self._controller_bridge.get_control()
+        MAX_STEER_ANGLE = 70 # TODO
+        steering_angle = control.steer * np.deg2rad(MAX_STEER_ANGLE)
         self._state_estimator.run_step(data, steering_angle)
-        self.estimated_states.append(self._state_estimator.get_state())
-        
-        vehicle_location = self._vehicles[self._ego_vehicle_name].get_location()
-        vehicle_rotation = self._vehicles[self._ego_vehicle_name].get_transform().rotation
-        vehicle_velocity = self._vehicles[self._ego_vehicle_name].get_velocity()
-        vehicle_acceleration = self._vehicles[self._ego_vehicle_name].get_acceleration()
-        
-        gt_state = [vehicle_location.x, -vehicle_location.y, -np.deg2rad(vehicle_rotation.yaw), np.hypot(vehicle_velocity.x, vehicle_velocity.y), np.hypot(vehicle_acceleration.x, vehicle_acceleration.y)]
-        self.gt_states.append(gt_state)
-        # if self._set_global_plan_perception:
-        #     control_command, det, other_cast_locs, other_cast_cmds = self._agent.run_step(data, None)
-        #     # if det is not None:
-        #     #     self._carla_visualizer.draw_perception(self._vehicles[self._ego_vehicle_name].get_transform(), det, other_cast_locs, other_cast_cmds)
-        #     if self._set_global_plan_planning:
-        #         if det is None:
-        #             print("No detection")
-        #             self._controller_bridge.apply_control(control_command)
-        #         else:
-        #             ego_transform_matrix = self._vehicles[self._ego_vehicle_name].get_transform().get_matrix()
-        #             self._object_detector.publish_object_detection(det, ego_transform_matrix)
-        #             self._object_detector.publish_prediction(other_cast_locs, other_cast_cmds, ego_transform_matrix)
-        #             self._controller_bridge.apply_control()
-        #             # if control_command.brake == 1:
-        #             #     self._controller_bridge.apply_control(control_command)
-        #             # else:
-        #             #     self._controller_bridge.apply_control()
-
+        if self._set_global_plan_perception:
+            control_command, det, other_cast_locs, other_cast_cmds = self._agent.run_step(data, None)
+            # if det is not None:
+            #     self._carla_visualizer.draw_perception(self._vehicles[self._ego_vehicle_name].get_transform(), det, other_cast_locs, other_cast_cmds)
+            if self._set_global_plan_planning:
+                if det is None:
+                    print("No detection")
+                    self._controller_bridge.apply_control(control_command)
+                else:
+                    ego_transform_matrix = self._vehicles[self._ego_vehicle_name].get_transform().get_matrix()
+                    self._object_detector.publish_object_detection(det, ego_transform_matrix)
+                    self._object_detector.publish_prediction(other_cast_locs, other_cast_cmds, ego_transform_matrix)
+                    self._controller_bridge.apply_control()
+                    ### use LAV output for emergency brake
+                    # if control_command.brake == 1:
+                    #     self._controller_bridge.apply_control(control_command)
+                    # else:
+                    #     self._controller_bridge.apply_control()
+        self._num_frames += 1
         self._world.tick()
-        if self._step_cnt >= self._total_steps:
-            self._object_detector.shutdown()
-            self._carla_timer.shutdown()
-            self.destory()
-            rospy.signal_shutdown("Simulation finished!")
             
     def _add_ego_vehicle(self, spawn_point):
         blueprint_library = self._world.get_blueprint_library()
@@ -192,11 +168,10 @@ class CARLABridgeNode:
             sensor.destroy()
         for vehicle in self._vehicles.values():
             vehicle.destroy()
-        print("dumping estimated states")
-        pickle.dump(self.estimated_states, open("/home/shaohang/work_space/autonomous_vehicle/ISS/estimated_states.pkl", "wb"))
-        pickle.dump(self.gt_states, open("/home/shaohang/work_space/autonomous_vehicle/ISS/gt_states.pkl", "wb"))
-        # self._agent.destroy()
+        self._agent.destroy()
         self._world.apply_settings(self._original_settings)
+        self._object_detector.shutdown()
+        self._carla_timer.shutdown()
 
         
 
