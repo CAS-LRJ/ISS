@@ -3,11 +3,11 @@ carla_port: 2000
 map_name: "Town06"
 fixed_delta_seconds: 0.05
 graphic_rendering: true
-num_non_ego_vehicles: 50
+num_non_ego_vehicles: 0
 simulation_duration: 300
 state_estimation_frequency: 10
 gt_object_detection_frequency: 10
-ego_init: 1
+ego_init: 50
 ego_destination: 10
 agent_control_frequency: 10
 

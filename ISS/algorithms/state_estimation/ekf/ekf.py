@@ -1,4 +1,5 @@
 import numpy as np
+from ISS.algorithms.utils.angle import pi_2_pi
 
 class EKF:
     EARTH_RADIUS = 6378135 # Equator radius
@@ -26,6 +27,8 @@ class EKF:
         assert self._is_initialized, "EKF is not initialized"
         # Update the state with the bicycle model
         self.bicycle_model_step(acc_x, steer)
+        print("-------------------")
+        print("predicted state: ", self._state)
         # Calculate the Jacobian of the motion model
         self._G = self.calculate_jacobian(self._state, steer, acc_x)
         # Predict the error covariance
@@ -34,9 +37,12 @@ class EKF:
         K = self._SIGMA @ self._H.T @ np.linalg.inv(self._H @ self._SIGMA @ self._H.T + self._Q)
         # Update the state with the new measurements
         z = np.array([obs_x, obs_y, compass, speed, acc_x])
+        print("observed state: ", z)
         self._state = self._state + K @ (z - self._H @ self._state)
+        self._state[2] = pi_2_pi(self._state[2])
         # Update the error covariance
         self._SIGMA = (np.eye(5) - K @ self._H) @ self._SIGMA
+        print("updated state: ", self._state)
         return self._state
 
     def calculate_jacobian(self, state, steer, acc_x):
@@ -53,12 +59,13 @@ class EKF:
         return F
 
     def bicycle_model_step(self, acc_x, steer):
+        print("acc_x: ", acc_x)
         x, y, theta, v, _ = self._state
         dt = self._dt
         L = self._vehicle_info['wheelbase']
         self._state[0] += v * np.cos(theta) * dt
         self._state[1] += v * np.sin(theta) * dt
-        self._state[2] += v * np.tan(steer) / L * dt
+        self._state[2] += pi_2_pi(v * np.tan(steer) / L * dt)
         self._state[3] += acc_x * dt
         # Assuming constant acceleration within this step
         self._state[4] = acc_x

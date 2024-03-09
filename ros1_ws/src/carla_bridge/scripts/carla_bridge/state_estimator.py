@@ -5,7 +5,7 @@ import numpy as np
 from ISS.algorithms.state_estimation.ekf.ekf import EKF
 from ISS.algorithms.utils.angle import pi_2_pi
 
-DEBUG = True
+DEBUG = False
 
 class GTStateEstimator:
     def __init__(self, vehicle) -> None:
@@ -52,7 +52,7 @@ class EKFStateEstimator:
     def initialize(self, lat, lon, compass, speed, acc_x, x_std, y_std, compass_std, speed_std, acc_x_std):
         obs_x, obs_y = self._ekf.geo_to_xy(lat, lon)
         obs_y *= -1
-        self._ekf.initialize(obs_x, obs_y, compass, speed, acc_x, x_std, y_std, compass_std, speed_std, acc_x_std)
+        self._ekf.initialize(obs_x, obs_y, pi_2_pi(compass), speed, acc_x, x_std, y_std, compass_std, speed_std, acc_x_std)
         
     def run_step(self, input_data, steer):
         _, gps   = input_data.get('GPS')
@@ -62,7 +62,7 @@ class EKFStateEstimator:
         
         obs_x, obs_y = self._ekf.geo_to_xy(gps[0], gps[1])
         obs_y *= -1
-        obs_yaw = np.pi / 2 - imu[-1]
+        obs_yaw = pi_2_pi(np.pi / 2 - imu[-1])
         obs_acc = imu[0]
         
         if self._ekf.is_initialized() is False:
@@ -84,3 +84,6 @@ class EKFStateEstimator:
             self.iter += 1
             rospy.loginfo("EKFStateEstimator.run_step self.iter: " + str(self.iter) + " gps: " + str(gps) + " state.x: " + str(state.x) + " state.y: " + str(state.y) + " state.heading_angle: " + str(state.heading_angle))
         self._state_estimation_pub.publish(state)
+
+    def get_state(self):
+        return self._ekf.get_state()

@@ -80,7 +80,7 @@ class LAVAgent(AutonomousAgent):
 
         self.waypointer = None
         self.planner    = None
-
+        return
         # wandb.init(project='lav_eval')
 
         # Setup models
