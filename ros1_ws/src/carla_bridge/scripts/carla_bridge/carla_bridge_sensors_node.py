@@ -185,5 +185,5 @@ if __name__ == "__main__":
     client.load_world(map_name)
     simulator = CARLABridgeNode(client.get_world(), client.get_trafficmanager())
     rospy.on_shutdown(simulator.destory)
-    # simulator.run()
+    simulator.run()
     rospy.spin()
