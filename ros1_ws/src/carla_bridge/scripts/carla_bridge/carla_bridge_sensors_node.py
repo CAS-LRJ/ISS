@@ -23,7 +23,7 @@ import os
 
 ISS_PATH = os.path.dirname(ISS.__file__)
 
-DEBUG = True
+DEBUG = False
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
         self._ego_vehicle_name = rospy.get_param('robot_name', 'ego_vehicle')
