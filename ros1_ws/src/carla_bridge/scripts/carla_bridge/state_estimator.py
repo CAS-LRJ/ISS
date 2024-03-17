@@ -11,7 +11,7 @@ class GTStateEstimator:
     def __init__(self, vehicle) -> None:
         self._vehicle = vehicle
         self._state_estimation_pub = rospy.Publisher(rospy.get_param("ego_state_topic"), State, queue_size=1)
-        gt_state_estimation_frequency = rospy.get_param('gt_state_estimation_frequency', 10)
+        # gt_state_estimation_frequency = rospy.get_param('gt_state_estimation_frequency', 10)
         # self._timer = rospy.Timer(rospy.Duration(1 / gt_state_estimation_frequency), self.publish_ego_state)
     
     def publish_ego_state(self, event):
@@ -29,12 +29,12 @@ class GTStateEstimator:
         state.heading_angle = pi_2_pi(-np.deg2rad(vehicle_rotation.yaw))
         state.velocity = np.hypot(vehicle_velocity.x, vehicle_velocity.y)
         state.acceleration = np.hypot(vehicle_acceleration.x, vehicle_acceleration.y)
-        # print("real state: ", state)
+        # print("real angle: ", pi_2_pi(-np.deg2rad(vehicle_rotation.yaw)))
+        # print("-------------------")
         self._state_estimation_pub.publish(state)
     
-    def shutdown(self):
-        self._timer.shutdown()
-        self._state_estimation_pub.unregister()
+    def run_step(self, input_data, steer):
+        self.publish_ego_state(None)
     
 class EKFStateEstimator:
     def __init__(self) -> None:
@@ -66,7 +66,7 @@ class EKFStateEstimator:
         obs_acc = imu[0]
         
         if self._ekf.is_initialized() is False:
-            self._ekf.initialize(obs_x, obs_y, obs_yaw, spd, obs_acc, 1e-2, 1e-2, 1e-1, 1e-5, 1e-5)
+            self._ekf.initialize(obs_x, obs_y, obs_yaw, spd, obs_acc, 1e-1, 1e-1, 1e-3, 1e-5, 1e-5)
         else:
             self._ekf.step(obs_acc, obs_yaw, obs_x, obs_y, spd, steer)
         

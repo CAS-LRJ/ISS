@@ -16,18 +16,23 @@ class EKF:
         self._G = None
         self._is_initialized = False
 
-    def initialize(self, obs_x, obs_y, compass, speed, acc_x, x_std, y_std, compass_std, speed_std, acc_x_std):
-        self._state = np.array([obs_x, obs_y, compass, speed, acc_x])
-        self._Q = np.diag([x_std**2, y_std**2, compass_std**2, speed_std**2, acc_x_std**2])
+    def initialize(self, obs_x, obs_y, obs_yaw, speed, acc_x, x_std, y_std, obs_yaw_std, speed_std, acc_x_std):
+        self._state = np.array([obs_x, obs_y, obs_yaw, speed, acc_x])
+        self._Q = np.diag([x_std**2, y_std**2, obs_yaw_std**2, speed_std**2, acc_x_std**2])
         self._is_initialized = True
     
     def is_initialized(self):
         return self._is_initialized
     
-    def step(self, acc_x, compass, obs_x, obs_y, speed, steer):
+    def step(self, acc_x, obs_yaw, obs_x, obs_y, speed, steer):
         assert self._is_initialized, "EKF is not initialized"
+        obs_yaw = pi_2_pi(obs_yaw - self._state[2]) + self._state[2]
         # Update the state with the bicycle model
+        # print("previous angle: ", self._state[2])
         self.bicycle_model_step(acc_x, steer)
+        # print("steer: ", steer)
+        # print("predicted angle: ", self._state[2])
+        # print("observed angle: ", obs_yaw)
         if DEBUG:
             print("-------------------")
             print("predicted state: ", self._state)
@@ -38,11 +43,13 @@ class EKF:
         # Calculate the Kalman Gain
         K = self._SIGMA @ self._H.T @ np.linalg.inv(self._H @ self._SIGMA @ self._H.T + self._Q)
         # Update the state with the new measurements
-        z = np.array([obs_x, obs_y, compass, speed, acc_x])
+        z = np.array([obs_x, obs_y, obs_yaw, speed, acc_x])
         if DEBUG:
             print("observed state: ", z)
+        # print("added term: ", (K @ (z - self._H @ self._state))[2])
         self._state = self._state + K @ (z - self._H @ self._state)
         self._state[2] = pi_2_pi(self._state[2])
+        # print("updated angle: ", self._state[2])
         # Update the error covariance
         self._SIGMA = (np.eye(5) - K @ self._H) @ self._SIGMA
         if DEBUG:
@@ -70,7 +77,7 @@ class EKF:
         L = self._vehicle_info['wheelbase']
         self._state[0] += v * np.cos(theta) * dt
         self._state[1] += v * np.sin(theta) * dt
-        self._state[2] += pi_2_pi(v * np.tan(steer) / L * dt)
+        self._state[2] += (v * np.tan(steer) / L * dt)
         self._state[3] += acc_x * dt
         # Assuming constant acceleration within this step
         self._state[4] = acc_x

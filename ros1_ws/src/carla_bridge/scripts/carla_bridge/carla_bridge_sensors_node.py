@@ -94,9 +94,11 @@ class CARLABridgeNode:
             self._num_frames += 1
             self._world.tick()
             return
+        
         control = self._controller_bridge.get_control()
-        MAX_STEER_ANGLE = 70 # TODO
-        steering_angle = control.steer * np.deg2rad(MAX_STEER_ANGLE)
+        MAX_STEER_ANGLE = 40 # TODO
+        steering_angle = -control.steer * np.deg2rad(MAX_STEER_ANGLE) # note the negative sign
+        
         self._state_estimator.run_step(data, steering_angle)
         if self._set_global_plan_perception:
             control_command, det, other_cast_locs, other_cast_cmds = self._agent.run_step(data, None)
