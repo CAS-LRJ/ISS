@@ -78,8 +78,6 @@ class ControlManagerNode:
         self._ctrl_pub.publish(ctrl_msg)
     
     def _state_callback(self, msg):
-        if DEBUG_MSGS:
-            rospy.loginfo("ControlManagerNode._state_callback msg.header.seq: " + str(msg.header.seq) + " msg.x: " + str(msg.x) + " msg.y: " + str(msg.y) + " msg.heading_angle: " + str(msg.heading_angle))
         self._ego_state = msg
     
     def _trajectory_callback(self, msg):

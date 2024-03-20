@@ -98,11 +98,7 @@ class PlanningManagerNode:
         while self._ego_state is None:
             rospy.sleep(0.1)
         start_point = (self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle)
-        if DEBUG_MSGS:
-            rospy.loginfo("PlanningManagerNode._set_goal_srv_callback start_point: " + str(start_point))
         end_point = (req.x, req.y, req.yaw)
-        if DEBUG_MSGS:
-            rospy.loginfo("PlanningManagerNode._set_goal_srv_callback end_point: " + str(end_point))
         global_traj = self._global_planner.run_step(start_point, end_point)
         self._goal_point = end_point
         if global_traj is None:
@@ -117,8 +113,6 @@ class PlanningManagerNode:
         return SetGoalResponse(True)
     
     def _ego_state_callback(self, state_msg):
-        if DEBUG_MSGS:
-            rospy.loginfo("PlanningManagerNode._ego_state_callback state_msg.header.seq: " + str(state_msg.header.seq) + " state_msg.x: " + str(state_msg.x) + " state_msg.y: " + str(state_msg.y) + " state_msg.heading_angle: " + str(state_msg.heading_angle))
         self._ego_state = state_msg
     
     def _obstacle_callback(self, obstacle_msg):
