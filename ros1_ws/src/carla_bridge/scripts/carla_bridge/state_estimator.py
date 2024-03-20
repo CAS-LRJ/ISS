@@ -6,6 +6,7 @@ from ISS.algorithms.state_estimation.ekf.ekf import EKF
 from ISS.algorithms.utils.angle import pi_2_pi
 
 DEBUG = False
+DEBUG_MSGS = True
 
 class GTStateEstimator:
     def __init__(self, vehicle) -> None:
@@ -46,7 +47,7 @@ class EKFStateEstimator:
                         "frequency": 20
                     }
         self._ekf = EKF(ekf_setting)
-        if DEBUG:
+        if DEBUG_MSGS:
             self.iter = 0
     
     def initialize(self, lat, lon, compass, speed, acc_x, x_std, y_std, compass_std, speed_std, acc_x_std):
@@ -80,7 +81,7 @@ class EKFStateEstimator:
         state.heading_angle = state_list[2]
         state.velocity = state_list[3]
         state.acceleration = state_list[4]
-        if DEBUG:
+        if DEBUG_MSGS:
             self.iter += 1
             rospy.loginfo("EKFStateEstimator.run_step self.iter: " + str(self.iter) + " gps: " + str(gps) + " state.x: " + str(state.x) + " state.y: " + str(state.y) + " state.heading_angle: " + str(state.heading_angle))
         self._state_estimation_pub.publish(state)

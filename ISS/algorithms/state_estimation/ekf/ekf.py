@@ -1,7 +1,7 @@
 import numpy as np
 from ISS.algorithms.utils.angle import pi_2_pi
 
-DEBUG = False
+DEBUG_MSGS = False
 class EKF:
     EARTH_RADIUS = 6378135 # Equator radius
 
@@ -33,7 +33,7 @@ class EKF:
         # print("steer: ", steer)
         # print("predicted angle: ", self._state[2])
         # print("observed angle: ", obs_yaw)
-        if DEBUG:
+        if DEBUG_MSGS:
             print("-------------------")
             print("predicted state: ", self._state)
         # Calculate the Jacobian of the motion model
@@ -44,7 +44,7 @@ class EKF:
         K = self._SIGMA @ self._H.T @ np.linalg.inv(self._H @ self._SIGMA @ self._H.T + self._Q)
         # Update the state with the new measurements
         z = np.array([obs_x, obs_y, obs_yaw, speed, acc_x])
-        if DEBUG:
+        if DEBUG_MSGS:
             print("observed state: ", z)
         # print("added term: ", (K @ (z - self._H @ self._state))[2])
         self._state = self._state + K @ (z - self._H @ self._state)
@@ -52,7 +52,7 @@ class EKF:
         # print("updated angle: ", self._state[2])
         # Update the error covariance
         self._SIGMA = (np.eye(5) - K @ self._H) @ self._SIGMA
-        if DEBUG:
+        if DEBUG_MSGS:
             print("updated state: ", self._state)
         return self._state
 
@@ -70,7 +70,7 @@ class EKF:
         return F
 
     def bicycle_model_step(self, acc_x, steer):
-        if DEBUG:
+        if DEBUG_MSGS:
             print("acc_x: ", acc_x)
         x, y, theta, v, _ = self._state
         dt = self._dt

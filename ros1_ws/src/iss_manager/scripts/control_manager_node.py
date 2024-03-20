@@ -14,6 +14,7 @@ from iss_manager.msg import StateArray, State, ControlCommand
 from iss_manager.srv import EmergencyStop, EmergencyStopResponse
 
 DEBUG = False
+DEBUG_MSGS = True
 class ControlManagerNode:
     def __init__(self) -> None:
         self._ctrl_freq = rospy.get_param("control")["control_frequency"]
@@ -77,7 +78,7 @@ class ControlManagerNode:
         self._ctrl_pub.publish(ctrl_msg)
     
     def _state_callback(self, msg):
-        if DEBUG:
+        if DEBUG_MSGS:
             rospy.loginfo("ControlManagerNode._state_callback msg.header.seq: " + str(msg.header.seq) + " msg.x: " + str(msg.x) + " msg.y: " + str(msg.y) + " msg.heading_angle: " + str(msg.heading_angle))
         self._ego_state = msg
     
