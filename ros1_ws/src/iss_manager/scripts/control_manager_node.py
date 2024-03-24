@@ -13,6 +13,8 @@ from iss_manager.data_utils import traj_from_ros_msg
 from iss_manager.msg import StateArray, State, ControlCommand
 from iss_manager.srv import EmergencyStop, EmergencyStopResponse
 
+DEBUG = False
+DEBUG_MSGS = True
 class ControlManagerNode:
     def __init__(self) -> None:
         self._ctrl_freq = rospy.get_param("control")["control_frequency"]
@@ -54,18 +56,28 @@ class ControlManagerNode:
         self._thro_as_speed = pid_settings["thro_as_speed"]
     
     def _emergency_stop_callback(self, req):
+        if DEBUG_MSGS:
+            rospy.loginfo("ControlManagerNode._emergency_stop_callback start")
         DURATION_SEC = 1
         self._emergency_stop = True
         rospy.sleep(DURATION_SEC)
         self._emergency_stop = False
+        if DEBUG_MSGS:
+            rospy.loginfo("ControlManagerNode._emergency_stop_callback end")
         return EmergencyStopResponse(True)
     
     def _timer_callback(self, event):
+        if DEBUG_MSGS:
+            rospy.loginfo("ControlManagerNode._timer_callback start")
         if self._ego_state is None:
+            if DEBUG_MSGS:
+                rospy.loginfo("ControlManagerNode._timer_callback end 1")
             return
         ctrl_msg = ControlCommand()
         if self._emergency_stop:
             self._ctrl_pub.publish(ctrl_msg)
+            if DEBUG_MSGS:
+                rospy.loginfo("ControlManagerNode._timer_callback end 2")
             return
         throttle, steering = self._pid_tracker.run_step(self._ego_state, thro_as_speed=self._thro_as_speed)
         if len(self._pid_tracker.traj) != 0:
@@ -74,15 +86,25 @@ class ControlManagerNode:
         ctrl_msg.steering = steering
         # print(ctrl_msg.throttle, ctrl_msg.steering)
         self._ctrl_pub.publish(ctrl_msg)
+        if DEBUG_MSGS:
+            rospy.loginfo("ControlManagerNode._timer_callback end 3")
     
     def _state_callback(self, msg):
+        if DEBUG_MSGS:
+            rospy.loginfo("ControlManagerNode._state_callback start")
         self._ego_state = msg
+        if DEBUG_MSGS:
+            rospy.loginfo("ControlManagerNode._state_callback end")
     
     def _trajectory_callback(self, msg):
+        if DEBUG_MSGS:
+            rospy.loginfo("ControlManagerNode._trajectory_callback start")
         self._trajectory = traj_from_ros_msg(msg)
         states_list = self._trajectory.get_states_list(1 / self._ctrl_freq)
         self._pid_tracker.set_traj(states_list)
         self._traj_cnt += 1       
+        if DEBUG_MSGS:
+            rospy.loginfo("ControlManagerNode._trajectory_callback end")
  
 if __name__ == "__main__":
     rospy.init_node("control_manager_node")

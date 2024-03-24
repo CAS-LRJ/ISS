@@ -317,3 +317,5 @@ def add_sensors(vehicle, world, sensor_interface, sensor_specs, sensors_list):
         # setup callback
         sensor.listen(CallBack(sensor_spec['id'], sensor_spec['type'], sensor, sensor_interface))
         sensors_list.append(sensor)
+        
+        

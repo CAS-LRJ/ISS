@@ -9,7 +9,7 @@ import time
 import rospy
 
 from ros1_ws.src.carla_bridge.scripts.carla_bridge.object_detector import GTObjectDetector, LAVObjectDetector
-from ros1_ws.src.carla_bridge.scripts.carla_bridge.state_estimator import GTStateEstimator
+from ros1_ws.src.carla_bridge.scripts.carla_bridge.state_estimator import GTStateEstimator, EKFStateEstimator
 from carla_bridge.carla_visualizer import CARLAVisualizer
 from carla_bridge.controller_bridge import ControllerBridge
 from carla_bridge.sensor_utils import add_sensors, SensorInterface
@@ -23,6 +23,7 @@ import os
 
 ISS_PATH = os.path.dirname(ISS.__file__)
 
+DEBUG_MSGS = True
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
         self._ego_vehicle_name = rospy.get_param('robot_name', 'ego_vehicle')
@@ -60,17 +61,14 @@ class CARLABridgeNode:
         add_sensors(self._vehicles[self._ego_vehicle_name], self._world, self._sensor_interface, self._agent.sensors(), self._sensors_list)
         self._world.tick()
         
-        # self._object_detector = GTObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
         self._object_detector = LAVObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
-        self._gt_state_estimator = GTStateEstimator(self._vehicles[self._ego_vehicle_name])
+        self._state_estimator = EKFStateEstimator()
         self._controller_bridge = ControllerBridge(self._vehicles[self._ego_vehicle_name])
         self._carla_visualizer = CARLAVisualizer(self._world)
-        
-        self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
-        self._step_cnt = 0
         self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
         self._set_global_plan_perception = False
         self._set_global_plan_planning = False
+        self._num_frames = 0
     
     def run(self):
         start_location = self._spawn_points[self.params["ego_init"]].location
@@ -87,39 +85,76 @@ class CARLABridgeNode:
                 vehicle.set_autopilot(True, self._traffic_manager_port)
         
     def _carla_tick(self, event):
-        self._step_cnt += 1
+        if DEBUG_MSGS:
+            rospy.loginfo("CARLABridgeNode._carla_tick start")
         self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
-        self._gt_state_estimator.publish_ego_state(None)
-        start_time = time.time()
-        data = self._sensor_interface.get_data()
+        data = self._sensor_interface.get_data() 
+        WARM_UP_FRAMES = 5
+        if self._num_frames < WARM_UP_FRAMES: # need to throw away first few frames of data
+            if DEBUG_MSGS:
+                rospy.loginfo("CARLABridgeNode._carla_tick middle 1")
+            self._num_frames += 1
+            self._world.tick()
+            if DEBUG_MSGS:
+                rospy.loginfo("CARLABridgeNode._carla_tick end 1")
+            return
+        
+        if DEBUG_MSGS:
+            rospy.loginfo("CARLABridgeNode._carla_tick middle 2")
+        control = self._controller_bridge.get_control()
+        MAX_STEER_ANGLE = 40 # TODO
+        steering_angle = -control.steer * np.deg2rad(MAX_STEER_ANGLE) # note the negative sign
+        
+        if DEBUG_MSGS:
+            rospy.loginfo("CARLABridgeNode._carla_tick middle 3")
+        self._state_estimator.run_step(data, steering_angle)
+        if DEBUG_MSGS:
+            rospy.loginfo("CARLABridgeNode._carla_tick middle 4")
         if self._set_global_plan_perception:
+            if DEBUG_MSGS:
+                rospy.loginfo("CARLABridgeNode._carla_tick inner 1")
             control_command, det, other_cast_locs, other_cast_cmds = self._agent.run_step(data, None)
+            if DEBUG_MSGS:
+                rospy.loginfo("CARLABridgeNode._carla_tick inner 2")
             # if det is not None:
             #     self._carla_visualizer.draw_perception(self._vehicles[self._ego_vehicle_name].get_transform(), det, other_cast_locs, other_cast_cmds)
             if self._set_global_plan_planning:
+                if DEBUG_MSGS:
+                    rospy.loginfo("CARLABridgeNode._carla_tick inner 3")
                 if det is None:
+                    if DEBUG_MSGS:
+                        rospy.loginfo("CARLABridgeNode._carla_tick inner 4 start")
                     print("No detection")
                     self._controller_bridge.apply_control(control_command)
+                    if DEBUG_MSGS:
+                        rospy.loginfo("CARLABridgeNode._carla_tick inner 4 end")
                 else:
+                    if DEBUG_MSGS:
+                        rospy.loginfo("CARLABridgeNode._carla_tick inner 5 start")
                     ego_transform_matrix = self._vehicles[self._ego_vehicle_name].get_transform().get_matrix()
+                    if DEBUG_MSGS:
+                        rospy.loginfo("CARLABridgeNode._carla_tick inner 5.1")
                     self._object_detector.publish_object_detection(det, ego_transform_matrix)
+                    if DEBUG_MSGS:
+                        rospy.loginfo("CARLABridgeNode._carla_tick inner 5.2")
                     self._object_detector.publish_prediction(other_cast_locs, other_cast_cmds, ego_transform_matrix)
+                    if DEBUG_MSGS:
+                        rospy.loginfo("CARLABridgeNode._carla_tick inner 5.3")
                     self._controller_bridge.apply_control()
+                    if DEBUG_MSGS:
+                        rospy.loginfo("CARLABridgeNode._carla_tick inner 5 end")
+                    ### use LAV output for emergency brake
                     # if control_command.brake == 1:
                     #     self._controller_bridge.apply_control(control_command)
                     # else:
                     #     self._controller_bridge.apply_control()
-                
-        # print("Time elapsed: ", time.time() - start_time)
-        # for veh_name, veh in self._vehicles.items():
-        #     print(veh_name, veh.get_transform())
+        if DEBUG_MSGS:
+            rospy.loginfo("CARLABridgeNode._carla_tick middle 5")
+        self._num_frames += 1
+        # got stuck at the following line once
         self._world.tick()
-        if self._step_cnt >= self._total_steps:
-            self._object_detector.shutdown()
-            self._gt_state_estimator.shutdown()
-            self._carla_timer.shutdown()
-            self.destory()
-            rospy.signal_shutdown("Simulation finished!")
+        if DEBUG_MSGS:
+            rospy.loginfo("CARLABridgeNode._carla_tick end")
             
     def _add_ego_vehicle(self, spawn_point):
         blueprint_library = self._world.get_blueprint_library()
@@ -172,6 +207,9 @@ class CARLABridgeNode:
             vehicle.destroy()
         self._agent.destroy()
         self._world.apply_settings(self._original_settings)
+        self._object_detector.shutdown()
+        self._carla_timer.shutdown()
+
         
 
 if __name__ == "__main__":

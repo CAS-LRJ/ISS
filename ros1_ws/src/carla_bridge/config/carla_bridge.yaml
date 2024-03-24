@@ -5,7 +5,7 @@ fixed_delta_seconds: 0.05
 graphic_rendering: true
 num_non_ego_vehicles: 50
 simulation_duration: 300
-gt_state_estimation_frequency: 10
+state_estimation_frequency: 20
 gt_object_detection_frequency: 10
 ego_init: 1
 ego_destination: 10
