@@ -14,7 +14,7 @@ from iss_manager.msg import StateArray, State, ControlCommand
 from iss_manager.srv import EmergencyStop, EmergencyStopResponse
 
 DEBUG = False
-DEBUG_MSGS = True
+DEBUG_MSGS = False
 class ControlManagerNode:
     def __init__(self) -> None:
         self._ctrl_freq = rospy.get_param("control")["control_frequency"]

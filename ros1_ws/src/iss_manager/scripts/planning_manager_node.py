@@ -103,6 +103,7 @@ class PlanningManagerNode:
             rospy.loginfo("PlanningManagerMode._set_goal_srv_callback middle 1")
         start_point = (self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle)
         end_point = (req.x, req.y, req.yaw)
+        print(start_point)
         global_traj = self._global_planner.run_step(start_point, end_point)
         if DEBUG_MSGS:
             rospy.loginfo("PlanningManagerMode._set_goal_srv_callback middle 2")

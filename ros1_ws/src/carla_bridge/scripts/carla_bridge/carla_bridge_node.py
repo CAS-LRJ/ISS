@@ -11,7 +11,7 @@ import rospy
 from ros1_ws.src.carla_bridge.scripts.carla_bridge.object_detector import GTObjectDetector
 from ros1_ws.src.carla_bridge.scripts.carla_bridge.state_estimator import GTStateEstimator
 from carla_bridge.carla_visualizer import CARLAVisualizer
-from carla_bridge.controller_bridge import ControllerBridge
+from ros1_ws.src.carla_bridge.scripts.carla_bridge.controller_interface import ControllerBridge
 
 
 class CARLABridgeNode:
