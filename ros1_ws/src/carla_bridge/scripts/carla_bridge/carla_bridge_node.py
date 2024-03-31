@@ -8,10 +8,10 @@ from scipy.spatial.transform import Rotation as R
 
 import rospy
 
-from ros1_ws.src.carla_bridge.scripts.carla_bridge.object_detector import GTObjectDetector
-from ros1_ws.src.carla_bridge.scripts.carla_bridge.state_estimator import GTStateEstimator
+from carla_bridge.object_detector import GTObjectDetector
+from carla_bridge.state_estimator import GTStateEstimator
 from carla_bridge.carla_visualizer import CARLAVisualizer
-from ros1_ws.src.carla_bridge.scripts.carla_bridge.controller_interface import ControllerBridge
+from carla_bridge.controller_interface import ControllerInterface
 
 
 class CARLABridgeNode:
@@ -46,35 +46,22 @@ class CARLABridgeNode:
         
         self._gt_object_detector = GTObjectDetector(self._vehicles[self._ego_vehicle_name].id, self._world)
         self._gt_state_estimator = GTStateEstimator(self._vehicles[self._ego_vehicle_name])
-        self._controller_bridge = ControllerBridge(self._vehicles[self._ego_vehicle_name])
-        self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
-        self._total_steps = int(self.params["simulation_duration"] / self.params["fixed_delta_seconds"])
-        # self._progress_bar = tqdm(total=self.params["simulation_duration"] + 0.1, unit="sec")
-        self._step_cnt = 0
+        self._controller_interface = ControllerInterface(self._vehicles[self._ego_vehicle_name])
         self._carla_visualizer = CARLAVisualizer(self._world)
+        self._carla_timer = None
     
     def run(self):
-        if self._controller_bridge.start_iss_agent(self._spawn_points[self.params["ego_destination"]]):
+        if self._controller_interface.start_iss_agent(self._spawn_points[self.params["ego_destination"]]):
             for key, vehicle in self._vehicles.items():
                 if key == self._ego_vehicle_name:
                     continue
                 vehicle.set_autopilot(True, self._traffic_manager_port)
+        self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
         
     def _carla_tick(self, event):
-        # self._progress_bar.update(self.params["fixed_delta_seconds"])
-        self._step_cnt += 1
         self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
-        self._gt_state_estimator.publish_ego_state(None)
-        self._controller_bridge.apply_control()
+        # self._controller_interface.apply_control()
         self._world.tick()
-        if self._step_cnt >= self._total_steps:
-            self._gt_object_detector.shutdown()
-            self._gt_state_estimator.shutdown()
-            self._carla_timer.shutdown()
-            # self._progress_bar.close()
-            self.destory()
-            self._world.tick()
-            rospy.signal_shutdown("Simulation finished!")
             
     def _add_ego_vehicle(self, spawn_point):
         blueprint_library = self._world.get_blueprint_library()

@@ -23,7 +23,6 @@ import os
 
 ISS_PATH = os.path.dirname(ISS.__file__)
 
-DEBUG_MSGS = False
 class CARLABridgeNode:
     def __init__(self, world, traffic_manager):
         self._ego_vehicle_name = rospy.get_param('robot_name', 'ego_vehicle')
@@ -74,7 +73,6 @@ class CARLABridgeNode:
         waypoints_trajectory = [start_location, end_location]
         global_plan_gps, global_plan_world_coord = interpolate_trajectory(self._world, waypoints_trajectory)
         self._agent.set_global_plan(global_plan_gps, global_plan_world_coord, downsample_route)
-        print("setting global plan")
         if self._controller_interface.start_iss_agent(self._spawn_points[self.params["ego_destination"]]) is False:
             self.destroy()
             return

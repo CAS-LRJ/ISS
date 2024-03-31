@@ -12,8 +12,8 @@ class GTStateEstimator:
     def __init__(self, vehicle) -> None:
         self._vehicle = vehicle
         self._state_estimation_pub = rospy.Publisher(rospy.get_param("ego_state_topic"), State, queue_size=1)
-        # gt_state_estimation_frequency = rospy.get_param('gt_state_estimation_frequency', 10)
-        # self._timer = rospy.Timer(rospy.Duration(1 / gt_state_estimation_frequency), self.publish_ego_state)
+        gt_state_estimation_frequency = rospy.get_param('gt_state_estimation_frequency', 20)
+        self._timer = rospy.Timer(rospy.Duration(1 / gt_state_estimation_frequency), self.publish_ego_state)
     
     def publish_ego_state(self, event):
         state = State()
@@ -30,8 +30,6 @@ class GTStateEstimator:
         state.heading_angle = pi_2_pi(-np.deg2rad(vehicle_rotation.yaw))
         state.velocity = np.hypot(vehicle_velocity.x, vehicle_velocity.y)
         state.acceleration = np.hypot(vehicle_acceleration.x, vehicle_acceleration.y)
-        # print("real angle: ", pi_2_pi(-np.deg2rad(vehicle_rotation.yaw)))
-        # print("-------------------")
         self._state_estimation_pub.publish(state)
     
     def run_step(self, input_data, steer):
