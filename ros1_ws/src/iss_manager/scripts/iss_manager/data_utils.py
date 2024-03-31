@@ -32,7 +32,7 @@ def traj_to_ros_msg(trajectory: Trajectory, frame_id="map"):
             state_msg.jerk = states[i][6]
             state_msg.steering_angle_velocity = states[i][7]
             state_msg.time_from_start = states[i][8]
-            trajectory_msg.states.append(state_msg)
+        trajectory_msg.states.append(state_msg)
     return trajectory_msg
 
 def traj_to_ros_msg_path(trajectory: Trajectory, frame_id="map"):

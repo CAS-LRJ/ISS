@@ -25,16 +25,14 @@ class CARLAVisualizer:
         self._state_estimation_sub = rospy.Subscriber(rospy.get_param("state_estimation_topic"), State, self._state_estimation_callback)
     
     def _global_planner_callback(self, msg):
-        self._draw_trajectory_carla(msg, life_time=100, z=0.5, color=color_map['green'])
+        for state in msg.states:
+            loc = carla.Location(x=state.x, y=-state.y, z=0.5)  # note: carla y is opposite to rviz y
+            self._world.debug.draw_point(loc, size=0.05, color=color_map['green'], life_time=100)
     
     def _local_planner_callback(self, msg):
-        self._draw_trajectory_carla(msg, life_time=0.1, z=0.5, color=color_map['blue'])
-    
-    def _draw_trajectory_carla(self, msg, life_time, z=0.5, color=carla.Color(255, 0, 0)):
-        # trajectory: StateArray
         for i, state in enumerate(msg.states):
-            loc = carla.Location(x=state.x, y=-state.y, z=z)  # note: carla y is opposite to rviz y
-            self._world.debug.draw_string(loc, str(i), life_time=life_time, color=color)
+            loc = carla.Location(x=state.x, y=-state.y, z=0.5)  # note: carla y is opposite to rviz y
+            self._world.debug.draw_string(loc, str(i), life_time=0.1, color=color_map['blue'])
     
     def _object_detection_callback(self, msg):
         for detection in msg.detections:
