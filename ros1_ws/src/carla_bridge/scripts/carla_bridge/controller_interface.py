@@ -25,45 +25,22 @@ class ControllerInterface:
             return False
     
     def _agent_sub_callback(self, msg):
-        if DEBUG_MSGS:
-            rospy.loginfo("ControllerInterface._agent_sub_callback")
         self.set_control(msg.throttle, msg.steering)
-        # rospy.loginfo("[simulator] throttle: %.2f,  steering: %.2f" % (msg.throttle, msg.steering))
-        if DEBUG_MSGS:
-            rospy.loginfo("ControllerInterface._agent_sub_callback done")
-    
-    def _simple_agent_tick(self, event):
-        self._control = self._simple_agent.run_step()
-    
+
     def _teleop_callback(self, msg):
-        if DEBUG_MSGS:
-            rospy.loginfo("ControllerInterface._teleop_callback")
         throttle = msg.linear.x
         steering = msg.angular.z
         scale_linear = rospy.get_param("scale_linear", 0.5)
         scale_angular = rospy.get_param("scale_angular", 0.5)
         self.set_control(throttle * scale_linear, steering * scale_angular)
-        if DEBUG_MSGS:
-            rospy.loginfo("ControllerInterface._teleop_callback done")
     
     def apply_control(self, ctrl=None):
-        if DEBUG_MSGS:
-            rospy.loginfo("ControllerInterface.apply_control")
         if ctrl is not None:
-            if DEBUG_MSGS:
-                rospy.loginfo("ControllerInterface.apply_control ctrl: " + str(ctrl))
             self._vehicle.apply_control(ctrl)
         else:
-            if DEBUG_MSGS:
-                rospy.loginfo("ControllerInterface.apply_control self._control: " + str(self._control))
-            # got stuck at the following line once
             self._vehicle.apply_control(self._control)   
-        if DEBUG_MSGS:
-            rospy.loginfo("ControllerInterface.apply_control done")
         
     def set_control(self, throttle, steering):
-        if DEBUG_MSGS:
-            rospy.loginfo("ControllerInterface.set_control")
         self._control.steer = min(max(-steering, -1.0), 1.0)
         if throttle < 0:
             self._control.throttle = 0
@@ -71,8 +48,6 @@ class ControllerInterface:
         else:
             self._control.throttle = min(throttle, 1.0)
             self._control.brake = 0
-        if DEBUG_MSGS:
-            rospy.loginfo("ControllerInterface.set_control done")
 
     def get_control(self):
         return self._control

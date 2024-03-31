@@ -1,7 +1,7 @@
 import carla
 import rospy
 import numpy as np
-from iss_manager.msg import StateArray, State
+from iss_manager.msg import State, StateArray, ObjectDetection3DArray
 
 color_map = { 
     'red': carla.Color(255, 0, 0),
@@ -21,10 +21,11 @@ class CARLAVisualizer:
         self._world = world
         self._global_planner_sub = rospy.Subscriber("planning/global_planner/trajectory", StateArray, self._global_planner_callback)
         self._local_planner_sub = rospy.Subscriber("planning/local_planner/trajectory", StateArray, self._local_planner_callback)
+        self._object_detection_sub = rospy.Subscriber(rospy.get_param("object_detection_topic"), ObjectDetection3DArray, self._object_detection_callback)
+        self._state_estimation_sub = rospy.Subscriber(rospy.get_param("state_estimation_topic"), State, self._state_estimation_callback)
     
     def _global_planner_callback(self, msg):
-        life_time = rospy.get_param('simulation_duration')
-        self._draw_trajectory_carla(msg, life_time=life_time, z=0.5, color=color_map['green'])
+        self._draw_trajectory_carla(msg, life_time=100, z=0.5, color=color_map['green'])
     
     def _local_planner_callback(self, msg):
         self._draw_trajectory_carla(msg, life_time=0.1, z=0.5, color=color_map['blue'])
@@ -34,9 +35,22 @@ class CARLAVisualizer:
         for i, state in enumerate(msg.states):
             loc = carla.Location(x=state.x, y=-state.y, z=z)  # note: carla y is opposite to rviz y
             self._world.debug.draw_string(loc, str(i), life_time=life_time, color=color)
-            
-    def draw_perception(self, ego_trans, det, other_cast_locs, other_cast_cmds):
+    
+    def _object_detection_callback(self, msg):
+        for detection in msg.detections:
+            box = carla.BoundingBox(carla.Location(x=detection.state.x, y=-detection.state.y, z=0.1), carla.Vector3D(x=detection.bbox.size.x, y=detection.bbox.size.y, z=detection.bbox.size.z))
+            rot = carla.Rotation(pitch=0, yaw=-np.rad2deg(detection.state.heading_angle), roll=0)
+            self._world.debug.draw_box(box, rot, color=color_map['red'], life_time=0.1, thickness=0.05)
+    
+    def _state_estimation_callback(self, msg):
+        vehicle_length = rospy.get_param("vehicle_info")["length"]
+        vehicle_width = rospy.get_param("vehicle_info")["width"]
+        box = carla.BoundingBox(carla.Location(x=msg.x, y=-msg.y, z=0.1), carla.Vector3D(x=vehicle_length*0.7, y=vehicle_width*0.7, z=1.5))
+        rot = carla.Rotation(pitch=0, yaw=-np.rad2deg(msg.heading_angle), roll=0)
+        self._world.debug.draw_box(box, rot, color=color_map['yellow'], life_time=0.1, thickness=0.05)
         
+    
+    def draw_perception(self, ego_trans, det, other_cast_locs, other_cast_cmds):
         duration = 0.05
         meter_per_pixel = 1 / 4
         

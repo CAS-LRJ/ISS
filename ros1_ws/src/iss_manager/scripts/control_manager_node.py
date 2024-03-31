@@ -20,7 +20,7 @@ class ControlManagerNode:
         self._ctrl_freq = rospy.get_param("control")["control_frequency"]
         self._timer = rospy.Timer(rospy.Duration(1 / self._ctrl_freq), self._timer_callback)
         self._ctrl_pub = rospy.Publisher(rospy.get_param("control_command_topic"), ControlCommand, queue_size=1)
-        self._ego_state_sub = rospy.Subscriber(rospy.get_param("ego_state_topic"), State, self._state_callback)
+        self._ego_state_sub = rospy.Subscriber(rospy.get_param("state_estimation_topic"), State, self._state_callback)
         self._trajectory_sub = rospy.Subscriber("planning/local_planner/trajectory", StateArray, self._trajectory_callback)
         self._emergency_stop_srv = rospy.Service("control/emergency_stop", EmergencyStop, self._emergency_stop_callback)
         self._emergency_stop = False

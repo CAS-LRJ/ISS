@@ -11,9 +11,8 @@ DEBUG_MSGS = True
 class GTStateEstimator:
     def __init__(self, vehicle) -> None:
         self._vehicle = vehicle
-        self._state_estimation_pub = rospy.Publisher(rospy.get_param("ego_state_topic"), State, queue_size=1)
-        gt_state_estimation_frequency = rospy.get_param('gt_state_estimation_frequency', 20)
-        self._timer = rospy.Timer(rospy.Duration(1 / gt_state_estimation_frequency), self.publish_ego_state)
+        self._state_estimation_pub = rospy.Publisher(rospy.get_param("state_estimation_topic"), State, queue_size=1)
+        self._timer = rospy.Timer(rospy.Duration(1 / rospy.get_param('state_estimation_frequency')), self.publish_ego_state)
     
     def publish_ego_state(self, event):
         state = State()
@@ -27,7 +26,8 @@ class GTStateEstimator:
         vehicle_acceleration = self._vehicle.get_acceleration()
         state.x = vehicle_location.x
         state.y = -vehicle_location.y
-        state.heading_angle = pi_2_pi(-np.deg2rad(vehicle_rotation.yaw))
+        # state.heading_angle = pi_2_pi(-np.deg2rad(vehicle_rotation.yaw))
+        state.heading_angle = -np.deg2rad(vehicle_rotation.yaw)
         state.velocity = np.hypot(vehicle_velocity.x, vehicle_velocity.y)
         state.acceleration = np.hypot(vehicle_acceleration.x, vehicle_acceleration.y)
         self._state_estimation_pub.publish(state)
@@ -37,7 +37,7 @@ class GTStateEstimator:
     
 class EKFStateEstimator:
     def __init__(self) -> None:
-        self._state_estimation_pub = rospy.Publisher(rospy.get_param("ego_state_topic"), State, queue_size=1)
+        self._state_estimation_pub = rospy.Publisher(rospy.get_param("state_estimation_topic"), State, queue_size=1)
         ekf_setting = {
                         "vehicle_info": {
                             "wheelbase": 2.8498,

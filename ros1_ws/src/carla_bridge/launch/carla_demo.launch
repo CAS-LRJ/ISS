@@ -11,6 +11,7 @@
 
         <rosparam command="load" file="$(find iss_manager)/config/$(arg robot_type_0).yaml"/>
         <include file="$(find iss_manager)/launch/iss_manager.launch"/>
+
     </group>
 
 </launch>

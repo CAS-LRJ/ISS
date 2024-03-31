@@ -7,8 +7,8 @@ global_planning:
     YAW_TOLERANCE: 0.1
 
 prediction:
-  method: "loaded_waypoint_predictor"
-  # method: "constant_velocity_predictor"
+  # method: "loaded_waypoint_predictor"
+  method: "constant_velocity_predictor"
 
 local_planning:
   local_planning_frequency: 10

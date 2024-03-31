@@ -60,7 +60,7 @@ class CARLABridgeNode:
         
     def _carla_tick(self, event):
         self._set_spectator(self._vehicles[self._ego_vehicle_name].get_transform())
-        # self._controller_interface.apply_control()
+        self._controller_interface.apply_control()
         self._world.tick()
             
     def _add_ego_vehicle(self, spawn_point):
