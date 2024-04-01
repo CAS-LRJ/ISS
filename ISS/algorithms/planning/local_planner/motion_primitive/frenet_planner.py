@@ -67,6 +67,7 @@ class FrenetPlanner(object):
         state_cartesian = None
         state_cartesian_prev = None
         self.best_path = None
+        self.flag_danger = False
 
     def update_reference_line(self, waypoints):
         self.waypoints_xy = waypoints
@@ -94,14 +95,20 @@ class FrenetPlanner(object):
         if self.state_frenet is None:
             return frenet_paths
         s, s_d, s_dd, d, d_d, d_dd = self.state_frenet
-        d_r, d_l = self.d_r, -self.d_l
+        d_r = abs(self.d_r)
+        d_l = -abs(self.d_l)
         
         # Get the front obstacle if it exists
         s_obstacle = motion_predictor.get_front_obstacle(self.csp, s, self.LOOK_AHEAD_DISTANCE)
+        
+        backup_trajectory = []
         for Ti in np.arange(self.MIN_T, self.MAX_T + self.D_T, self.D_T):
             for tv in np.arange(self.MIN_SPEED, self.MAX_SPEED + self.D_V_S, self.D_V_S):
                 if tv == 0 and (s_obstacle is not None):
                     lon_qp = QuinticPolynomial(s, s_d, s_dd, s_obstacle - self.SAFE_DISTANCE, tv, 0.0, Ti)
+                    print("Dangerous situation detected!")
+                    print("s_obstacle: ", s_obstacle)
+                    self.flag_danger = True
                 else:
                     lon_qp = QuarticPolynomial(s, s_d, 0, tv, 0.0, Ti)
                 for di in np.arange(d_l, d_r + self.D_S, self.D_S):
@@ -129,8 +136,11 @@ class FrenetPlanner(object):
                     fp.cd = self.K_J * Jp + self.K_T * Ti + self.K_D * fp.d[-1] ** 2 + self.K_D_DIFF * Jd
                     fp.cv = self.K_J * Js + self.K_T * Ti + self.K_D * ds
                     fp.cf = self.K_LAT * fp.cd + self.K_LON * fp.cv
-
                     frenet_paths.append(fp)
+                    if self.flag_danger:
+                        backup_trajectory.append(fp)
+                if self.flag_danger:
+                    return backup_trajectory
 
         return frenet_paths
 
@@ -220,6 +230,10 @@ class FrenetPlanner(object):
         solid_boundary = 0
         all_path_vis = []
         frenet_path_duration = -1
+        
+        if self.flag_danger:
+            print("number of backup trajectories: ", len(fplist))
+        
         for i, frenet_path in enumerate(fplist):
             path_vis = [[x, y, yaw] for x, y, yaw in zip(
                     frenet_path.x, frenet_path.y, frenet_path.yaw)]
@@ -229,10 +243,14 @@ class FrenetPlanner(object):
             if any([self.MAX_SPEED < v for v in frenet_path.s_d]):
                 speed += 1
                 all_path_vis[-1][-1] = "velocity"
+                if self.flag_danger:
+                    print("speed error")
                 continue
             elif any([self.MAX_ACCEL < abs(a) for a in frenet_path.s_dd]):
                 accel += 1
                 all_path_vis[-1][-1] = "acceleration"
+                if self.flag_danger:
+                    print("acceleration error with max accel: ", max(frenet_path.s_dd), "min accel: ", min(frenet_path.s_dd))
                 continue
             # elif any([self.MAX_CURVATURE < abs(c) for c in frenet_path.c]):
             #     curvature += 1
@@ -249,13 +267,13 @@ class FrenetPlanner(object):
                 if res:
                     if coll_type == 0:
                         solid_boundary += 1
-                        # if frenet_path.fail_proof:
-                        #     print("boundary error")
+                        if self.flag_danger:
+                            print("boundary error")
                         all_path_vis[-1][-1] = "solid_boundary"
                     elif coll_type == 1:
                         obstacle += 1
-                        # if frenet_path.fail_proof:
-                        #     print("obstacle error")
+                        if self.flag_danger:
+                            print("obstacle error")
                         all_path_vis[-1][-1] = "obstacle"
                     continue
             ok_ind.append(i)
@@ -269,6 +287,7 @@ class FrenetPlanner(object):
         fplist = self._calc_global_paths(fplist)
         fplist, all_path_vis = self._check_paths(fplist, motion_predictor)
         best_path = min(fplist, key=lambda fp: fp.cf, default=None)
+        self.flag_danger = False
         return best_path, all_path_vis
     
     def run_step(self, init_planning_state, init_planning_state_prev, motion_predictor):

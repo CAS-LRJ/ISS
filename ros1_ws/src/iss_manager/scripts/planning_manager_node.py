@@ -128,7 +128,7 @@ class PlanningManagerNode:
             return
         init_planning_state = [self._ego_state.x, self._ego_state.y, self._ego_state.heading_angle, self._ego_state.velocity, self._ego_state.acceleration]
         dist_to_goal = np.linalg.norm(np.array([self._ego_state.x, self._ego_state.y]) - np.array(self._goal_point[:2]))
-        if  dist_to_goal < 0.5:
+        if  dist_to_goal < 1:
             # TODO: stop the vehicle
             return
         # if not self._local_traj.is_empty():

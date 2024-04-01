@@ -23,7 +23,7 @@ class GTObjectDetector:
         self._vehicle_id = vehicle_id
         self._world = world
         self._object_detection_pub = rospy.Publisher(rospy.get_param("object_detection_topic"), ObjectDetection3DArray, queue_size=1)
-        self._MAX_DISTANCE = 20
+        self._MAX_DISTANCE = 100
         self._timer = rospy.Timer(rospy.Duration(1 / rospy.get_param('object_detection_frequency')), self.publish_object_detection)
         
     def publish_object_detection(self, event):

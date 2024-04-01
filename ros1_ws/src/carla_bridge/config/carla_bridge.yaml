@@ -3,11 +3,11 @@ carla_port: 2000
 map_name: "Town06"
 fixed_delta_seconds: 0.05
 graphic_rendering: true
-num_non_ego_vehicles: 10
+num_non_ego_vehicles: 999
 simulation_duration: 300
 state_estimation_frequency: 20
 object_detection_frequency: 20
-ego_init: 180
+ego_init: 178
 # ego_destination: 305 # left turn with red light
 ego_destination: 94 # straight road with red light
 

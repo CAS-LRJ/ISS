@@ -49,6 +49,12 @@ class CARLABridgeNode:
         self._controller_interface = ControllerInterface(self._vehicles[self._ego_vehicle_name])
         self._carla_visualizer = CARLAVisualizer(self._world)
         self._carla_timer = None
+        
+        # set the traffic light to be right for 1min
+        traffic_lights = self._world.get_actors().filter('traffic.traffic_light')
+        for tl in traffic_lights:
+            tl.set_state(carla.TrafficLightState.Red)
+            tl.set_red_time(0)
     
     def run(self):
         if self._controller_interface.start_iss_agent(self._spawn_points[self.params["ego_destination"]]):
@@ -86,11 +92,10 @@ class CARLABridgeNode:
         for p in self._spawn_points:
             if p != ego_spawn_point and \
                 np.hypot(p.location.x - ego_spawn_point.location.x,
-                         p.location.y - ego_spawn_point.location.y) < 50:
+                         p.location.y - ego_spawn_point.location.y) < 30:
                 nonego_spawn_points.append(p)
         self._add_ego_vehicle(ego_spawn_point)
         for i in range(self.params["num_non_ego_vehicles"]):
-            random.shuffle(nonego_spawn_points)
             if i < len(nonego_spawn_points):
                 self._add_non_ego_vehicle(nonego_spawn_points[i], "npc_" + str(i))
             else:
