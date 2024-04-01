@@ -36,14 +36,14 @@ class CARLAVisualizer:
     
     def _object_detection_callback(self, msg):
         for detection in msg.detections:
-            box = carla.BoundingBox(carla.Location(x=detection.state.x, y=-detection.state.y, z=0.1), carla.Vector3D(x=detection.bbox.size.x, y=detection.bbox.size.y, z=detection.bbox.size.z))
+            box = carla.BoundingBox(carla.Location(x=detection.state.x, y=-detection.state.y, z=0.1), carla.Vector3D(x=detection.bbox.size.x/2, y=detection.bbox.size.y/2, z=detection.bbox.size.z/2))
             rot = carla.Rotation(pitch=0, yaw=-np.rad2deg(detection.state.heading_angle), roll=0)
             self._world.debug.draw_box(box, rot, color=color_map['red'], life_time=0.1, thickness=0.05)
     
     def _state_estimation_callback(self, msg):
         vehicle_length = rospy.get_param("vehicle_info")["length"]
         vehicle_width = rospy.get_param("vehicle_info")["width"]
-        box = carla.BoundingBox(carla.Location(x=msg.x, y=-msg.y, z=0.1), carla.Vector3D(x=vehicle_length*0.7, y=vehicle_width*0.7, z=1.5))
+        box = carla.BoundingBox(carla.Location(x=msg.x, y=-msg.y, z=0.1), carla.Vector3D(x=vehicle_length/2, y=vehicle_width/2, z=1.5/2))
         rot = carla.Rotation(pitch=0, yaw=-np.rad2deg(msg.heading_angle), roll=0)
         self._world.debug.draw_box(box, rot, color=color_map['yellow'], life_time=0.1, thickness=0.05)
         

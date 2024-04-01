@@ -65,8 +65,8 @@ class ConstVelPredictor:
             self._spatial_temporal_obstacles = None
     
     def collision_check(self, path, ego_length=None, ego_width=None, check_solid=True):
-        if check_solid and self._lanemap_collision_checker.check_path(path): #TODO: not accurate
-            return True, 0
+        # if check_solid and self._lanemap_collision_checker.check_path(path): #TODO: not accurate
+        #     return True, 0
         if self._spatial_temporal_obstacles is None:
             return False, 0
         if ego_length is None:

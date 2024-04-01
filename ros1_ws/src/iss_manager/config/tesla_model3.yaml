@@ -26,8 +26,8 @@ local_planning:
     MIN_SPEED: 0.0        # minimum speed [m/s]
     TARGET_SPEED: 15    # target speed [m/s]
     D_V_S: 5            # target speed sampling length [m/s]
-    SAFE_DISTANCE: 5.0    # safe distance to the front vehicle[m]
-    LOOK_AHEAD_DISTANCE: 20.0 # look ahead distance [m]
+    SAFE_DISTANCE: 10.0    # safe distance to the front vehicle[m], keep two times of the vehicle length
+    LOOK_AHEAD_DISTANCE: 50.0 # look ahead distance [m]
 
     K_J: 0.1
     K_T: 0.5

@@ -44,9 +44,9 @@ class GTObjectDetector:
             detection.state.heading_angle = pi_2_pi(-np.deg2rad(actor.get_transform().rotation.yaw))
             detection.state.velocity = np.hypot(actor.get_velocity().x, actor.get_velocity().y)
             detection.state.acceleration = np.hypot(actor.get_acceleration().x, actor.get_acceleration().y)
-            detection.bbox.size.x = actor.bounding_box.extent.x * 2 * 0.7
-            detection.bbox.size.y = actor.bounding_box.extent.y * 2 * 0.7
-            detection.bbox.size.z = actor.bounding_box.extent.z * 2 * 0.7
+            detection.bbox.size.x = actor.bounding_box.extent.x * 2
+            detection.bbox.size.y = actor.bounding_box.extent.y * 2
+            detection.bbox.size.z = actor.bounding_box.extent.z * 2
             detection.bbox.center.position.x = actor.bounding_box.location.x
             detection.bbox.center.position.y = -actor.bounding_box.location.y
             detection.bbox.center.position.z = actor.bounding_box.location.z

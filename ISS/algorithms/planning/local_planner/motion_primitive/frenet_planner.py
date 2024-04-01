@@ -231,9 +231,6 @@ class FrenetPlanner(object):
         all_path_vis = []
         frenet_path_duration = -1
         
-        if self.flag_danger:
-            print("number of backup trajectories: ", len(fplist))
-        
         for i, frenet_path in enumerate(fplist):
             path_vis = [[x, y, yaw] for x, y, yaw in zip(
                     frenet_path.x, frenet_path.y, frenet_path.yaw)]
