@@ -36,7 +36,8 @@ local_planning:
     K_LON: 0.8
     K_D_DIFF: 1
     
-    MAX_ACCEL: 10          # maximum acceleration [m/ss]
+    MAX_ACCEL: 20          # maximum acceleration [m/ss]
+    MAX_JERK: 20           # maximum jerk [m/sss]
     MAX_CURVATURE: 1.0    # maximum curvature [1/m]
 
 control:

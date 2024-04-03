@@ -32,7 +32,8 @@ class CARLAVisualizer:
     def _local_planner_callback(self, msg):
         for i, state in enumerate(msg.states):
             loc = carla.Location(x=state.x, y=-state.y, z=0.5)  # note: carla y is opposite to rviz y
-            self._world.debug.draw_string(loc, str(i), life_time=0.1, color=color_map['blue'])
+            self._world.debug.draw_string(loc, str(i), life_time=0.05, color=color_map['blue'])
+            # self._world.debug.draw_point(loc, size=0.05, color=color_map['blue'], life_time=0.05)
     
     def _object_detection_callback(self, msg):
         for detection in msg.detections:

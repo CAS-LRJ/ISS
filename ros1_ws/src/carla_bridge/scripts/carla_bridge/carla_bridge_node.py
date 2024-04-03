@@ -62,6 +62,7 @@ class CARLABridgeNode:
                 if key == self._ego_vehicle_name:
                     continue
                 vehicle.set_autopilot(True, self._traffic_manager_port)
+                self._traffic_manager.auto_lane_change(vehicle, False)
         self._carla_timer = rospy.Timer(rospy.Duration(self.params["fixed_delta_seconds"]), self._carla_tick)
         
     def _carla_tick(self, event):

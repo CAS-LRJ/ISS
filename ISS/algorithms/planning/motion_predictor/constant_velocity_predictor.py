@@ -79,10 +79,10 @@ class ConstVelPredictor:
             ego_circle_centers, ego_radius = get_circle_centers(ego_center[0], ego_center[1], ego_heading, ego_length, ego_width)
             for ego_circle_center in ego_circle_centers:
                 ego_circle_center_array = np.array(ego_circle_center)
-                possible_obstacles = self._spatial_temporal_obstacles.query_ball_point(ego_circle_center_array, 6 * ego_radius)
+                possible_obstacles = self._spatial_temporal_obstacles.query_ball_point(ego_circle_center_array, 2 * ego_radius)
                 for idx in possible_obstacles:
                     obs_info = self._obstacles_info_list[idx]
-                    if obs_info[0] in [(i + j) for j in range(-1, 2)]:                    
+                    if obs_info[0] == i:    
                         dist = np.linalg.norm(ego_circle_center_array - self._spatial_temporal_obstacles.data[idx])
                         if dist < (ego_radius + obs_info[1]):
                             return True, 1
