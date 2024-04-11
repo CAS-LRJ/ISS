@@ -2,6 +2,7 @@ import numpy as np
 import math
 from scipy.spatial import KDTree
 from ISS.algorithms.utils.cubic_spline import Spline2D
+import time
 
 def get_circle_centers(x, y, heading_angle, length, width, num_circles=3):
     spacing = length / num_circles
@@ -23,6 +24,7 @@ class ConstVelPredictor:
 
     def update_obstacle(self, obstacle_detections):
         self._obstacle_detections = obstacle_detections
+        self.update_prediction(0.1, 50) # TODO
     
     def read_prediction(self, trajectories):
         self._loaded_trajecotries = trajectories
@@ -85,6 +87,8 @@ class ConstVelPredictor:
                     if obs_info[0] == i:    
                         dist = np.linalg.norm(ego_circle_center_array - self._spatial_temporal_obstacles.data[idx])
                         if dist < (ego_radius + obs_info[1]):
+                            print("obs_center %.2f, %.2f" % (self._spatial_temporal_obstacles.data[idx][0], self._spatial_temporal_obstacles.data[idx][1]))
+                            print("dist %.2f, ego_radius %.2f, obs_radius %.2f" % (dist, ego_radius, obs_info[1]))
                             return True, 1
         return False, 0
     
@@ -96,10 +100,10 @@ class ConstVelPredictor:
         s_obstacle = s_ego
         obstacle_detections_kdtree = KDTree(np.array([[obstacle.state.x, obstacle.state.y] for obstacle in self._obstacle_detections.detections]), copy_data=True)
         while s_obstacle < (s_ego + LOOK_AHEAD_DISTANCE):
-            s_obstacle += self._ego_veh_info["length"] / 2
+            s_obstacle += self._ego_veh_info["length"]
             x, y = csp.calc_position(s_obstacle)
-            d, idx = obstacle_detections_kdtree.query([x, y])
-            if d < self._ego_veh_info["width"] / 2:
+            d, idx = obstacle_detections_kdtree.query([x, y]) # TODO
+            if d <= self._ego_veh_info["length"]: 
                 return s_obstacle
         return None
     

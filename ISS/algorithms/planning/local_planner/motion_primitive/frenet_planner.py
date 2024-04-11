@@ -29,6 +29,8 @@ from ISS.algorithms.utils.cubic_spline import Spline2D
 from ISS.algorithms.utils.quartic_polynomial import QuarticPolynomial
 from ISS.algorithms.utils.quintic_polynomial import QuinticPolynomial
 
+import pickle
+
 class FrenetPath:
 
     def __init__(self):
@@ -78,6 +80,8 @@ class FrenetPlanner(object):
     def _generate_target_course(self):
         x = [waypoint[0] for waypoint in self.waypoints_xy]
         y = [waypoint[1] for waypoint in self.waypoints_xy]
+        
+        # pickle.dump([x, y], open("/home/kasm-user/workspace/ISS/waypoints.pkl", "wb"))
         self.csp = Spline2D(x, y)
         self.s = np.arange(0, self.csp.s[-1], 0.1)
         self.rx, self.ry, self.ryaw, self.rk = [], [], [], []
@@ -94,8 +98,7 @@ class FrenetPlanner(object):
         frenet_paths = []
         if self.state_frenet is None:
             return frenet_paths
-        print("-------------------")
-        print("state_frenet: ", self.state_frenet)
+        # print("state_frenet: ", self.state_frenet)
         s, s_d, s_dd, d, d_d, d_dd = self.state_frenet
         d_r = abs(self.d_r)
         d_l = -abs(self.d_l)
@@ -103,27 +106,36 @@ class FrenetPlanner(object):
         # Get the front obstacle if it exists
         s_obstacle = motion_predictor.get_front_obstacle(self.csp, s, self.LOOK_AHEAD_DISTANCE)
         if s_obstacle is None:
-            s_obstacle = s + 50
-        possible_target_distances = [random.uniform(0, s_obstacle - 10 - s) for _ in range(6)]
+            raise ValueError("s_obstacle is None")
+
+        possible_target_distances = [random.uniform(0, s_obstacle - s - 10) for _ in range(10)]
+        print("s_obstacle: ", s_obstacle)
+        print("s: ", s)
         Ti = 5
         for target_distance in possible_target_distances:
             for tv in np.arange(self.MIN_SPEED, self.MAX_SPEED + self.D_V_S, self.D_V_S):
+            # for tv in [random.uniform(self.MIN_SPEED, self.MAX_SPEED) for _ in range(20)]:
+                fp = FrenetPath()
+                fp.T = Ti
+                fp.t = list(np.arange(0.0, Ti, self.dt))
+                if (s + target_distance) > (s_obstacle - 6):
+                    raise ValueError("s + target_distance > s_obstacle - 6")
                 lon_qp = QuinticPolynomial(s, s_d, s_dd, s + target_distance, tv, 0.0, Ti)
+                fp.s = [lon_qp.calc_point(t) for t in fp.t]
+                if any([((s_val < s) or (s_val > s + target_distance)) for s_val in fp.s]):
+                    continue
+                fp.s_d = [lon_qp.calc_first_derivative(t) for t in fp.t]
+                fp.s_dd = [lon_qp.calc_second_derivative(t) for t in fp.t]
+                fp.s_ddd = [lon_qp.calc_third_derivative(t) for t in fp.t]
+                
                 # lon_qp = QuarticPolynomial(s, s_d, s_dd, tv, 0.0, Ti)
                 # for di in np.arange(d_l, d_r + self.D_S, self.D_S):
                 di = 0
                 lat_qp = QuinticPolynomial(d, d_d, d_dd, di, 0.0, 0.0, Ti)
-                fp = FrenetPath()
-                fp.T = Ti
-                fp.t = list(np.arange(0.0, Ti, self.dt))
                 fp.d = [lat_qp.calc_point(t) for t in fp.t]
                 fp.d_d = [lat_qp.calc_first_derivative(t) for t in fp.t]
                 fp.d_dd = [lat_qp.calc_second_derivative(t) for t in fp.t]
                 fp.d_ddd = [lat_qp.calc_third_derivative(t) for t in fp.t]
-                fp.s = [lon_qp.calc_point(t) for t in fp.t]
-                fp.s_d = [lon_qp.calc_first_derivative(t) for t in fp.t]
-                fp.s_dd = [lon_qp.calc_second_derivative(t) for t in fp.t]
-                fp.s_ddd = [lon_qp.calc_third_derivative(t) for t in fp.t]
                 
                 Jp = sum(np.power(fp.d_ddd, 2))  # square of jerk
                 Js = sum(np.power(fp.s_ddd, 2))  # square of jerk
@@ -186,16 +198,19 @@ class FrenetPlanner(object):
             for s, d in zip(fp.s, fp.d):
                 ix, iy = self.csp.calc_position(s)
                 if ix is None or iy is None:
+                    print(fp.s)
                     break
+                    # raise ValueError("Frenet planning error: ix or iy is None")
                 i_yaw = self.csp.calc_yaw(s)
                 fx = ix + d * math.cos(i_yaw + math.pi / 2.0)
                 fy = iy + d * math.sin(i_yaw + math.pi / 2.0)
                 fp.x.append(fx)
+                
                 fp.y.append(fy)
             
-            # TODO!!!!
             if len(fp.x) != len(fp.s):
                 continue
+                # raise ValueError("Frenet planning error: len(fp.x) != len(fp.s)")
             
             for i in range(len(fp.x) - 1):
                 dx = fp.x[i + 1] - fp.x[i]
@@ -250,10 +265,6 @@ class FrenetPlanner(object):
                 frenet_path_tuple = [(x, y, yaw) for x, y, yaw in zip(
                     frenet_path.x, frenet_path.y, frenet_path.yaw)]
                 
-                if frenet_path.T != frenet_path_duration:
-                    motion_predictor.update_prediction(frenet_path.t[1], len(frenet_path.t))
-                    frenet_path_duration = frenet_path.T
-                
                 res, coll_type = motion_predictor.collision_check(frenet_path_tuple)
                 if res:
                     if coll_type == 0:
@@ -263,24 +274,26 @@ class FrenetPlanner(object):
                     continue
             ok_ind.append(i)
         if len(fplist) != 0:
-            print("speed percent %.2f, accel percent %.2f, jerk percent %.2f, obstacle percent %.2f, solid_boundary percent %.2f" % (speed / len(fplist), accel / len(fplist), jerk / len(fplist), obstacle / len(fplist), solid_boundary / len(fplist)))
+            print("speed %.2f, accel %.2f, jerk %.2f, obstacle %.2f, solid_boundary %.2f" % (speed / len(fplist), accel / len(fplist), jerk / len(fplist), obstacle / len(fplist), solid_boundary / len(fplist)))
         return [fplist[i] for i in ok_ind], all_path_vis
     
     def _path_planning(self, motion_predictor):
         time_init = time.time()
         fplist = self._calc_frenet_paths(motion_predictor)
-        # print("time for frenet path: ", time.time() - time_init)
+        print("time for frenet path: %.4f" % (time.time() - time_init))
         time_start = time.time()
         fplist = self._calc_global_paths(fplist)
-        # print("time for global path: ", time.time() - time_start)
+        print("time for global path: %.4f" % (time.time() - time_start))
         time_start = time.time()
         fplist, all_path_vis = self._check_paths(fplist, motion_predictor)
-        # print("time for check path: ", time.time() - time_start)
-        print("time for frenet planning: ", time.time() - time_init)
+        print("time for check path: %.4f" % (time.time() - time_start))
         best_path = min(fplist, key=lambda fp: fp.cf, default=None)
+        print("time for frenet planning: %.4f" % (time.time() - time_init))
         return best_path, all_path_vis
     
     def run_step(self, init_planning_state, init_planning_state_prev, motion_predictor):
+        print("-------------------")
+        print("init_planning_state: ", init_planning_state)
         self._get_frenet_state(init_planning_state, init_planning_state_prev)
         self.best_path, all_path_vis = self._path_planning(motion_predictor)
         states_list = []
@@ -296,3 +309,10 @@ class FrenetPlanner(object):
         return trajectory, all_path_vis
 
 
+if __name__ == "__main__":
+    x, y = pickle.load(open("/home/kasm-user/workspace/ISS/waypoints.pkl", "rb"))
+    csp = Spline2D(x, y)
+    s = [i for i in range(0, 50, 10)]
+    for i_s in s:
+        ix, iy = csp.calc_position(i_s)
+        print("s: %.2f, ix: %.2f, iy: %.2f" % (i_s, ix, iy))

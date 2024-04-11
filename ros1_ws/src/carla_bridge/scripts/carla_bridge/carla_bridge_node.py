@@ -89,12 +89,15 @@ class CARLABridgeNode:
     
     def _add_vehicles(self):
         ego_spawn_point = self._spawn_points[self.params["ego_init"]]
-        nonego_spawn_points = []       
-        for p in self._spawn_points:
-            if p != ego_spawn_point and \
-                np.hypot(p.location.x - ego_spawn_point.location.x,
-                         p.location.y - ego_spawn_point.location.y) < 30:
-                nonego_spawn_points.append(p)
+        # nonego_spawn_points = []       
+        # for p in self._spawn_points:
+        #     if p != ego_spawn_point and \
+        #         np.hypot(p.location.x - ego_spawn_point.location.x,
+        #                  p.location.y - ego_spawn_point.location.y) < 30:
+        #         nonego_spawn_points.append(p)
+        nonego_spawn_points = [self._spawn_points[182]]
+        print("ego spawn at: ", ego_spawn_point)
+        print("nonego spawn at: ", self._spawn_points[182])
         self._add_ego_vehicle(ego_spawn_point)
         for i in range(self.params["num_non_ego_vehicles"]):
             if i < len(nonego_spawn_points):
