@@ -2,5 +2,6 @@
 
     <node pkg="iss_manager" type="planning_manager_node.py" name="planning_manager_node" output="screen"/>
     <node pkg="iss_manager" type="control_manager_node.py" name="control_manager_node" output="screen"/>
+    <node pkg="iss_manager" type="tracking_manager_node.py" name="tracking_manager_node" output="screen"/>
 
 </launch>

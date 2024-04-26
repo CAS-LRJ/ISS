@@ -18,6 +18,7 @@ ego_odom_topic: "ego_odom"
 state_estimation_topic: "ego_state_estimation"
 object_detection_topic: "object_detection"
 motion_prediction_topic: "motion_prediction"
+object_tracking_topic: "object_tracking"
 
 world_frame: "odom"
 control_command_topic: "control_command"
