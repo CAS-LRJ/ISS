@@ -68,7 +68,7 @@ add_message_files(
   State.msg
   StateArray.msg
   StateArrayArray.msg
-  ObjectTracker.msg
+  ObjectTracking.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -188,7 +188,6 @@ catkin_install_python(PROGRAMS
   scripts/iss_manager/data_utils.py
   scripts/control_manager_node.py
   scripts/planning_manager_node.py
-  scripts/tracking_manager_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

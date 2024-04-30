@@ -1,0 +1,6 @@
+tracker_lidar_pointcloud_topic: ""
+tracker_imu_topic: ""
+tracker_gps_position_topic: ""
+tracker_gps_velocity_topic: ""
+
+tracker_data_source_granularity: 0.1

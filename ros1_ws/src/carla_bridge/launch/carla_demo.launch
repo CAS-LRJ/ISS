@@ -6,6 +6,7 @@
         <param name="robot_name" value="$(arg robot_name_0)"/>
         
         <rosparam command="load" file="$(find carla_bridge)/config/carla_bridge.yaml"/>
+        <rosparam command="load" file="$(find carla_bridge)/config/object_tracking.yaml"/>
         <!-- <node pkg="carla_bridge" type="carla_bridge_sensors_node.py" name="carla_bridge_node" output="screen"/> -->
         <node pkg="carla_bridge" type="carla_bridge_node.py" name="carla_bridge_node" output="screen"/>
 
